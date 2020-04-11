@@ -7,7 +7,7 @@ from flask import Flask
 from gevent.pywsgi import WSGIServer
 import pandas as pd
 from math import floor, ceil, exp
-from parameters_cov_AI import params, df2
+from parameters_cov_AI import params, population_frame
 import numpy as np
 import plotly.graph_objects as go
 from plotly.validators.scatter.marker import SymbolValidator
@@ -42,7 +42,7 @@ initial_lr = 8
 initial_hr = 5
 initial_month = 8
 
-df = copy.deepcopy(df2)
+df = copy.deepcopy(population_frame)
 df = df.loc[:,'Age':'Pop']
 df2 = df.loc[:,['Pop','Hosp_given_symptomatic','Crit']].astype(str) + '%'
 df = pd.concat([df.loc[:,'Age'],df2],axis=1)
