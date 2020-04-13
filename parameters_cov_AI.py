@@ -21,8 +21,7 @@ def preparePopulationFrame(ageBreakdown):
 
     population_frame = population_frame.assign(p_hosp = lambda x: (x.Hosp_given_symptomatic/100)*frac_symptomatic,
                     p_crit = lambda x: (x.Crit/100)) 
-    # print(df2.p_hosp[2])
-    # exit()
+                    
     return population_frame
 
 population_frame=preparePopulationFrame(ageBreakdown)

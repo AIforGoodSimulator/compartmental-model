@@ -97,6 +97,15 @@ longname = {'S': 'Susceptible',
         'D': 'Deaths (cumulative)',
 }
 
+shortname = {'S': 'Sus.',
+        'E': 'Exp.',
+        'I': 'Inf.',
+        'R': 'Rec. (cumulative)',
+        'H': 'Hosp.',
+        'C': 'Crit.',
+        'D': 'Deaths (cumulative)',
+}
+
 colours = {'S': 'blue',
         'E': 'pink',
         'I': 'orange',
@@ -159,14 +168,14 @@ def figure_generator(sols,cats_to_plot):
                 sol['y'] = np.asarray(sol['y'])
                 
                 xx = sol['t']
-                yyy_p = 100*sol['y'][index[name],:]
+                y_plot = 100*sol['y'][index[name],:]
                 for i in range(1,params.age_categories):
-                    yyy_p = yyy_p + 100*sol['y'][index[name]+ i*params.number_compartments,:]
+                    y_plot = y_plot + 100*sol['y'][index[name]+ i*params.number_compartments,:]
                 
-                line =  {'x': xx, 'y': yyy_p,
+                line =  {'x': xx, 'y': y_plot,
                         'hovertemplate': longname[name] + ': %{y:.2f}%, ' + '%{text} <br>' +
                                         'Time: %{x:.1f} days<extra></extra>',
-                        'text': [human_format(i*population_plot/100,dp=1) for i in yyy_p],
+                        'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
                         'line': {'color': str(colours[name])},
                         'legendgroup': name,
                         'name': longname[name]}
@@ -284,7 +293,305 @@ def figure_generator(sols,cats_to_plot):
     return {'data': lines_to_plot, 'layout': layout}
 
 
-#########################################################################################################################################################
+
+
+########################################################################################################################
+def stacked_plot(sols,cats_to_plot):
+
+    population_plot = params.population
+
+    font_size = 13
+
+    lines_to_plot = []
+
+    ii = -1
+    for sol in sols:
+        ii += 1
+        for name in longname.keys():
+            if name == cats_to_plot:
+                sol['y'] = np.asarray(sol['y'])
+                
+                xx = sol['t']
+                for i in range(params.age_categories):
+                    y_plot = 100*sol['y'][index[name]+ i*params.number_compartments,:]
+
+                    legend_name = longname[name] + ': ' + population_frame.Age[i] # first one says e.g. infected
+                    
+                    line =  {'x': xx, 'y': y_plot,
+
+                            'hovertemplate': '%{y:.2f}%, ' + '%{text} <br>',# +
+                                            # 'Time: %{x:.1f} days<extra></extra>',
+                            'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
+
+                            'opacity': 0.5,
+                            'name': legend_name}
+                    lines_to_plot.append(line)
+
+
+
+    ymax = 0
+    for line in lines_to_plot:
+        ymax = max(ymax,max(line['y']))
+
+
+    yax = dict(range= [0,min(1.1*ymax,100)])
+    ##
+
+    lines_to_plot.append(
+    dict(
+        type='scatter',
+        x = [0,sol['t'][-1]],
+        y = [ 0, population_plot],
+        yaxis="y2",
+        opacity=0,
+        hoverinfo = 'skip',
+        showlegend=False
+    ))
+
+
+    yy2 = [0]
+    for i in range(8):
+        yy2.append(10**(i-5))
+        yy2.append(2*10**(i-5))
+        yy2.append(5*10**(i-5))
+
+    yy = [i for i in yy2]
+
+
+    for i in range(len(yy)-1):
+        if yax['range'][1]>yy[i] and yax['range'][1] <= yy[i+1]:
+            pop_vec_lin = np.linspace(0,yy2[i+1],11)
+
+    vec = [i*(population_plot) for i in pop_vec_lin]
+
+    log_bottom = -8
+    log_range = [log_bottom,np.log10(yax['range'][1])]
+
+    pop_vec_log_intermediate = np.linspace(log_range[0],ceil(np.log10(pop_vec_lin[-1])), 1+ ceil(np.log10(pop_vec_lin[-1])-log_range[0]) )
+
+    pop_log_vec = [10**(i) for i in pop_vec_log_intermediate]
+    vec2 = [i*(population_plot) for i in pop_log_vec]
+
+
+
+
+
+    layout = go.Layout(
+                    template="simple_white",
+                    font = dict(size= font_size), #'12em'),
+                   margin=dict(t=5, b=5, l=10, r=10,pad=15),
+                   hovermode='x',
+                   yaxis= dict(mirror= True,
+                        title='Percentage of Total Population',
+                        range= yax['range'],
+                        showline=False,
+                        automargin=True,
+                        type = 'linear'
+                   ),
+                    updatemenus = [dict(
+                                            buttons=list([
+                                                dict(
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True, 'showline':False},
+                                                    "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True, 'showline':False,'side':'right'}
+                                                    }], # tickformat
+                                                    label="Linear",
+                                                    method="relayout"
+                                                ),
+                                                dict(
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'log', 'range': log_range,'automargin': True, 'showline':False},
+                                                    "yaxis2": {'title': 'Population','type': 'log', 'overlaying': 'y1', 'range': log_range, 'ticktext': [human_format(0.01*vec2[i]) for i in range(len(pop_log_vec))], 'tickvals': [i for i in  pop_log_vec],'automargin': True, 'showline':False,'side':'right'}
+                                                    }], # 'tickformat': yax_form_log,
+                                                    label="Logarithmic",
+                                                    method="relayout"
+                                                )
+                                        ]),
+                                        x= 0.5,
+                                        xanchor="right",
+                                        pad={"r": 5, "t": 30, "b": 10, "l": 5},
+                                        active=0,
+                                        y=-0.13,
+                                        showactive=True,
+                                        direction='up',
+                                        yanchor="top"
+                                        )],
+                                        legend = dict(
+                                                        font=dict(size=font_size*(20/24)),
+                                                        x = 0.5,
+                                                        y = 1.03,
+                                                        xanchor= 'center',
+                                                        yanchor= 'bottom'
+                                                    ),
+                                        legend_orientation  = 'h',
+                                        legend_title        = '<b> Key </b>',
+                                        yaxis2 = dict(
+                                                        title = 'Population',
+                                                        overlaying='y1',
+                                                        showline=False,
+                                                        range = yax['range'],
+                                                        side='right',
+                                                        ticktext = [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))],
+                                                        tickvals = [i for i in  pop_vec_lin],
+                                                        automargin=True
+                                                    )
+
+                            )
+
+
+
+    return {'data': lines_to_plot, 'layout': layout}
+
+
+
+########################################################################################################################
+def stacked_bar_plot(sols,cats_to_plot):
+
+    population_plot = params.population
+    font_size = 13
+    lines_to_plot = []
+
+    ii = -1
+    for sol in sols:
+        ii += 1
+        for name in longname.keys():
+            if name == cats_to_plot:
+                sol['y'] = np.asarray(sol['y'])
+                
+                xx = sol['t']
+                y_sum = np.zeros(len(xx))
+                
+                xx = [xx[i] for i in range(1,len(xx),2)]
+                
+                for i in range(params.age_categories):
+                    y_plot = 100*sol['y'][index[name]+ i*params.number_compartments,:]
+                    y_sum  = y_sum + y_plot
+                    legend_name = longname[name] + ': ' + population_frame.Age[i] # first one says e.g. infected
+
+                    y_plot = [y_plot[i] for i in range(1,len(y_plot),2)]
+                    
+                    line =  {'x': xx, 'y': y_plot,
+
+                            'hovertemplate': '%{y:.2f}%, ' + '%{text} <br>',# +
+                                            # 'Time: %{x:.1f} days<extra></extra>',
+                            'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
+                            # 'marker_line_width': 0,
+                            # 'marker_line_color': 'black',
+                            'type': 'bar',
+                            'name': legend_name}
+                    lines_to_plot.append(line)
+
+
+
+    ymax = max(y_sum)
+    # ymax = 0
+    # for line in lines_to_plot:
+    #     ymax = max(ymax,max(line['y']))
+
+
+    yax = dict(range= [0,min(1.1*ymax,100)])
+    ##
+
+    lines_to_plot.append(
+    dict(
+        type='scatter',
+        x = [0,sol['t'][-1]],
+        y = [ 0, population_plot],
+        yaxis="y2",
+        opacity=0,
+        hoverinfo = 'skip',
+        showlegend=False
+    ))
+
+
+    yy2 = [0]
+    for i in range(8):
+        yy2.append(10**(i-5))
+        yy2.append(2*10**(i-5))
+        yy2.append(5*10**(i-5))
+
+    yy = [i for i in yy2]
+
+
+    for i in range(len(yy)-1):
+        if yax['range'][1]>yy[i] and yax['range'][1] <= yy[i+1]:
+            pop_vec_lin = np.linspace(0,yy2[i+1],11)
+
+    vec = [i*(population_plot) for i in pop_vec_lin]
+
+    log_bottom = -8
+    log_range = [log_bottom,np.log10(yax['range'][1])]
+
+    pop_vec_log_intermediate = np.linspace(log_range[0],ceil(np.log10(pop_vec_lin[-1])), 1+ ceil(np.log10(pop_vec_lin[-1])-log_range[0]) )
+
+    pop_log_vec = [10**(i) for i in pop_vec_log_intermediate]
+    vec2 = [i*(population_plot) for i in pop_log_vec]
+
+
+
+
+
+    layout = go.Layout(
+                    template="simple_white",
+                    font = dict(size= font_size), #'12em'),
+                   margin=dict(t=5, b=5, l=10, r=10,pad=15),
+                   hovermode='x',
+                   yaxis= dict(mirror= True,
+                        title='Percentage of Total Population',
+                        range= yax['range'],
+                        showline=False,
+                        automargin=True,
+                        type = 'linear'
+                   ),
+                    barmode = 'stack',
+
+                    updatemenus = [dict(
+                                            buttons=list([
+                                                dict(
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True, 'showline':False},
+                                                    "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True, 'showline':False,'side':'right'}
+                                                    }], # tickformat
+                                                    label="Linear",
+                                                    method="relayout"
+                                                ),
+                                                dict(
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'log', 'range': log_range,'automargin': True, 'showline':False},
+                                                    "yaxis2": {'title': 'Population','type': 'log', 'overlaying': 'y1', 'range': log_range, 'ticktext': [human_format(0.01*vec2[i]) for i in range(len(pop_log_vec))], 'tickvals': [i for i in  pop_log_vec],'automargin': True, 'showline':False,'side':'right'}
+                                                    }], # 'tickformat': yax_form_log,
+                                                    label="Logarithmic",
+                                                    method="relayout"
+                                                )
+                                        ]),
+                                        x= 0.5,
+                                        xanchor="right",
+                                        pad={"r": 5, "t": 30, "b": 10, "l": 5},
+                                        active=0,
+                                        y=-0.13,
+                                        showactive=True,
+                                        direction='up',
+                                        yanchor="top"
+                                        )],
+                                        legend = dict(
+                                                        font=dict(size=font_size*(20/24)),
+                                                        x = 0.5,
+                                                        y = 1.03,
+                                                        xanchor= 'center',
+                                                        yanchor= 'bottom'
+                                                    ),
+                                        legend_orientation  = 'h',
+                                        legend_title        = '<b> Key </b>',
+                                        yaxis2 = dict(
+                                                        title = 'Population',
+                                                        overlaying='y1',
+                                                        showline=False,
+                                                        range = yax['range'],
+                                                        side='right',
+                                                        ticktext = [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))],
+                                                        tickvals = [i for i in  pop_vec_lin],
+                                                        automargin=True
+                                                    )
+
+                            )
+
+    return {'data': lines_to_plot, 'layout': layout}
 
 
 
@@ -661,9 +968,6 @@ layout_inter = html.Div([
                                                     html.Div([
                                              
 
-                                                        dbc.Row([
-                                                        html.Div(id='worked-div'),
-                                                        ],justify='center'),
 
                                                         dbc.Row([
 
@@ -683,195 +987,12 @@ layout_inter = html.Div([
                                                       
 
                                              
-                                                        html.Div([
-
-
-
-
-
-                                                                        
-
-
-
-                                                                        dbc.Col([
-
-                                                                                                dbc.Col([
-                                                                                                    html.Div(
-                                                                                                        [
-                                                                                                        dbc.Row([
-                                                                                                            html.H4(style={'fontSize': '180%', 'textAlign': 'center'}, children = [
-                                                                                                            
-                                                                                                            html.Div(['Total Deaths (Percentage) ',
-                                                                                                            
-                                                                                                            ],
-                                                                                                            style= {'textAlign': 'center', 'marginTop': '3vh', 'marginBottom': '3vh'}),
-
-                                                                                                            ]),
-                                                                                                        ]
-                                                                                                        ,justify='center'),
-                                                                                                        ],
-                                                                                                        id='bar-plot-1-title',style={ 'display':'block', 'textAlign': 'left'}),
-
-                                                                                                        dcc.Graph(id='bar-plot-1',style=bar_non_crit_style),
-                                                                                                
-                                                                                                        dcc.Markdown('''
-
-                                                                                                            This plot shows a prediction for the number of deaths caused by the epidemic.
-                                                                                                            
-                                                                                                            Most outcomes result in a much higher proportion of high risk deaths, so it is critical that any strategy should protect the high risk.
-
-                                                                                                            Quarantine/lockdown strategies are very effective at slowing the death rate, but only work whilst they're in place (or until a vaccine is produced).
-
-                                                                                                            ''',style={'fontSize': '100%', 'textAlign': 'center', 'marginTop': '3vh', 'marginBottom': '6vh' }),
-                                                                                                
-
-                                                                                                
-                                                                                        html.Hr(),
-
-
-
-
-                                                                                                                    html.Div(
-                                                                                                                        [dbc.Row([##
-                                                                                                                            html.H4(style={'fontSize': '180%', 'textAlign': 'center', 'marginTop': '3vh', 'marginBottom': '3vh'}, children = [
-
-                                                                                                                                html.Div(['Peak ICU Bed Capacity Requirement ',
-                                                                                                                                ],style= {'textAlign': 'center'}),
-
-
-                                                                                                                            ]),
-                                                                                                                        ],
-                                                                                                                        justify='center'),##
-                                                                                                                        ],
-                                                                                                                        id='bar-plot-3-title', style={'display':'block'}),
-
-                                                                                                                        dcc.Graph(id='bar-plot-3',style=bar_non_crit_style),
-                                                                                                                    
-                                                                                                                        dcc.Markdown('''
-
-                                                                                                                            This plot shows the maximum ICU capacity needed.
-                                                                                                                            
-                                                                                                                            Better strategies reduce the load on the healthcare system by reducing the numbers requiring Intensive Care at any one time.
-
-                                                                                                                            ''',style={'fontSize': '100%' , 'textAlign': 'center', 'marginTop': '3vh', 'marginBottom': '6vh' }),
-                                                                                                        
-
-                                                                                                    html.Hr(),
-
-
-                                                                                                                    html.Div(
-                                                                                                                            [dbc.Row([##
-                                                                                                                                html.H4(style={'fontSize': '180%', 'textAlign': 'center', 'marginTop': '3vh', 'marginBottom': '3vh'}, children = [
-
-                                                                                                                                    html.Div(['Time ICU (Current) Bed Capacity Exceeded ',
-                                                                                                                                    ],style= {'textAlign': 'center'}),
-
-                                                                                                                                ]),
-                                                                                                                                
-                                                                                                                            ],
-                                                                                                                            justify='center'),##
-                                                                                                                            ],
-                                                                                                                    id='bar-plot-4-title',style={'display':'block'}),
-
-                                                                                                                    dcc.Graph(id='bar-plot-4',style=bar_non_crit_style),
-                                                                                                    
-                                                                                                                    dcc.Markdown('''
-
-                                                                                                                        This plot shows the length of time for which ICU capacity is exceeded, over the calculated number of years.
-
-                                                                                                                        Better strategies will exceed the ICU capacity for shorter lengths of time.
-
-                                                                                                                        ''',style={'fontSize': '100%' , 'textAlign': 'center', 'marginTop': '3vh', 'marginBottom': '6vh' }),
-                                                                                            html.Hr(),
-
-
-
-                                                                                                
-
-
-                                                                                                        html.Div(
-                                                                                                                [dbc.Row([##
-                                                                                                                    html.H4(style={'fontSize': '180%', 'textAlign': 'center', 'marginTop': '3vh', 'marginBottom': '3vh'}, children = [
-
-                                                                                                                        html.Div(['Herd Immunity Threshold ',
-                                                                                                                        ],
-                                                                                                                        style= {'textAlign': 'center'}), # id='bar-plot-2-out'),
-                                                                                                                    
-
-                                                                                                                    ]),
-
-                                                                                                                ],
-                                                                                                            justify='center'),##
-                                                                                                                ],
-                                                                                                        id='bar-plot-2-title',style={ 'display':'block'}),
-
-                                                                                                        dcc.Graph(id='bar-plot-2',style=bar_non_crit_style),
-                                                                                                        
-
-                                                                                                        dcc.Markdown('''
-
-                                                                                                            This plot shows how close to the 60% population immunity the strategy gets.
-                                                                                                            
-                                                                                                            Strategies with a lower *infection rate* can delay the course of the epidemic but once the strategies are lifted there is no protection through herd immunity. Strategies with a high infection rate can risk overwhelming healthcare capacity.
-
-                                                                                                            The optimal outcome is obtained by making sure the 60% that do get the infection are from the low risk group.
-
-                                                                                                            ''',style={'fontSize': '100%' , 'textAlign': 'center' , 'marginTop': '3vh', 'marginBottom': '6vh'}),
-                                                                                            
-
-                                                                                            html.Hr(),
-
-
-                                                                                                    
-                                                                                                    html.Div(
-                                                                                                            [dbc.Row([##
-
-                                                                                                                    html.H4(style={'fontSize': '180%', 'textAlign': 'center', 'marginTop': '3vh', 'marginBottom': '3vh'}, children = [
-
-                                                                                                                    html.Div(['Time Until Herd Immunity Threshold Reached ',
-                                                                                                                    ],style= {'textAlign': 'center'}),
-
-                                                                                                                    ]),
-                                                                                                            ],
-                                                                                                            justify='center'
-                                                                                                            ),##
-                                                                                                            ],
-                                                                                                    id='bar-plot-5-title',style={ 'display':'block'}),
-
-                                                                                                    dcc.Graph(id='bar-plot-5',style=bar_non_crit_style),
-                                                                                                    
-                                                                                                    dcc.Markdown('''
-
-                                                                                                        This plot shows the length of time until the safe threshold for population immunity is 95% reached.
-                                                                                                        
-                                                                                                        We allow within 5% of the safe threshold, since some strategies get very close to full safety very quickly and then asymptotically approach it (but in practical terms this means the population is safe).
-
-                                                                                                        The longer it takes to reach this safety threshold, the longer the population must continue control measures because it is at risk of a further epidemic.
-
-                                                                                                        ''',style={'fontSize': '100%' , 'textAlign': 'center', 'marginTop': '3vh', 'marginBottom': '3vh' }),
-
-                                                                                            
-                                                                                            ],
-                                                                                            align='center',
-                                                                                            width=12,
-                                                                                            ),
-
-
 
                                                                                         
-                                                                                        
 
-
-
-                                                                        ],width=True),
-                                                                    ],id='bc-content',
-                                                                    style={'display': 'none'}),
-
-                                                                                        
+                                                                
+                                                                
                                                     html.Div(id='DPC-content',children=[
-
-                                                                
-                                                                
 
                                                                 
                                                                 dcc.Graph(id='line-plot-1',style={'height': '70vh', 'width': '100%'}),
@@ -902,7 +1023,7 @@ layout_inter = html.Div([
                                                                                                                                                 dbc.Col([
 
 
-                                                                                                                                                    dbc.Checklist(id='categories-to-plot-checklist',
+                                                                                                                                                    dbc.Checklist(id='categories-to-plot-checklist-1',
                                                                                                                                                                     options=[
                                                                                                                                                                         {'label': longname[key], 'value': key} for key in longname
                                                                                                                                                                     ],
@@ -1006,6 +1127,68 @@ layout_inter = html.Div([
                                                                             ''',style={'fontSize': '100%', 'textAlign': 'justify', 'marginTop': '6vh', 'marginBottom': '3vh'}),
 
                                                                 html.Hr(),
+
+                                                                dcc.Graph(id='line-plot-2',style={'height': '70vh', 'width': '100%'}),
+
+
+                                                                 dbc.Row([
+                                                                 dbc.Col([
+
+                                                                        html.H6('Categories To Plot',style={'fontSize': '100%','textAlign': 'center'}),
+                                                                        dbc.Col([
+
+
+                                                                            dbc.RadioItems(id='categories-to-plot-checklist-2',
+                                                                                            options=[
+                                                                                                {'label': longname[key], 'value': key} for key in longname
+                                                                                            ],
+                                                                                            value= 'H',
+                                                                                            inline=True,
+                                                                                            labelStyle = {'display': 'inline-block','fontSize': '80%'},
+                                                                                        ),
+                                                                            
+                                                                            dcc.Markdown('''
+                                                                                *Category choice is for the plot above. Hospital categories are shown in the plot below.*
+                                                                                ''',style={'fontSize': '75%', 'textAlign': 'justify', 'marginTop': '0vh'}),
+                                                                                
+
+                                                                        ],width={'size':8 , 'offset': 2}),
+
+                                                                ],width=True),
+                                                                ],justify=True),
+
+
+                                                                html.Hr(),
+
+                                                                dcc.Graph(id='line-plot-3',style={'height': '70vh', 'width': '100%'}),
+
+
+                                                                 dbc.Row([
+                                                                 dbc.Col([
+
+                                                                        html.H6('Categories To Plot',style={'fontSize': '100%','textAlign': 'center'}),
+                                                                        dbc.Col([
+
+
+                                                                            dbc.RadioItems(id='categories-to-plot-checklist-3',
+                                                                                            options=[
+                                                                                                {'label': longname[key], 'value': key} for key in longname
+                                                                                            ],
+                                                                                            value= 'H',
+                                                                                            inline=True,
+                                                                                            labelStyle = {'display': 'inline-block','fontSize': '80%'},
+                                                                                        ),
+                                                                            
+                                                                            dcc.Markdown('''
+                                                                                *Category choice is for the plot above. Hospital categories are shown in the plot below.*
+                                                                                ''',style={'fontSize': '75%', 'textAlign': 'justify', 'marginTop': '0vh'}),
+                                                                                
+
+                                                                        ],width={'size':8 , 'offset': 2}),
+
+                                                                ],width=True),
+                                                                ],justify=True),
+
 
 
 
@@ -1307,7 +1490,7 @@ page_layout = html.Div([
 
 app.layout = page_layout
 
-app.title = 'Modelling COVID-19 Control'
+app.title = 'Control of COVID-19 in refugee camps'
 
 
 
@@ -1359,21 +1542,28 @@ for p in [ "pick-strat","control", "months-control", "res-type" , "cc-care" ,"cu
     [Output('sol-calculated', 'data'),
     Output('loading-sol-1','children'),
     Output('line-plot-1', 'figure'),
+    Output('line-plot-2', 'figure'),
+    Output('line-plot-3', 'figure'),
     ],
     [
     Input('preset', 'value'),
-    Input('categories-to-plot-checklist','value'),
+    Input('categories-to-plot-checklist-1','value'),
+    Input('categories-to-plot-checklist-2','value'),
+    Input('categories-to-plot-checklist-3','value'),
     Input('month-slider', 'value'),
     ])
-def find_sol(preset,cats,month):
+def find_sol(preset,cats,cats2,cats3,month):
     
     t_stop = 200
 
     sols = []
     sols.append(simulator().run_model(T_stop=t_stop))
     fig = figure_generator(sols,cats)
+    fig2 = stacked_plot(sols,cats2)
+    fig3 = stacked_bar_plot(sols,cats3)
 
-    return sols, None, fig
+
+    return sols, None, fig, fig2, fig3
 
 
 
