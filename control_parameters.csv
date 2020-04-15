@@ -1,4 +1,5 @@
-﻿Control_name,Reduces_R0_by
-Control_1,0.9
-Control_2,0.8
-Control_3,0.5
+﻿Control_name,Effect_on_beta
+No control,1
+Control name 1,0.9
+Control name 2,0.8
+Control name 3,0.5

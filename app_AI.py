@@ -871,10 +871,6 @@ layout_inter = html.Div([
 
                                                                                                                                                                 The type of **control** determines how much we can reduce the **infection rate** of the disease (how quickly the disease is transmitted between people).
                                                                                                                                                                 
-                                                                                                                                                                We consider control of **two risk groups**; high risk and low risk. High risk groups are more likely to get seriously ill if they catch the disease.
-
-                                                                                                                                                                *For further explanation, read the [**Background**](/intro)*.
-
                                                                                                                                                                 '''
                                                                                                                                                                 ),),
                                                                                                                                                                 ],
@@ -937,7 +933,7 @@ layout_inter = html.Div([
 
                                                                                                                                                                 When control is in place the infection rate is reduced by an amount depending on the strategy choice.
 
-                                                                                                                                                                When control is not in place the infection rate returns to the baseline level (100%).
+                                                                                                                                                                When control is not in place the infection rate returns to the baseline level.
                                                                                                                                                                 
                                                                                                                                                                 '''
                                                                                                                                                                 ),),
@@ -1672,7 +1668,7 @@ def find_sol(preset,cats,cats2,cats3,timings,camp):
     
     t_stop = 200
 
-    beta_factor = control_data.Reduces_R0_by[preset]
+    beta_factor = control_data.Effect_on_beta[preset]
 
     population_frame, population = preparePopulationFrame(camp)
 
