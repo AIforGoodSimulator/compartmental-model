@@ -8,24 +8,37 @@ import pandas as pd
 from scipy.stats import gamma, norm
 from math import ceil
 
-ageBreakdown=[20.25,20.25,18.2,18.2,18.2,2,1,1,0.9] #coresspond to ['0-9','10-19','20-29','30-39','40-49','50-59','60-69','70-79','80+']
+def preparePopulationFrame(camp_name):
 
-def preparePopulationFrame(ageBreakdown):
-    population_frame = pd.DataFrame({'Age': ['0-9','10-19','20-29','30-39','40-49','50-59','60-69','70-79','80+'],
-       'Hosp_given_symptomatic': [0.1,0.3,1.2,3.2,4.9,10.2,16.6,24.3,27.3], #pending citation
-       'Crit': [5,5,5,5,6.3,12.2,27.4,43.2,70.9], #pending citation
-       'Pop': ageBreakdown  #the percentage of people within each age bracket (data from the refugee camps of choice) and the list sums to one
-       })
+    raw_data = pd.read_csv('AI_for_good/AI-for-good/camp_params.csv')
+    
+    population_size = raw_data.loc[:,['Variable',camp_name]]
+
+    covid_data = raw_data.loc[:,'Variable':'Critical_given_hospitalised']
+    population_frame = pd.concat([covid_data,raw_data.loc[:,camp_name]],axis=1)
+    population_frame = population_frame[population_frame['Variable']=='Population_structure']
+    population_frame = population_frame.loc[:,'Age':]
+
 
     frac_symptomatic = 0.55 # so e.g. 40% that weren't detected were bc no symptoms and the rest (5%) didn't identify vs e.g. flu
+    population_frame = population_frame.assign(p_hospitalised = lambda x: (x.Hosp_given_symptomatic/100)*frac_symptomatic,
+                    p_critical = lambda x: (x.Critical_given_hospitalised/100)) 
 
-    population_frame = population_frame.assign(p_hosp = lambda x: (x.Hosp_given_symptomatic/100)*frac_symptomatic,
-                    p_crit = lambda x: (x.Crit/100)) 
-                    
-    return population_frame
+    population_frame = population_frame.rename(columns={camp_name: "Population"})
 
-population_frame=preparePopulationFrame(ageBreakdown)
 
+    population_size = population_size[population_size['Variable']=='Total_population']
+    population_size = np.float(population_size.iloc[-1,-1])
+
+    return population_frame, population_size
+
+
+
+example_population_frame = preparePopulationFrame('Camp_1')[0]
+
+
+# print(population_frame)
+# print(population)
 #------------------------------------------------------------
 # disease params
 population = 200000
@@ -33,7 +46,7 @@ N    = 1
 non_infectious_rate = 1/7
 R_0        = 4.0
 beta = R_0*non_infectious_rate/N # R_0 mu/N
-infection_matrix = beta*np.ones((population_frame.shape[0],population_frame.shape[0]))
+infection_matrix = beta*np.ones((example_population_frame.shape[0],example_population_frame.shape[0]))
 infectious_rate = 1/2
 hosp_rate = 1/8
 death_rate = 1/8
@@ -56,13 +69,14 @@ max_months_controlling = 18
 class Parameters:
     def __init__(self):
         
-        self.population = population
+        # self.population = population
+        # self.dataframe = example_population_frame
+
         self.R_0 = R_0
         self.N  = N
         self.non_infectious_rate = non_infectious_rate
-        self.dataframe = population_frame
         beta = R_0*non_infectious_rate/N # R_0 mu/N
-        self.infection_matrix = beta*np.ones((population_frame.shape[0],population_frame.shape[0]))
+        self.infection_matrix = beta*np.ones((example_population_frame.shape[0],example_population_frame.shape[0]))
         self.fact_v = fact_v
         self.max_months_controlling = max_months_controlling
 
@@ -80,7 +94,7 @@ class Parameters:
         self.death_rate = death_rate
         self.death_rate_noICU = death_rate_noICU
         self.death_prob     = death_prob
-        self.age_categories = population_frame.shape[0]
+        self.age_categories = example_population_frame.shape[0]
 
         self.S_ind = 0
         self.E_ind = 1
