@@ -1,0 +1,6 @@
+﻿Name,Value,Type,Explanation,Assumptions
+No control,1,Control,Effect on beta,
+Control name 1,0.9,Control,Effect on beta,
+Control name 2,0.8,Control,Effect on beta,
+Control name 3,0.5,Control,Effect on beta,
+will add to,1,Model Parameter,will add to,

@@ -51,15 +51,11 @@ df2 = df.loc[:,['Hosp_given_symptomatic','Critical_given_hospitalised']].astype(
 df = pd.concat([df.loc[:,'Age'],df2],axis=1)
 df = df.rename(columns={"Hosp_given_symptomatic": "Hospitalised", "p_critical": "Requiring Critical Care"})
 
-init_lr = params.fact_v[initial_lr]
-init_hr = params.fact_v[initial_hr]
-
-
 def generate_table(dataframe, max_rows=10):
     return dbc.Table.from_dataframe(df, striped=True, bordered = True, hover=True)
 
 
-dummy_figure = {'data': [], 'layout': {'template': 'simple_white'}}
+# dummy_figure = {'data': [], 'layout': {'template': 'simple_white'}}
 
 bar_height = '100'
 bar_width  =  '100'
@@ -74,7 +70,9 @@ camps = {'Camp_1': 'Name of Camp 1',
         }
 
 
-control_data = pd.read_csv('AI_for_good/AI-for-good/control_parameters.csv')
+parameter_csv = pd.read_csv('AI_for_good/AI-for-good/parameters.csv')
+
+control_data = parameter_csv[parameter_csv['Type']=='Control']
 
 
 
@@ -148,7 +146,7 @@ def human_format(num,dp=0):
 
 
 ########################################################################################################################
-def figure_generator(sols,cats_to_plot,population_plot,control_time):
+def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_time):
 
     # population_plot = params.population
 
@@ -165,7 +163,7 @@ def figure_generator(sols,cats_to_plot,population_plot,control_time):
                 
                 xx = sol['t']
                 y_plot = 100*sol['y'][index[name],:]
-                for i in range(1,params.age_categories):
+                for i in range(1, population_frame.shape[0]): # age_categories
                     y_plot = y_plot + 100*sol['y'][index[name]+ i*params.number_compartments,:]
                 
                 line =  {'x': xx, 'y': y_plot,
@@ -349,7 +347,7 @@ def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,contro
                 sol['y'] = np.asarray(sol['y'])
                 
                 xx = sol['t']
-                for i in range(params.age_categories):
+                for i in range(population_frame.shape[0]): # # age_categories
                     y_plot = 100*sol['y'][index[name]+ i*params.number_compartments,:]
 
                     legend_name = longname[name] + ': ' + population_frame.Age[i] # first one says e.g. infected
@@ -540,7 +538,7 @@ def stacked_bar_plot(sols,cats_to_plot,population_plot,population_frame):
                 
                 xx = [xx[i] for i in range(1,len(xx),2)]
                 
-                for i in range(params.age_categories):
+                for i in range(population_frame.shape[0]): # age_cats
                     y_plot = 100*sol['y'][index[name]+ i*params.number_compartments,:]
                     y_sum  = y_sum + y_plot
                     legend_name = longname[name] + ': ' + population_frame.Age[i] # first one says e.g. infected
@@ -884,8 +882,8 @@ layout_inter = html.Div([
                                                                                                                                                             html.Div([
                                                                                                                                                             dcc.Dropdown(
                                                                                                                                                                 id = 'preset',
-                                                                                                                                                                options=[{'label': control_data.Control_name[i],
-                                                                                                                                                                'value': i} for i in range(len(control_data.Control_name))],
+                                                                                                                                                                options=[{'label': control_data.Name[i],
+                                                                                                                                                                'value': i} for i in range(len(control_data.Name))],
                                                                                                                                                                 value= 0,
                                                                                                                                                                 clearable = False,
                                                                                                                                                                 # disabled=True
@@ -1645,7 +1643,11 @@ for p in [ "pick-strat","control", "months-control", "res-type" , "cc-care" ,"cu
 
 
 ##############################################################################################################################
-
+# population_frame, population = preparePopulationFrame('Camp_1')
+# beta_factor=1
+# timings = [1,100]
+# print(simulator().run_model(T_stop=200,population=population,population_frame=population_frame,control_time=timings,beta_factor=beta_factor))
+# exit()
 
 
 @app.callback(
@@ -1668,13 +1670,14 @@ def find_sol(preset,cats,cats2,cats3,timings,camp):
     
     t_stop = 200
 
-    beta_factor = control_data.Effect_on_beta[preset]
+    beta_factor = control_data.Value[preset]
+    # print(beta_factor)
 
     population_frame, population = preparePopulationFrame(camp)
 
     sols = []
     sols.append(simulator().run_model(T_stop=t_stop,population=population,population_frame=population_frame,control_time=timings,beta_factor=beta_factor))
-    fig = figure_generator(sols,cats,population,timings)
+    fig  = figure_generator(sols,cats,population,population_frame,timings)
     fig2 = age_structure_plot(sols,cats2,population,population_frame,timings)
     fig3 = stacked_bar_plot(sols,cats3,population,population_frame)
 

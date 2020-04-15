@@ -18,7 +18,7 @@ class simulator:
         ##
         dydt = np.zeros(y.shape)
 
-        I_vec = [ y[params.I_ind+i*params.number_compartments] for i in range(params.age_categories)]
+        I_vec = [ y[params.I_ind+i*params.number_compartments] for i in range(population_frame.shape[0])] # age_categories
 
         if t > control_time[0] and t < control_time[1]: # control in place
             control_factor = beta_factor
@@ -27,7 +27,7 @@ class simulator:
             
 
 
-        for i in range(params.age_categories):
+        for i in range(population_frame.shape[0]): # age_categories
             # S
             dydt[params.S_ind + i*params.number_compartments] = - y[params.S_ind + i*params.number_compartments] * control_factor * (np.dot(params.infection_matrix[i,:],I_vec)) 
             # E
@@ -63,9 +63,9 @@ class simulator:
         D0 = 0
         S0 = 1 - I0 - R0 - C0 - H0 - D0
 
-        y0 = np.zeros(params.number_compartments*params.age_categories)
+        y0 = np.zeros(params.number_compartments*population_frame.shape[0]) # age_categories
 
-        for i in range(params.age_categories):
+        for i in range(population_frame.shape[0]):
             y0[params.S_ind + i*params.number_compartments] = (population_frame.Population[i]/100)*S0
             y0[params.E_ind + i*params.number_compartments] = (population_frame.Population[i]/100)*E0
             y0[params.I_ind + i*params.number_compartments] = (population_frame.Population[i]/100)*I0

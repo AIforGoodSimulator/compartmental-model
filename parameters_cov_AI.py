@@ -34,14 +34,13 @@ def preparePopulationFrame(camp_name):
 
 
 
-example_population_frame = preparePopulationFrame('Camp_1')[0]
+example_population_frame, example_population = preparePopulationFrame('Camp_1')
 
 
 # print(population_frame)
 # print(population)
 #------------------------------------------------------------
 # disease params
-population = 200000
 N    = 1
 non_infectious_rate = 1/7
 R_0        = 4.0
@@ -80,12 +79,6 @@ class Parameters:
         self.fact_v = fact_v
         self.max_months_controlling = max_months_controlling
 
-        # self.ICU_capacity = ICU_capacity
-        # self.vaccinate_percent = vaccinate_percent
-        # self.vaccinate_rate = vaccinate_rate
-        # self.import_rate = import_rate
-        # self.ICU_growth = ICU_growth
-
         self.number_compartments = number_compartments
 
         self.infectious_rate  = infectious_rate
@@ -94,7 +87,6 @@ class Parameters:
         self.death_rate = death_rate
         self.death_rate_noICU = death_rate_noICU
         self.death_prob     = death_prob
-        self.age_categories = example_population_frame.shape[0]
 
         self.S_ind = 0
         self.E_ind = 1
