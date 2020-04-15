@@ -62,38 +62,27 @@ def generate_table(dataframe, max_rows=10):
 dummy_figure = {'data': [], 'layout': {'template': 'simple_white'}}
 
 bar_height = '100'
-
 bar_width  =  '100'
 
 bar_non_crit_style = {'height': bar_height, 'width': bar_width, 'display': 'block' }
 
-presets_dict = {'N': 'Do Nothing',
-                'MSD': 'Social Distancing',
-                'H': 'Lockdown High Risk, No Social Distancing For Low Risk',
-                'HL': 'Lockdown High Risk, Social Distancing For Low Risk',
-                'Q': 'Lockdown All',
-                'LC': 'Lockdown Cycles',
-                'C': 'Custom'}
 
-presets_dict_dropdown = {'N': 'Do Nothing',
-                'MSD': 'Social Distancing',
-                'H': 'High Risk: Lockdown, Low Risk: No Social Dist.',
-                'HL': 'High Risk: Lockdown, Low Risk: Social Dist.',
-                'Q': 'Lockdown All',
-                'LC': 'Lockdown Cycles (switching lockdown on and off)',
-                'C': 'Custom'}
 
-preset_dict_high = {'Q': 2, 'MSD': 7, 'LC': 2, 'HL': 2,  'H': 2, 'N':10}
-preset_dict_low  = {'Q': 2, 'MSD': 7, 'LC': 2, 'HL': 7, 'H': 10, 'N':10}
-
-month_len = 365/12
 
 camps = {'Camp_1': 'Name of Camp 1',
         'Camp_2': 'Name of Camp 2'
         }
 
 
-# group_vec = ['BR','HR','LR']
+control_data = pd.read_csv('AI_for_good/AI-for-good/control_parameters.csv')
+
+
+
+
+
+
+
+
 
 longname = {'S': 'Susceptible',
         'E': 'Exposed',
@@ -159,7 +148,7 @@ def human_format(num,dp=0):
 
 
 ########################################################################################################################
-def figure_generator(sols,cats_to_plot,population_plot):
+def figure_generator(sols,cats_to_plot,population_plot,control_time):
 
     # population_plot = params.population
 
@@ -232,12 +221,46 @@ def figure_generator(sols,cats_to_plot,population_plot):
     pop_log_vec = [10**(i) for i in pop_vec_log_intermediate]
     vec2 = [i*(population_plot) for i in pop_log_vec]
 
+    shapes=[]
+    if control_time[0]!=control_time[1]:
+        shapes.append(dict(
+                # filled Blue Control Rectangle
+                type="rect",
+                x0= control_time[0],
+                y0=0,
+                x1= control_time[1],
+                y1= yax['range'][1],
+                line=dict(
+                    color="LightSkyBlue",
+                    width=0,
+                ),
+                fillcolor="LightSkyBlue",
+                opacity= 0.15
+            ))
 
-
+    annots=[]
+    if control_time[0]!=control_time[1]:
+        annots.append(dict(
+                x  = 0.5*(control_time[0] + control_time[1]),
+                y  = 0.5,
+                text="<b>Control<br>" + "<b> In <br>" + "<b> Place",
+                textangle=0,
+                font=dict(
+                    size= font_size*(30/24),
+                    color="blue"
+                ),
+                showarrow=False,
+                opacity=0.4,
+                xshift= 0,
+                xref = 'x',
+                yref = 'paper',
+        ))
 
 
     layout = go.Layout(
                     template="simple_white",
+                    shapes=shapes,
+                    annotations=annots,
                     font = dict(size= font_size), #'12em'),
                    margin=dict(t=5, b=5, l=10, r=10,pad=15),
                    hovermode='x',
@@ -310,7 +333,7 @@ def figure_generator(sols,cats_to_plot,population_plot):
 
 
 ########################################################################################################################
-def stacked_plot(sols,cats_to_plot,population_plot,population_frame):
+def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,control_time):
 
     # population_plot = params.population
 
@@ -362,6 +385,40 @@ def stacked_plot(sols,cats_to_plot,population_plot,population_frame):
         showlegend=False
     ))
 
+    shapes=[]
+    if control_time[0]!=control_time[1]:
+        shapes.append(dict(
+                # filled Blue Control Rectangle
+                type="rect",
+                x0= control_time[0],
+                y0=0,
+                x1= control_time[1],
+                y1= yax['range'][1],
+                line=dict(
+                    color="LightSkyBlue",
+                    width=0,
+                ),
+                fillcolor="LightSkyBlue",
+                opacity= 0.15
+            ))
+
+    annots=[]
+    if control_time[0]!=control_time[1]:
+        annots.append(dict(
+                x  = 0.5*(control_time[0] + control_time[1]),
+                y  = 0.5,
+                text="<b>Control<br>" + "<b> In <br>" + "<b> Place",
+                textangle=0,
+                font=dict(
+                    size= font_size*(30/24),
+                    color="blue"
+                ),
+                showarrow=False,
+                opacity=0.4,
+                xshift= 0,
+                xref = 'x',
+                yref = 'paper',
+        ))
 
     yy2 = [0]
     for i in range(8):
@@ -392,6 +449,8 @@ def stacked_plot(sols,cats_to_plot,population_plot,population_frame):
 
     layout = go.Layout(
                     template="simple_white",
+                    shapes=shapes,
+                    annotations=annots,
                     font = dict(size= font_size), #'12em'),
                    margin=dict(t=5, b=5, l=10, r=10,pad=15),
                    hovermode='x',
@@ -829,19 +888,19 @@ layout_inter = html.Div([
                                                                                                                                                             html.Div([
                                                                                                                                                             dcc.Dropdown(
                                                                                                                                                                 id = 'preset',
-                                                                                                                                                                options=[{'label': presets_dict_dropdown[key],
-                                                                                                                                                                'value': key} for key in presets_dict_dropdown],
-                                                                                                                                                                value= 'MSD',
+                                                                                                                                                                options=[{'label': control_data.Control_name[i],
+                                                                                                                                                                'value': i} for i in range(len(control_data.Control_name))],
+                                                                                                                                                                value= 0,
                                                                                                                                                                 clearable = False,
-                                                                                                                                                                disabled=True
+                                                                                                                                                                # disabled=True
                                                                                                                                                             ),],
-                                                                                                                                                            style={'cursor': 'pointer'}),
+                                                                                                                                                            style={'cursor': 'pointer', 'textAlign': 'center'}),
 
 
 
 
                                                                                                                                                                 html.H6([
-                                                                                                                                                                '3. Months of Control ',
+                                                                                                                                                                '3. Control Timings ',
                                                                                                                                                                 dbc.Button('🛈',
                                                                                                                                                                 color='primary',
                                                                                                                                                                 size='sm',
@@ -854,14 +913,14 @@ layout_inter = html.Div([
                                                                                                                                                             
                                                                                                                                                                 html.Div([
                                                                                                                                                                 dcc.RangeSlider(
-                                                                                                                                                                            id='month-slider',
+                                                                                                                                                                            id='day-slider',
                                                                                                                                                                             min=0,
-                                                                                                                                                                            max=floor(params.max_months_controlling),
+                                                                                                                                                                            max=200,
                                                                                                                                                                             step=1,
-                                                                                                                                                                            disabled=True,
+                                                                                                                                                                            # disabled=True,
                                                                                                                                                                             # pushable=0,
-                                                                                                                                                                            marks={i: str(i) for i in range(0,floor(params.max_months_controlling)+1,3)},
-                                                                                                                                                                            value=[12,12],
+                                                                                                                                                                            marks={i: 'Day '+ str(i) if i ==0 else str(i) for i in range(0,201,10)},
+                                                                                                                                                                            value=[10,100],
                                                                                                                                                                 ),
                                                                                                                                                                 ],
                                                                                                                                                                 # style={'fontSize': '180%'},
@@ -1486,9 +1545,9 @@ page_layout = html.Div([
             
             dbc.Row([
                 dbc.Col([
-                    html.H3(children='Modelling control of COVID-19',
+                    html.H3(children='Controlling COVID-19 in a refugee setting',
                     className="display-4",
-                    style={'marginTop': '1vh', 'textAlign': 'center','fontSize': '360%'}
+                    style={'marginTop': '1vh', 'textAlign': 'center','fontSize': '340%'}
                     ),
 
 
@@ -1605,20 +1664,22 @@ for p in [ "pick-strat","control", "months-control", "res-type" , "cc-care" ,"cu
     Input('categories-to-plot-checklist-1','value'),
     Input('categories-to-plot-checklist-2','value'),
     Input('categories-to-plot-checklist-3','value'),
-    Input('month-slider', 'value'),
+    Input('day-slider', 'value'),
     Input('camps', 'value'),
     ])
-def find_sol(preset,cats,cats2,cats3,month,camp):
+def find_sol(preset,cats,cats2,cats3,timings,camp):
     # print('find_sol')
     
     t_stop = 200
 
+    beta_factor = control_data.Reduces_R0_by[preset]
+
     population_frame, population = preparePopulationFrame(camp)
 
     sols = []
-    sols.append(simulator().run_model(T_stop=t_stop,population=population,population_frame=population_frame))
-    fig = figure_generator(sols,cats,population)
-    fig2 = stacked_plot(sols,cats2,population,population_frame)
+    sols.append(simulator().run_model(T_stop=t_stop,population=population,population_frame=population_frame,control_time=timings,beta_factor=beta_factor))
+    fig = figure_generator(sols,cats,population,timings)
+    fig2 = age_structure_plot(sols,cats2,population,population_frame,timings)
     fig3 = stacked_bar_plot(sols,cats3,population,population_frame)
 
 

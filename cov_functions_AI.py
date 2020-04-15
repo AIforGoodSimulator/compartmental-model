@@ -14,18 +14,24 @@ class simulator:
 #-----------------------------------------------------------------
         
     ##
-    def ode_system(self,t,y,population_frame):
+    def ode_system(self,t,y,population_frame,control_time,beta_factor):
         ##
         dydt = np.zeros(y.shape)
 
         I_vec = [ y[params.I_ind+i*params.number_compartments] for i in range(params.age_categories)]
 
+        if t > control_time[0] and t < control_time[1]: # control in place
+            control_factor = beta_factor
+        else:
+            control_factor = 1
+            
+
 
         for i in range(params.age_categories):
             # S
-            dydt[params.S_ind + i*params.number_compartments] = - y[params.S_ind + i*params.number_compartments] * (np.dot(params.infection_matrix[i,:],I_vec)) 
+            dydt[params.S_ind + i*params.number_compartments] = - y[params.S_ind + i*params.number_compartments] * control_factor * (np.dot(params.infection_matrix[i,:],I_vec)) 
             # E
-            dydt[params.E_ind + i*params.number_compartments] = (y[params.S_ind + i*params.number_compartments] * (np.dot(params.infection_matrix[i,:],I_vec))
+            dydt[params.E_ind + i*params.number_compartments] = ( y[params.S_ind + i*params.number_compartments] * control_factor * (np.dot(params.infection_matrix[i,:],I_vec))
                                                                 - params.infectious_rate * y[params.E_ind + i*params.number_compartments])
             # I
             dydt[params.I_ind + i*params.number_compartments] = (params.infectious_rate * y[params.E_ind + i*params.number_compartments] - 
@@ -47,7 +53,7 @@ class simulator:
     ##
     #--------------------------------------------------------------------
     ##
-    def run_model(self,T_stop,population,population_frame): # ,beta_L_factor,beta_H_factor,t_control,T_stop,vaccine_time,ICU_grow,let_HR_out):
+    def run_model(self,T_stop,population,population_frame,control_time,beta_factor): # ,beta_L_factor,beta_H_factor,t_control,T_stop,vaccine_time,ICU_grow,let_HR_out):
         
         E0 = 0
         I0 = 1/population
@@ -68,7 +74,7 @@ class simulator:
             y0[params.C_ind + i*params.number_compartments] = (population_frame.Population[i]/100)*C0
             y0[params.D_ind + i*params.number_compartments] = (population_frame.Population[i]/100)*D0
 
-        sol = ode(self.ode_system,jac=None).set_integrator('dopri5').set_f_params(population_frame)
+        sol = ode(self.ode_system,jac=None).set_integrator('dopri5').set_f_params(population_frame,control_time,beta_factor)
         
         tim = np.linspace(0,T_stop, 301) # use 141 time values
         
