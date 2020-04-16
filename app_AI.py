@@ -7,7 +7,7 @@ from flask import Flask
 from gevent.pywsgi import WSGIServer
 import pandas as pd
 from math import floor, ceil, exp
-from parameters_cov_AI import params, example_population_frame, preparePopulationFrame
+from parameters_cov_AI import params, parameter_csv, example_population_frame, preparePopulationFrame
 import numpy as np
 import plotly.graph_objects as go
 from plotly.validators.scatter.marker import SymbolValidator
@@ -70,7 +70,7 @@ camps = {'Camp_1': 'Name of Camp 1',
         }
 
 
-parameter_csv = pd.read_csv('AI_for_good/AI-for-good/parameters.csv')
+# parameter_csv = pd.read_csv('AI_for_good/AI-for-good/parameters.csv')
 
 control_data = parameter_csv[parameter_csv['Type']=='Control']
 
