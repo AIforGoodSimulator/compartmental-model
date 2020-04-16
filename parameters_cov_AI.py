@@ -10,8 +10,8 @@ from math import ceil
 import os
 cwd = os.getcwd()
 
-# raw_data = pd.read_csv(os.path.join(cwd,'camp_params.csv'))
-raw_data = pd.read_csv(os.path.join(cwd,'camp_raw_data/moria_params.csv'))
+raw_data = pd.read_csv(os.path.join(cwd,'camp_params.csv'))
+# raw_data = pd.read_csv(os.path.join(cwd,'camp_raw_data/moria_params.csv'))
 
 def preparePopulationFrame(camp_name):
     
@@ -38,7 +38,8 @@ def preparePopulationFrame(camp_name):
 
 
 
-example_population_frame, example_population = preparePopulationFrame('Moria')
+# example_population_frame, example_population = preparePopulationFrame('Moria')
+example_population_frame, example_population = preparePopulationFrame('Camp_1')
 
 
 #------------------------------------------------------------
