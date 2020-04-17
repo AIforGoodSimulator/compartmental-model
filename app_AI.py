@@ -3,6 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+from dash.exceptions import PreventUpdate
 from flask import Flask
 from gevent.pywsgi import WSGIServer
 import pandas as pd
@@ -38,12 +39,11 @@ app.config.suppress_callback_exceptions = True
 ########################################################################################################################
 # setup
 
-initial_lr = 8
-initial_hr = 5
-initial_month = 8
 
-
-
+# sols = []
+# for beta in params.beta_list:
+#     sols.append(simulator().run_model(T_stop=10,population=example_population,population_frame=population_frame,control_time=timings,beta=beta,beta_factor=beta_factor))
+# exit()
 
 df = copy.deepcopy(example_population_frame)
 df = df.loc[:,'Age':'Population']
@@ -100,13 +100,23 @@ shortname = {'S': 'Sus.',
         'D': 'Deaths (cumulative)',
 }
 
+fill_colours = {'S': 'rgba(0,0,255,0.01)', #'blue',
+                'E': 'rgba(255,150,255,0.01)', #'pink',
+                'I': 'rgba(255,150,50,0.01)', #'orange',
+                'R': 'rgba(0,255,0,0.01)', #'green',
+                'H': 'rgba(255,0,0,0.01)', #'red',
+                'C': 'rgba(50,50,50,0.01)', #'black',
+                'D': 'rgba(130,0,255,0.01)', #'purple',
+        }
+
+
 colours = {'S': 'blue',
-        'E': 'pink',
-        'I': 'orange',
-        'R': 'green',
-        'H': 'red',
-        'C': 'black',
-        'D': 'purple',
+           'E': 'pink',
+           'I': 'orange',
+           'R': 'green',
+           'H': 'red',
+           'C': 'black',
+           'D': 'purple',
         }
 
 index = {'S': params.S_ind,
@@ -146,17 +156,49 @@ def human_format(num,dp=0):
 
 
 ########################################################################################################################
-def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_time):
+def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_time,no_control,confidence_range=None):
 
     # population_plot = params.population
+    if len(cats_to_plot)==0:
+        cats_to_plot=['I']
 
     font_size = 13
 
     lines_to_plot = []
 
-    ii = -1
+
+    for name in longname.keys():
+        if name in cats_to_plot:
+            ii = 0
+            for sol in confidence_range:
+                if ii ==0:
+                    fill = None
+                else:
+                    fill = 'tonexty'
+                ii = ii+1
+                sol['y'] = np.asarray(sol['y'])
+                
+                xx = sol['t']
+                y_plot = 100*sol['y'][index[name],:]
+                for i in range(1, population_frame.shape[0]): # age_categories
+                    y_plot = y_plot + 100*sol['y'][index[name]+ i*params.number_compartments,:]
+                
+                line =  {'x': xx, 'y': y_plot,
+                        'hovertemplate': '%{y:.2f}%, %{text}',
+                                        # 'Time: %{x:.1f} days<extra></extra>',
+                        'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
+                        'line': {'color': str(fill_colours[name]),'width': 0},
+                        'legendgroup': name + 'fill',
+                        'showlegend': False,
+                        'mode': 'lines',
+                        # 'opacity': 0.1,
+                        'fill': fill,
+                        'name': longname[name] + 'fill'
+                        }
+                lines_to_plot.append(line)
+
+
     for sol in sols:
-        ii += 1
         for name in longname.keys():
             if name in cats_to_plot:
                 sol['y'] = np.asarray(sol['y'])
@@ -174,7 +216,6 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
                         'legendgroup': name,
                         'name': longname[name]}
                 lines_to_plot.append(line)
-
 
     ymax = 0
     for line in lines_to_plot:
@@ -204,7 +245,6 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
 
     yy = [i for i in yy2]
 
-
     for i in range(len(yy)-1):
         if yax['range'][1]>yy[i] and yax['range'][1] <= yy[i+1]:
             pop_vec_lin = np.linspace(0,yy2[i+1],11)
@@ -220,7 +260,9 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
     vec2 = [i*(population_plot) for i in pop_log_vec]
 
     shapes=[]
-    if control_time[0]!=control_time[1]:
+    annots=[]
+
+    if control_time[0]!=control_time[1] and not no_control:
         shapes.append(dict(
                 # filled Blue Control Rectangle
                 type="rect",
@@ -236,8 +278,6 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
                 opacity= 0.15
             ))
 
-    annots=[]
-    if control_time[0]!=control_time[1]:
         annots.append(dict(
                 x  = 0.5*(control_time[0] + control_time[1]),
                 y  = 0.5,
@@ -331,7 +371,7 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
 
 
 ########################################################################################################################
-def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,control_time):
+def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,control_time,no_control): # ,confidence_range=None
 
     # population_plot = params.population
 
@@ -350,7 +390,7 @@ def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,contro
                 for i in range(population_frame.shape[0]): # # age_categories
                     y_plot = 100*sol['y'][index[name]+ i*params.number_compartments,:]
 
-                    legend_name = longname[name] + ': ' + population_frame.Age[i] # first one says e.g. infected
+                    legend_name = longname[name] + ': ' + np.asarray(population_frame.Age)[i] # first one says e.g. infected
                     
                     line =  {'x': xx, 'y': y_plot,
 
@@ -384,7 +424,8 @@ def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,contro
     ))
 
     shapes=[]
-    if control_time[0]!=control_time[1]:
+    annots=[]
+    if control_time[0]!=control_time[1] and not no_control:
         shapes.append(dict(
                 # filled Blue Control Rectangle
                 type="rect",
@@ -400,8 +441,6 @@ def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,contro
                 opacity= 0.15
             ))
 
-    annots=[]
-    if control_time[0]!=control_time[1]:
         annots.append(dict(
                 x  = 0.5*(control_time[0] + control_time[1]),
                 y  = 0.5,
@@ -541,7 +580,7 @@ def stacked_bar_plot(sols,cats_to_plot,population_plot,population_frame):
                 for i in range(population_frame.shape[0]): # age_cats
                     y_plot = 100*sol['y'][index[name]+ i*params.number_compartments,:]
                     y_sum  = y_sum + y_plot
-                    legend_name = longname[name] + ': ' + population_frame.Age[i] # first one says e.g. infected
+                    legend_name = longname[name] + ': ' + np.asarray(population_frame.Age)[i] # first one says e.g. infected
 
                     y_plot = [y_plot[i] for i in range(1,len(y_plot),2)]
                     
@@ -842,7 +881,7 @@ layout_inter = html.Div([
                                                                                                                                                                 id = 'camps',
                                                                                                                                                                 options=[{'label': camps[key],
                                                                                                                                                                 'value': key} for key in camps],
-                                                                                                                                                                value= 'Camp_1',
+                                                                                                                                                                value= 'Camp_2',
                                                                                                                                                                 clearable = False,
                                                                                                                                                                 # disabled=True
                                                                                                                                                             ),],
@@ -1653,6 +1692,44 @@ for p in [ "pick-strat","control", "months-control", "res-type" , "cc-care" ,"cu
 @app.callback(
     [Output('sol-calculated', 'data'),
     Output('loading-sol-1','children'),
+    ],
+    [
+    Input('preset', 'value'),
+    # Input('categories-to-plot-checklist-1','value'),
+    # Input('categories-to-plot-checklist-2','value'),
+    # Input('categories-to-plot-checklist-3','value'),
+    Input('day-slider', 'value'),
+    Input('camps', 'value'),
+    ])
+def find_sol(preset,timings,camp):
+    # print('find_sol')
+    
+    t_stop = 200
+
+    beta_factor = control_data.Value[preset]
+
+    population_frame, population = preparePopulationFrame(camp)
+    print(population_frame,population)
+    
+    # no_control = False
+    # if beta_factor==1: # no control
+    #     no_control = True
+    infection_matrix = np.ones((population_frame.shape[0],population_frame.shape[0]))
+    beta_list = np.linspace(params.beta_list[0],params.beta_list[1],5)
+    sols = []
+    for beta in beta_list:
+        sols.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=beta,beta_factor=beta_factor))
+    # fig  = figure_generator([sols[1]],cats,population,population_frame,timings,no_control,[sols[0],sols[2]])
+    # fig2 = age_structure_plot([sols[1]],cats2,population,population_frame,timings,no_control,[sols[0],sols[2]])
+    # fig3 = stacked_bar_plot(sols,cats3,population,population_frame)
+
+
+    return sols, None #, fig, fig2, fig3
+
+
+
+@app.callback(
+    [
     Output('line-plot-1', 'figure'),
     Output('line-plot-2', 'figure'),
     Output('line-plot-3', 'figure'),
@@ -1664,29 +1741,28 @@ for p in [ "pick-strat","control", "months-control", "res-type" , "cc-care" ,"cu
     Input('categories-to-plot-checklist-3','value'),
     Input('day-slider', 'value'),
     Input('camps', 'value'),
+    Input('sol-calculated', 'data'),
     ])
-def find_sol(preset,cats,cats2,cats3,timings,camp):
-    # print('find_sol')
-    
-    t_stop = 200
+def plot_graphs(preset,cats,cats2,cats3,timings,camp,sols):
+    if sols is None:
+        raise PreventUpdate
 
-    beta_factor = control_data.Value[preset]
-    # print(beta_factor)
+    # t_stop = 200
+    # beta_factor = control_data.Value[preset]
 
     population_frame, population = preparePopulationFrame(camp)
 
-    sols = []
-    sols.append(simulator().run_model(T_stop=t_stop,population=population,population_frame=population_frame,control_time=timings,beta_factor=beta_factor))
-    fig  = figure_generator(sols,cats,population,population_frame,timings)
-    fig2 = age_structure_plot(sols,cats2,population,population_frame,timings)
-    fig3 = stacked_bar_plot(sols,cats3,population,population_frame)
+    preset = control_data.Name[preset]
 
+    no_control = False
+    if preset=='No control':
+        no_control = True
 
-    return sols, None, fig, fig2, fig3
+    fig  = figure_generator([sols[1]],cats,population,population_frame,timings,no_control,sols)
+    fig2 = age_structure_plot([sols[1]],cats2,population,population_frame,timings,no_control)
+    fig3 = stacked_bar_plot([sols[1]],cats3,population,population_frame)
 
-
-
-
+    return fig, fig2, fig3
 
 
 

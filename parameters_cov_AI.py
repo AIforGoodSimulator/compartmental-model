@@ -13,10 +13,10 @@ raw_data = pd.read_csv('AI_for_good/AI-for-good/camp_params.csv')
 
 def preparePopulationFrame(camp_name):
     
-    population_size = raw_data.loc[:,['Variable',camp_name]]
+    population_size = raw_data.loc[:,['Variable','Camp','Value']]
+    population_size = population_size[population_size.Camp == camp_name]
 
-    covid_data = raw_data.loc[:,'Variable':'Critical_given_hospitalised']
-    population_frame = pd.concat([covid_data,raw_data.loc[:,camp_name]],axis=1)
+    population_frame = raw_data[raw_data.Camp==camp_name]
     population_frame = population_frame[population_frame['Variable']=='Population_structure']
     population_frame = population_frame.loc[:,'Age':]
 
@@ -25,12 +25,12 @@ def preparePopulationFrame(camp_name):
     population_frame = population_frame.assign(p_hospitalised = lambda x: (x.Hosp_given_symptomatic/100)*frac_symptomatic,
                     p_critical = lambda x: (x.Critical_given_hospitalised/100)) 
 
-    population_frame = population_frame.rename(columns={camp_name: "Population"})
+    population_frame = population_frame.rename(columns={'Value': "Population"})
 
 
     population_size = population_size[population_size['Variable']=='Total_population']
+    population_size = np.float(population_size.Value)
 
-    population_size = np.float(population_size.iloc[-1,-1])
 
     return population_frame, population_size
 
@@ -46,16 +46,20 @@ model_params = parameter_csv[parameter_csv['Type']=='Model Parameter']
 model_params = model_params.loc[:,['Name','Value']]
 # print()
 
-R_0                 = np.float(model_params[model_params['Name']=='R0'].Value)
-become_infectious_rate     = 1/(np.float(model_params[model_params['Name']=='infectious_period'].Value))
-no_longer_infectious_rate = 1/(np.float(model_params[model_params['Name']=='non_infectious_period'].Value))
-hosp_rate           = 1/(np.float(model_params[model_params['Name']=='hosp_period'].Value))
-death_rate          = 1/(np.float(model_params[model_params['Name']=='death_period'].Value))
+R_0_list                         =   np.asarray(model_params[model_params['Name']=='R0'].Value)
 
-beta                = R_0*no_longer_infectious_rate # R_0 mu/N, N=1
-infection_matrix    = beta*np.ones((example_population_frame.shape[0],example_population_frame.shape[0]))
+
+become_infectious_rate      = 1/(np.float(model_params[model_params['Name']=='infectious_period'].Value))
+no_longer_infectious_rate   = 1/(np.float(model_params[model_params['Name']=='non_infectious_period'].Value))
+hosp_rate                   = 1/(np.float(model_params[model_params['Name']=='hosp_period'].Value))
+death_rate                  = 1/(np.float(model_params[model_params['Name']=='death_period'].Value))
+
 death_prob          = np.float(model_params[model_params['Name']=='death_prob'].Value)
 number_compartments = int(model_params[model_params['Name']=='number_compartments'].Value)
+
+beta_list           = [R_0*no_longer_infectious_rate  for R_0 in R_0_list] # R_0 mu/N, N=1
+
+# infection_matrix    = np.ones((example_population_frame.shape[0],example_population_frame.shape[0]))
 
 
 # Parameters that may come into play later:
@@ -67,10 +71,10 @@ number_compartments = int(model_params[model_params['Name']=='number_compartment
 class Parameters:
     def __init__(self):
         
-        self.R_0 = R_0
+        self.R_0_list = R_0_list
+        self.beta_list = beta_list
         self.no_longer_infectious_rate = no_longer_infectious_rate
-        self.beta = beta
-        self.infection_matrix = beta*np.ones((example_population_frame.shape[0],example_population_frame.shape[0]))
+        # self.infection_matrix = infection_matrix
 
 
         self.number_compartments = number_compartments
