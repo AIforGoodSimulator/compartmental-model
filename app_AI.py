@@ -11,7 +11,7 @@ from math import floor, ceil, exp
 from parameters_cov_AI import params, parameter_csv, example_population_frame, preparePopulationFrame
 import numpy as np
 import plotly.graph_objects as go
-from plotly.validators.scatter.marker import SymbolValidator
+# from plotly.validators.scatter.marker import SymbolValidator
 import copy
 from cov_functions_AI import simulator
 import flask
@@ -22,14 +22,6 @@ import json
 # external_stylesheets = 'https://codepen.io/chriddyp/pen/bWLwgP.css'
 tab_label_color = 'black' # "#00AEF9"
 external_stylesheets = dbc.themes.SPACELAB
-# Cerulean
-# COSMO
-# JOURNAL
-# Litera
-# MINTY
-# SIMPLEX - not red danger
-# spacelab good too
-# UNITED
 
 app = dash.Dash(__name__, external_stylesheets=[external_stylesheets])
 
@@ -38,12 +30,6 @@ server = app.server
 app.config.suppress_callback_exceptions = True
 ########################################################################################################################
 # setup
-
-
-# sols = []
-# for beta in params.beta_list:
-#     sols.append(simulator().run_model(T_stop=10,population=example_population,population_frame=population_frame,control_time=timings,beta=beta,beta_factor=beta_factor))
-# exit()
 
 df = copy.deepcopy(example_population_frame)
 df = df.loc[:,'Age':'Population']
@@ -167,35 +153,34 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
     lines_to_plot = []
 
 
+    xx = sols[0]['t']
     for name in longname.keys():
         if name in cats_to_plot:
             ii = 0
-            for sol in confidence_range:
-                if ii ==0:
-                    fill = None
-                else:
-                    fill = 'tonexty'
-                ii = ii+1
-                sol['y'] = np.asarray(sol['y'])
-                
-                xx = sol['t']
-                y_plot = 100*sol['y'][index[name],:]
-                for i in range(1, population_frame.shape[0]): # age_categories
-                    y_plot = y_plot + 100*sol['y'][index[name]+ i*params.number_compartments,:]
-                
-                line =  {'x': xx, 'y': y_plot,
-                        'hovertemplate': '%{y:.2f}%, %{text}',
-                                        # 'Time: %{x:.1f} days<extra></extra>',
-                        'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
-                        'line': {'color': str(fill_colours[name]),'width': 0},
-                        'legendgroup': name + 'fill',
-                        'showlegend': False,
-                        'mode': 'lines',
-                        # 'opacity': 0.1,
-                        'fill': fill,
-                        'name': longname[name] + 'fill'
-                        }
-                lines_to_plot.append(line)
+            if confidence_range is not None:
+                for yy in confidence_range:
+                    if ii ==0:
+                        fill = None
+                    else:
+                        fill = 'tonexty'
+                    ii = ii+1
+
+                    yy = np.asarray(yy)
+                    y_plot = 100*yy[index[name],:]
+                    
+                    line =  {'x': xx, 'y': y_plot,
+                            'hovertemplate': '%{y:.2f}%, %{text}',
+                                            # 'Time: %{x:.1f} days<extra></extra>',
+                            'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
+                            'line': {'color': str(fill_colours[name]),'width': 0},
+                            'legendgroup': name + 'fill',
+                            'showlegend': False,
+                            'mode': 'lines',
+                            # 'opacity': 0.1,
+                            'fill': fill,
+                            'name': longname[name] + 'fill'
+                            }
+                    lines_to_plot.append(line)
 
 
     for sol in sols:
@@ -203,7 +188,7 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
             if name in cats_to_plot:
                 sol['y'] = np.asarray(sol['y'])
                 
-                xx = sol['t']
+                # xx = sol['t']
                 y_plot = 100*sol['y'][index[name],:]
                 for i in range(1, population_frame.shape[0]): # age_categories
                     y_plot = y_plot + 100*sol['y'][index[name]+ i*params.number_compartments,:]
@@ -719,6 +704,35 @@ def stacked_bar_plot(sols,cats_to_plot,population_plot,population_frame):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 layout_inter = html.Div([
     dbc.Row([
         # column_1,
@@ -734,6 +748,7 @@ layout_inter = html.Div([
 
                                     # store results
                                     dcc.Store(id='sol-calculated'),
+                                    dcc.Store(id='conf-calculated'),
                                     dcc.Store(id='sol-calculated-do-nothing'),
             
                                     # dbc.Col([
@@ -981,6 +996,19 @@ layout_inter = html.Div([
                                                                                                                                                                 placement='right',
                                                                                                                                                             ),
 
+                                                                                                                                                            html.Hr(),
+
+                                                                                                                                                            dbc.Row(
+                                                                                                                                                                dbc.Button('Calculate',
+                                                                                                                                                                color='primary',
+                                                                                                                                                                size='lg',
+                                                                                                                                                                id='calc-button',
+                                                                                                                                                                style= {'cursor': 'pointer','marginBottom': '0.5vh'}),
+                                                                                                                                                            justify =  'center'
+                                                                                                                                                            ),
+
+
+
 
 
 
@@ -1092,6 +1120,13 @@ layout_inter = html.Div([
                                                                 
                                                                 
                                                     html.Div(id='DPC-content',children=[
+                                                                
+                                                                
+                                                                dbc.Row(
+                                                                    html.H4("All Outputs",
+                                                                    style={'marginBottom': '1vh', 'textAlign': 'center' ,'marginTop': '4vh','fontSize': '180%'}),
+                                                                justify =  'center'
+                                                                ),
 
                                                                 
                                                                 dcc.Graph(id='line-plot-1',style={'height': '70vh', 'width': '100%'}),
@@ -1225,15 +1260,15 @@ layout_inter = html.Div([
 
                                                                             ''',style={'fontSize': '100%', 'textAlign': 'justify', 'marginTop': '6vh', 'marginBottom': '3vh'}),
 
+ 
+ 
                                                                 html.Hr(),
 
-                                                                dcc.Graph(id='line-plot-2',style={'height': '70vh', 'width': '100%'}),
-
-
+ 
                                                                  dbc.Row([
                                                                  dbc.Col([
 
-                                                                        html.H6('Categories To Plot',style={'fontSize': '100%','textAlign': 'center'}),
+                                                                        html.H6('Categories To Plot (Next 3 plots)',style={'fontSize': '100%','textAlign': 'center'}),
                                                                         dbc.Col([
 
 
@@ -1256,37 +1291,64 @@ layout_inter = html.Div([
                                                                 ],width=True),
                                                                 ],justify=True),
 
+                                                                dbc.Row(
+                                                                    html.H4("Uncertainty in R0",
+                                                                    style={'marginBottom': '1vh', 'textAlign': 'center' ,'marginTop': '4vh','fontSize': '180%'}),
+                                                                justify =  'center'
+                                                                ),
+ 
+                                                                dcc.Graph(id='line-plot-uncertainty',style={'height': '70vh', 'width': '100%'}),
+ 
+                                                                html.Hr(),
+
+                                                                dbc.Row(
+                                                                    html.H4("Age Structure",
+                                                                    style={'marginBottom': '1vh', 'textAlign': 'center' ,'marginTop': '4vh','fontSize': '180%'}),
+                                                                justify =  'center'
+                                                                ),
+
+
+                                                                dcc.Graph(id='line-plot-2',style={'height': '70vh', 'width': '100%'}),
+
+
+
 
                                                                 html.Hr(),
+
+                                                                dbc.Row(
+                                                                    html.H4("Age Structure",
+                                                                    style={'marginBottom': '1vh', 'textAlign': 'center' ,'marginTop': '4vh','fontSize': '180%'}),
+                                                                justify =  'center'
+                                                                ),
 
                                                                 dcc.Graph(id='line-plot-3',style={'height': '70vh', 'width': '100%'}),
 
 
-                                                                 dbc.Row([
-                                                                 dbc.Col([
+                                                                #  dbc.Row([
+                                                                #  dbc.Col([
 
-                                                                        html.H6('Categories To Plot',style={'fontSize': '100%','textAlign': 'center'}),
-                                                                        dbc.Col([
+                                                                #         html.H6('Categories To Plot',style={'fontSize': '100%','textAlign': 'center'}),
+                                                                #         dbc.Col([
 
 
-                                                                            dbc.RadioItems(id='categories-to-plot-checklist-3',
-                                                                                            options=[
-                                                                                                {'label': longname[key], 'value': key} for key in longname
-                                                                                            ],
-                                                                                            value= 'H',
-                                                                                            inline=True,
-                                                                                            labelStyle = {'display': 'inline-block','fontSize': '80%'},
-                                                                                        ),
+                                                                #             dbc.RadioItems(id='categories-to-plot-checklist-3',
+                                                                #                             options=[
+                                                                #                                 {'label': longname[key], 'value': key} for key in longname
+                                                                #                             ],
+                                                                #                             value= 'H',
+                                                                #                             inline=True,
+                                                                #                             labelStyle = {'display': 'inline-block','fontSize': '80%'},
+                                                                #                         ),
                                                                             
-                                                                            dcc.Markdown('''
-                                                                                *Category choice is for the plot above. Hospital categories are shown in the plot below.*
-                                                                                ''',style={'fontSize': '75%', 'textAlign': 'justify', 'marginTop': '0vh'}),
+                                                                #             dcc.Markdown('''
+                                                                #                 *Category choice is for the plot above. Hospital categories are shown in the plot below.*
+                                                                #                 ''',style={'fontSize': '75%', 'textAlign': 'justify', 'marginTop': '0vh'}),
                                                                                 
 
-                                                                        ],width={'size':8 , 'offset': 2}),
+                                                                #         ],width={'size':8 , 'offset': 2}),
 
-                                                                ],width=True),
-                                                                ],justify=True),
+                                                                # ],width=True),
+                                                                # ],justify=True),
 
 
                                                                 html.Hr(),
@@ -1606,7 +1668,7 @@ page_layout = html.Div([
         layout_inter,
 
         # # page content
-        dcc.Location(id='url', refresh=False),
+        # dcc.Location(id='url', refresh=False),
 
         html.Footer('This page is intended for illustrative/educational purposes only, and not for accurate prediction of the pandemic.',
                     style={'textAlign': 'center', 'fontSize': '100%', 'marginBottom': '1.5vh' , 'color': '#446E9B', 'fontWeight': 'bold'}),
@@ -1682,73 +1744,86 @@ for p in [ "pick-strat","control", "months-control", "res-type" , "cc-care" ,"cu
 
 
 ##############################################################################################################################
-# population_frame, population = preparePopulationFrame('Camp_1')
-# beta_factor=1
-# timings = [1,100]
-# print(simulator().run_model(T_stop=200,population=population,population_frame=population_frame,control_time=timings,beta_factor=beta_factor))
-# exit()
 
 
 @app.callback(
     [Output('sol-calculated', 'data'),
+    Output('conf-calculated', 'data'),
     Output('loading-sol-1','children'),
     ],
     [
-    Input('preset', 'value'),
-    # Input('categories-to-plot-checklist-1','value'),
-    # Input('categories-to-plot-checklist-2','value'),
-    # Input('categories-to-plot-checklist-3','value'),
-    Input('day-slider', 'value'),
-    Input('camps', 'value'),
+    Input('calc-button','n_clicks'),
+    ],
+    [
+    State('preset', 'value'),
+    State('day-slider', 'value'),
+    State('camps', 'value'),
     ])
-def find_sol(preset,timings,camp):
-    # print('find_sol')
+def find_sol(n_clicks,preset,timings,camp):
+    if n_clicks is None:
+        raise PreventUpdate
     
     t_stop = 200
 
     beta_factor = control_data.Value[preset]
 
     population_frame, population = preparePopulationFrame(camp)
-    print(population_frame,population)
     
-    # no_control = False
-    # if beta_factor==1: # no control
-    #     no_control = True
     infection_matrix = np.ones((population_frame.shape[0],population_frame.shape[0]))
-    beta_list = np.linspace(params.beta_list[0],params.beta_list[1],5)
+    beta_list = np.linspace(params.beta_list[0],params.beta_list[2],20)
     sols = []
     for beta in beta_list:
         sols.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=beta,beta_factor=beta_factor))
-    # fig  = figure_generator([sols[1]],cats,population,population_frame,timings,no_control,[sols[0],sols[2]])
-    # fig2 = age_structure_plot([sols[1]],cats2,population,population_frame,timings,no_control,[sols[0],sols[2]])
-    # fig3 = stacked_bar_plot(sols,cats3,population,population_frame)
+
+    n_time_points = len(sols[0]['t'])
+
+    y_plot = np.zeros((len(longname.keys()), len(sols) , n_time_points ))
+
+    for k, sol in enumerate(sols):
+        for name in longname.keys():
+            sol['y'] = np.asarray(sol['y'])
+
+            y_plot[index[name],k,:] = sol['y'][index[name],:]
+            for i in range(1, population_frame.shape[0]): # age_categories
+                y_plot[index[name],k,:] = y_plot[index[name],k,:] + sol['y'][index[name] + i*params.number_compartments,:]
 
 
-    return sols, None #, fig, fig2, fig3
+    y_min = np.zeros((params.number_compartments,n_time_points))
+    y_max = np.zeros((params.number_compartments,n_time_points))
+
+    for name in longname.keys():
+        y_min[index[name],:] = [min(y_plot[index[name],:,i]) for i in range(n_time_points)]
+        y_max[index[name],:] = [max(y_plot[index[name],:,i]) for i in range(n_time_points)]
+
+    # print(params.beta_list)
+    
+    sols_out = []
+    sols_out.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=params.beta_list[1],beta_factor=beta_factor))
+    
+    return [sols_out, [y_min,y_max], None]
 
 
 
 @app.callback(
     [
     Output('line-plot-1', 'figure'),
+    Output('line-plot-uncertainty', 'figure'),
     Output('line-plot-2', 'figure'),
     Output('line-plot-3', 'figure'),
     ],
     [
-    Input('preset', 'value'),
-    Input('categories-to-plot-checklist-1','value'),
-    Input('categories-to-plot-checklist-2','value'),
-    Input('categories-to-plot-checklist-3','value'),
-    Input('day-slider', 'value'),
-    Input('camps', 'value'),
     Input('sol-calculated', 'data'),
+    Input('conf-calculated', 'data'),
+    Input('categories-to-plot-checklist-1','value'),
+    Input('categories-to-plot-checklist-2','value')],
+    [
+    State('preset', 'value'),
+    State('day-slider', 'value'),
+    State('camps', 'value'),
     ])
-def plot_graphs(preset,cats,cats2,cats3,timings,camp,sols):
+def plot_graphs(sols,conf,cats,cats2,preset,timings,camp):
     if sols is None:
         raise PreventUpdate
-
-    # t_stop = 200
-    # beta_factor = control_data.Value[preset]
 
     population_frame, population = preparePopulationFrame(camp)
 
@@ -1758,11 +1833,12 @@ def plot_graphs(preset,cats,cats2,cats3,timings,camp,sols):
     if preset=='No control':
         no_control = True
 
-    fig  = figure_generator([sols[1]],cats,population,population_frame,timings,no_control,sols)
-    fig2 = age_structure_plot([sols[1]],cats2,population,population_frame,timings,no_control)
-    fig3 = stacked_bar_plot([sols[1]],cats3,population,population_frame)
+    fig  = figure_generator([sols[0]],cats,population,population_frame,timings,no_control) # ,sols[1:])
+    fig_U  = figure_generator([sols[0]],cats2,population,population_frame,timings,no_control,conf) # ,sols[1:])
+    fig2 = age_structure_plot([sols[0]],cats2,population,population_frame,timings,no_control)
+    fig3 = stacked_bar_plot([sols[0]],cats2,population,population_frame)
 
-    return fig, fig2, fig3
+    return [fig, fig_U, fig2, fig3]
 
 
 
