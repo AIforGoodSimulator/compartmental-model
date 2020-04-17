@@ -1833,10 +1833,10 @@ def plot_graphs(sols,conf,cats,cats2,preset,timings,camp):
     if preset=='No control':
         no_control = True
 
-    fig  = figure_generator([sols[0]],cats,population,population_frame,timings,no_control) # ,sols[1:])
-    fig_U  = figure_generator([sols[0]],cats2,population,population_frame,timings,no_control,conf) # ,sols[1:])
-    fig2 = age_structure_plot([sols[0]],cats2,population,population_frame,timings,no_control)
-    fig3 = stacked_bar_plot([sols[0]],cats2,population,population_frame)
+    fig  = figure_generator(sols,cats,population,population_frame,timings,no_control) # ,sols[1:])
+    fig_U  = figure_generator(sols,cats2,population,population_frame,timings,no_control,conf) # ,sols[1:])
+    fig2 = age_structure_plot(sols,cats2,population,population_frame,timings,no_control)
+    fig3 = stacked_bar_plot(sols,cats2,population,population_frame)
 
     return [fig, fig_U, fig2, fig3]
 
