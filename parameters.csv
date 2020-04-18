@@ -1,17 +1,17 @@
 ﻿Name,Value,Unit,Type,Explanation,Assumptions
-No control,1.00,,Control,Effect on infection rate,
-Control name 1,0.90,,Control,Effect on infection rate,
-Control name 2,0.80,,Control,Effect on infection rate,
-Control name 3,0.50,,Control,Effect on infection rate,
+No control,1,,Control,Effect on infection rate,
+Control name 1,0.9,,Control,Effect on infection rate,
+Control name 2,0.8,,Control,Effect on infection rate,
+Control name 3,0.5,,Control,Effect on infection rate,
 ,,,,,
-R0,3.00,,Model Parameter,,Low
-R0,4.00,,Model Parameter,,Medium
-R0,5.00,,Model Parameter,,High
-infectious_period,2.00,Days,Model Parameter,Time to become infectious,
-non_infectious_period,5.00,Days,Model Parameter,Time remain infectious,
-hosp_period,8.00,Days,Model Parameter,,
-death_period,2.00,Days,Model Parameter,,without ICU
-death_prob,1.00,,Model Parameter,,without ICU
-death_period_with_ICU,8.00,Days,Model Parameter,,with ICU - not yet factored in
-death_prob_with_ICU,0.50,,Model Parameter,,with ICU - not yet factored in
-number_compartments,7.00,,Model Parameter,"S,E,I,R,H,C,D",
+R0,3,,Model Parameter,,Low
+R0,4,,Model Parameter,,Medium
+R0,5,,Model Parameter,,High
+latent_period,2,Days,Model Parameter,Time to become infectious,
+removal_period,5,Days,Model Parameter,Time infectious,
+hosp_period,8,Days,Model Parameter,Time stay in hosp,
+death_period,2,Days,Model Parameter,Time to die after getting to critical condition,without ICU
+death_prob,1,,Model Parameter,,without ICU
+death_period_with_ICU,8,Days,Model Parameter,,with ICU - not yet factored in
+death_prob_with_ICU,0.5,,Model Parameter,,with ICU - not yet factored in
+number_compartments,7,,Model Parameter,"S,E,I,R,H,C,D",

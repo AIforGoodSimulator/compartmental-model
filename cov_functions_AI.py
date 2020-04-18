@@ -33,16 +33,16 @@ class simulator:
             dydt[params.S_ind + i*params.number_compartments] = - y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec)) 
             # E
             dydt[params.E_ind + i*params.number_compartments] = ( y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec))
-                                                                - params.become_infectious_rate * y[params.E_ind + i*params.number_compartments])
+                                                                - params.latent_rate * y[params.E_ind + i*params.number_compartments])
             # I
-            dydt[params.I_ind + i*params.number_compartments] = (params.become_infectious_rate * y[params.E_ind + i*params.number_compartments] - 
-                                                                  params.no_longer_infectious_rate * y[params.I_ind + i*params.number_compartments])
+            dydt[params.I_ind + i*params.number_compartments] = (params.latent_rate * y[params.E_ind + i*params.number_compartments] - 
+                                                                  params.removal_rate * y[params.I_ind + i*params.number_compartments])
             # R
-            dydt[params.R_ind + i*params.number_compartments] = (params.no_longer_infectious_rate * (1 - hospital_prob[i]) * y[params.I_ind + i*params.number_compartments] +
+            dydt[params.R_ind + i*params.number_compartments] = (params.removal_rate * (1 - hospital_prob[i]) * y[params.I_ind + i*params.number_compartments] +
                                                                   params.hosp_rate * (1 - critical_prob[i]) * y[params.H_ind + i*params.number_compartments] + 
                                                                   params.death_rate * (1 - params.death_prob) * y[params.C_ind + i*params.number_compartments])
             # H
-            dydt[params.H_ind + i*params.number_compartments] = (params.no_longer_infectious_rate * (hospital_prob[i]) * y[params.I_ind + i*params.number_compartments] -
+            dydt[params.H_ind + i*params.number_compartments] = (params.removal_rate * (hospital_prob[i]) * y[params.I_ind + i*params.number_compartments] -
                                                                   params.hosp_rate * y[params.H_ind + i*params.number_compartments])
             # C
             dydt[params.C_ind + i*params.number_compartments] = (params.hosp_rate  * (critical_prob[i]) * y[params.H_ind + i*params.number_compartments] -
@@ -69,6 +69,7 @@ class simulator:
         y0 = np.zeros(params.number_compartments*age_categories) 
 
         population_vector = np.asarray(population_frame.Population)
+        # print(population_vector)
 
         for i in range(age_categories):
             y0[params.S_ind + i*params.number_compartments] = (population_vector[i]/100)*S0

@@ -8,7 +8,7 @@ from flask import Flask
 from gevent.pywsgi import WSGIServer
 import pandas as pd
 from math import floor, ceil, exp
-from parameters_cov_AI import params, parameter_csv, example_population_frame, preparePopulationFrame
+from parameters_cov_AI import params, parameter_csv, preparePopulationFrame
 import numpy as np
 import plotly.graph_objects as go
 # from plotly.validators.scatter.marker import SymbolValidator
@@ -26,7 +26,6 @@ def find_sol2(preset,timings,camp): # gives solution as well as upper and lower 
     t_stop = 200
 
     beta_factor = np.float(control_data.Value[control_data.Name==preset])
-    print(beta_factor)
 
     population_frame, population = preparePopulationFrame(camp)
     
@@ -77,7 +76,7 @@ sols, upper_lower_bounds =find_sol2(preset, timings, camp) # returns solution fo
 
 
 cats = ['I','R','D'] # categories to plot
-cats2 = 'I' # categories to plot in final 3 plots
+cats2 = 'D' # categories to plot in final 3 plots
 
 
 population_frame, population = preparePopulationFrame(camp)

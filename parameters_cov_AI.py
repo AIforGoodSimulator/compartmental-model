@@ -40,6 +40,7 @@ def preparePopulationFrame(camp_name):
 
 # example_population_frame, example_population = preparePopulationFrame('Moria')
 example_population_frame, example_population = preparePopulationFrame('Camp_1')
+# print(example_population_frame)
 
 
 #------------------------------------------------------------
@@ -52,15 +53,15 @@ model_params = model_params.loc[:,['Name','Value']]
 R_0_list                         =   np.asarray(model_params[model_params['Name']=='R0'].Value)
 
 
-become_infectious_rate      = 1/(np.float(model_params[model_params['Name']=='infectious_period'].Value))
-no_longer_infectious_rate   = 1/(np.float(model_params[model_params['Name']=='non_infectious_period'].Value))
+latent_rate      = 1/(np.float(model_params[model_params['Name']=='latent_period'].Value))
+removal_rate   = 1/(np.float(model_params[model_params['Name']=='removal_period'].Value))
 hosp_rate                   = 1/(np.float(model_params[model_params['Name']=='hosp_period'].Value))
 death_rate                  = 1/(np.float(model_params[model_params['Name']=='death_period'].Value))
 
 death_prob          = np.float(model_params[model_params['Name']=='death_prob'].Value)
 number_compartments = int(model_params[model_params['Name']=='number_compartments'].Value)
 
-beta_list           = [R_0*no_longer_infectious_rate  for R_0 in R_0_list] # R_0 mu/N, N=1
+beta_list           = [R_0*removal_rate  for R_0 in R_0_list] # R_0 mu/N, N=1
 
 # infection_matrix    = np.ones((example_population_frame.shape[0],example_population_frame.shape[0]))
 
@@ -76,13 +77,13 @@ class Parameters:
         
         self.R_0_list = R_0_list
         self.beta_list = beta_list
-        self.no_longer_infectious_rate = no_longer_infectious_rate
+        self.removal_rate = removal_rate
         # self.infection_matrix = infection_matrix
 
 
         self.number_compartments = number_compartments
 
-        self.become_infectious_rate  = become_infectious_rate
+        self.latent_rate  = latent_rate
         self.hosp_rate = hosp_rate        
         self.death_rate = death_rate
         self.death_prob     = death_prob
