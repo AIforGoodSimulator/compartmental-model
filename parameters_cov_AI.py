@@ -23,8 +23,9 @@ def preparePopulationFrame(camp_name):
     population_frame = population_frame.loc[:,'Age':]
 
 
-    frac_symptomatic = 0.55 # so e.g. 40% that weren't detected were bc no symptoms and the rest (5%) didn't identify vs e.g. flu
-    population_frame = population_frame.assign(p_hospitalised = lambda x: (x.Hosp_given_symptomatic/100)*frac_symptomatic,
+    # 0.55 # so e.g. 40% that weren't detected were bc no symptoms and the rest (5%) didn't identify vs e.g. flu
+    # frac_symptomatic = 1 # now only multiplying by symptomatic category so don't need to do this!
+    population_frame = population_frame.assign(p_hospitalised = lambda x: (x.Hosp_given_symptomatic/100), # *frac_symptomatic,
                     p_critical = lambda x: (x.Critical_given_hospitalised/100)) 
 
     population_frame = population_frame.rename(columns={'Value': "Population"})
@@ -52,13 +53,13 @@ model_params = model_params.loc[:,['Name','Value']]
 
 R_0_list                         =   np.asarray(model_params[model_params['Name']=='R0'].Value)
 
+asympt_prop = np.float(model_params[model_params['Name']=='asymptomatic proportion'].Value)
+latent_rate    = 1/(np.float(model_params[model_params['Name']=='latent period'].Value))
+removal_rate   = 1/(np.float(model_params[model_params['Name']=='removal period'].Value))
+hosp_rate                   = 1/(np.float(model_params[model_params['Name']=='hosp period'].Value))
+death_rate                  = 1/(np.float(model_params[model_params['Name']=='death period'].Value))
 
-latent_rate      = 1/(np.float(model_params[model_params['Name']=='latent_period'].Value))
-removal_rate   = 1/(np.float(model_params[model_params['Name']=='removal_period'].Value))
-hosp_rate                   = 1/(np.float(model_params[model_params['Name']=='hosp_period'].Value))
-death_rate                  = 1/(np.float(model_params[model_params['Name']=='death_period'].Value))
-
-death_prob          = np.float(model_params[model_params['Name']=='death_prob'].Value)
+death_prob          = np.float(model_params[model_params['Name']=='death prob'].Value)
 number_compartments = int(model_params[model_params['Name']=='number_compartments'].Value)
 
 beta_list           = [R_0*removal_rate  for R_0 in R_0_list] # R_0 mu/N, N=1
@@ -84,6 +85,7 @@ class Parameters:
         self.number_compartments = number_compartments
 
         self.latent_rate  = latent_rate
+        self.asympt_prop = asympt_prop
         self.hosp_rate = hosp_rate        
         self.death_rate = death_rate
         self.death_prob     = death_prob
@@ -91,10 +93,11 @@ class Parameters:
         self.S_ind = 0
         self.E_ind = 1
         self.I_ind = 2
-        self.R_ind = 3
-        self.H_ind = 4
-        self.C_ind = 5
-        self.D_ind = 6
+        self.A_ind = 3
+        self.R_ind = 4
+        self.H_ind = 5
+        self.C_ind = 6
+        self.D_ind = 7
 
 
 

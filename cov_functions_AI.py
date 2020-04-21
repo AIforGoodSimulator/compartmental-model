@@ -18,7 +18,10 @@ class simulator:
         ##
         dydt = np.zeros(y.shape)
 
-        I_vec = [ y[params.I_ind+i*params.number_compartments] for i in range(age_categories)] # age_categories
+        I_vec = [ y[params.I_ind+i*params.number_compartments] for i in range(age_categories)]
+
+        A_vec = [ y[params.A_ind+i*params.number_compartments] for i in range(age_categories)]
+
 
         if t > control_time[0] and t < control_time[1]: # control in place
             control_factor = beta_factor
@@ -30,17 +33,21 @@ class simulator:
 
         for i in range(age_categories): # age_categories
             # S
-            dydt[params.S_ind + i*params.number_compartments] = - y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec)) 
+            dydt[params.S_ind + i*params.number_compartments] = - y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + np.dot(infection_matrix[i,:],A_vec)) 
             # E
-            dydt[params.E_ind + i*params.number_compartments] = ( y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec))
+            dydt[params.E_ind + i*params.number_compartments] = ( y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + np.dot(infection_matrix[i,:],A_vec))
                                                                 - params.latent_rate * y[params.E_ind + i*params.number_compartments])
             # I
-            dydt[params.I_ind + i*params.number_compartments] = (params.latent_rate * y[params.E_ind + i*params.number_compartments] - 
+            dydt[params.I_ind + i*params.number_compartments] = (params.latent_rate * (1-params.asympt_prop) * y[params.E_ind + i*params.number_compartments] - 
                                                                   params.removal_rate * y[params.I_ind + i*params.number_compartments])
+            # A
+            dydt[params.A_ind + i*params.number_compartments] = (params.latent_rate * params.asympt_prop * y[params.E_ind + i*params.number_compartments] - 
+                                                                  params.removal_rate * y[params.A_ind + i*params.number_compartments])
             # R
             dydt[params.R_ind + i*params.number_compartments] = (params.removal_rate * (1 - hospital_prob[i]) * y[params.I_ind + i*params.number_compartments] +
-                                                                  params.hosp_rate * (1 - critical_prob[i]) * y[params.H_ind + i*params.number_compartments] + 
-                                                                  params.death_rate * (1 - params.death_prob) * y[params.C_ind + i*params.number_compartments])
+                                                                 params.removal_rate * y[params.A_ind + i*params.number_compartments] +
+                                                                 params.hosp_rate * (1 - critical_prob[i]) * y[params.H_ind + i*params.number_compartments] + 
+                                                                 params.death_rate * (1 - params.death_prob) * y[params.C_ind + i*params.number_compartments])
             # H
             dydt[params.H_ind + i*params.number_compartments] = (params.removal_rate * (hospital_prob[i]) * y[params.I_ind + i*params.number_compartments] -
                                                                   params.hosp_rate * y[params.H_ind + i*params.number_compartments])
@@ -58,6 +65,7 @@ class simulator:
         
         E0 = 0
         I0 = 1/population
+        A0 = 1/population
         R0 = 0
         H0 = 0
         C0 = 0
@@ -75,6 +83,7 @@ class simulator:
             y0[params.S_ind + i*params.number_compartments] = (population_vector[i]/100)*S0
             y0[params.E_ind + i*params.number_compartments] = (population_vector[i]/100)*E0
             y0[params.I_ind + i*params.number_compartments] = (population_vector[i]/100)*I0
+            y0[params.A_ind + i*params.number_compartments] = (population_vector[i]/100)*A0
             y0[params.R_ind + i*params.number_compartments] = (population_vector[i]/100)*R0
             y0[params.H_ind + i*params.number_compartments] = (population_vector[i]/100)*H0
             y0[params.C_ind + i*params.number_compartments] = (population_vector[i]/100)*C0

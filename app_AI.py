@@ -19,6 +19,7 @@ import datetime
 import json
 ########################################################################################################################
 
+# print(example_population_frame)
 # external_stylesheets = 'https://codepen.io/chriddyp/pen/bWLwgP.css'
 tab_label_color = 'black' # "#00AEF9"
 external_stylesheets = dbc.themes.SPACELAB
@@ -71,6 +72,7 @@ control_data = parameter_csv[parameter_csv['Type']=='Control']
 longname = {'S': 'Susceptible',
         'E': 'Exposed',
         'I': 'Infected',
+        'A': 'Asymptomatically Infected',
         'R': 'Recovered (cumulative)',
         'H': 'Hospitalised',
         'C': 'Critical',
@@ -80,6 +82,7 @@ longname = {'S': 'Susceptible',
 shortname = {'S': 'Sus.',
         'E': 'Exp.',
         'I': 'Inf.',
+        'A': 'Asym.',
         'R': 'Rec. (cumulative)',
         'H': 'Hosp.',
         'C': 'Crit.',
@@ -89,6 +92,7 @@ shortname = {'S': 'Sus.',
 fill_colours = {'S': 'rgba(0,0,255,0.01)', #'blue',
                 'E': 'rgba(255,150,255,0.01)', #'pink',
                 'I': 'rgba(255,150,50,0.01)', #'orange',
+                'A': 'rgba(255,50,50,0.01)', #'dunno',
                 'R': 'rgba(0,255,0,0.01)', #'green',
                 'H': 'rgba(255,0,0,0.01)', #'red',
                 'C': 'rgba(50,50,50,0.01)', #'black',
@@ -99,6 +103,7 @@ fill_colours = {'S': 'rgba(0,0,255,0.01)', #'blue',
 colours = {'S': 'blue',
            'E': 'pink',
            'I': 'orange',
+           'A': 'maroon',
            'R': 'green',
            'H': 'red',
            'C': 'black',
@@ -108,6 +113,7 @@ colours = {'S': 'blue',
 index = {'S': params.S_ind,
         'E': params.E_ind,
         'I': params.I_ind,
+        'A': params.A_ind,
         'R': params.R_ind,
         'H': params.H_ind,
         'C': params.C_ind,

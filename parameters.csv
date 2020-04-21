@@ -7,11 +7,12 @@ Control name 3,0.5,,Control,Effect on infection rate,
 R0,3,,Model Parameter,,Low
 R0,4,,Model Parameter,,Medium
 R0,5,,Model Parameter,,High
-latent_period,2,Days,Model Parameter,Time to become infectious,
-removal_period,5,Days,Model Parameter,Time infectious,
-hosp_period,8,Days,Model Parameter,Time stay in hosp,
-death_period,2,Days,Model Parameter,Time to die after getting to critical condition,without ICU
-death_prob,1,,Model Parameter,,without ICU
+latent period,2,Days,Model Parameter,Time to become infectious,
+removal period,5,Days,Model Parameter,Time infectious,
+asymptomatic proportion,0.5,,Model Parameter,Proportion without symptoms,
+hosp period,8,Days,Model Parameter,Time stay in hosp,
+death period,2,Days,Model Parameter,Time to die after getting to critical condition,without ICU
+death prob,1,,Model Parameter,,without ICU
 death_period_with_ICU,8,Days,Model Parameter,,with ICU - not yet factored in
 death_prob_with_ICU,0.5,,Model Parameter,,with ICU - not yet factored in
-number_compartments,7,,Model Parameter,"S,E,I,R,H,C,D",
+number_compartments,8,,Model Parameter,"S,E,I,A,R,H,C,D",
