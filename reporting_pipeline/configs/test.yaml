@@ -1,0 +1,20 @@
+# Use this config file as a template for creating model runs
+# Naming convention should follow this: modellingscenariodescription_modelbeingused, e.g. baseline_deterministic
+
+# specify the input population parameter location
+population_parameters: './pupulation_parameters/test.py'
+
+# specify the model parameter location
+model_parameters: './model_parameters/test.py'
+
+# specify the model that is being chosen
+model_choice: 'deterministic' 
+
+# specify the intervention strategy
+intervention_strategy: null 
+
+# specify the output folder
+output_location: null
+
+
+
