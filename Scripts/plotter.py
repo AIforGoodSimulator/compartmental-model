@@ -1,6 +1,6 @@
 import numpy as np
 from math import ceil, floor
-from parameters_cov_AI import params
+from initialise_parameters import params
 import plotly.graph_objects as go
 
 

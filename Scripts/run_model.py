@@ -8,12 +8,12 @@ from flask import Flask
 from gevent.pywsgi import WSGIServer
 import pandas as pd
 from math import floor, ceil, exp
-from parameters_cov_AI import params, parameter_csv, preparePopulationFrame, control_data
+from initialise_parameters import params, parameter_csv, preparePopulationFrame, control_data
 import numpy as np
 import plotly.graph_objects as go
 # from plotly.validators.scatter.marker import SymbolValidator
 import copy
-from cov_functions_AI import simulator
+from functions import simulator
 import flask
 import datetime
 import json
@@ -87,7 +87,7 @@ sols, upper_lower_bounds, y_median =find_sol2(preset, timings, camp) # returns s
 
 
 cats = ['A','I','D'] # categories to plot
-cats2 = 'A' # categories to plot in final 3 plots
+cats2 = 'D' # categories to plot in final 3 plots
 
 
 population_frame, population = preparePopulationFrame(camp)

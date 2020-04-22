@@ -8,12 +8,11 @@ from flask import Flask
 from gevent.pywsgi import WSGIServer
 import pandas as pd
 from math import floor, ceil, exp
-from parameters_cov_AI import params, parameter_csv, example_population_frame, preparePopulationFrame, control_data
+from initialise_parameters import params, parameter_csv, example_population_frame, preparePopulationFrame, control_data
 import numpy as np
 import plotly.graph_objects as go
-# from plotly.validators.scatter.marker import SymbolValidator
 import copy
-from cov_functions_AI import simulator
+from functions import simulator
 import flask
 import datetime
 import json

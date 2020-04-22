@@ -1,4 +1,4 @@
-from parameters_cov_AI import params
+from initialise_parameters import params
 from math import exp, ceil, log, floor, sqrt
 import numpy as np
 from scipy.integrate import ode
