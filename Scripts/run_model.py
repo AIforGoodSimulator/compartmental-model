@@ -4,37 +4,47 @@ from math import floor, ceil, exp
 from initialise_parameters import params, parameter_csv # , preparePopulationFrame, control_data
 import numpy as np
 import plotly.graph_objects as go
-from functions import simulator, simulate_range_of_R0s, object_dump
+from functions import simulator, simulate_range_of_R0s, object_dump, generate_csv
 from plotter import categories, figure_generator, age_structure_plot, stacked_bar_plot
 from config import control_type, camp, timings, population_frame, population
 import pickle
 import os
+cwd = os.getcwd()
 
-
+##----------------------------------------------------------------
 # load a saved solution?
 load = True
 # save generated solution? Only generates new if not loading old
+# saves as a python pickle object
 save = True
+save_csv = True
 
-solution_name   = 'saved_runs/Solution_%s_%s_%s_%s'    %(control_type,timings[0],timings[1],camp)
-percentile_name = 'saved_runs/Percentiles_%s_%s_%s_%s' %(control_type,timings[0],timings[1],camp)  
+##----------------------------------------------------------------
+solution_name   = 'Solution_%s_%s_%s_%s'    %(camp,timings[0],timings[1],control_type)
+percentile_name = 'Percentiles_%s_%s_%s_%s' %(camp,timings[0],timings[1],control_type)  
 
-already_exists_soln       = os.path.isfile(solution_name)
-already_exists_percentile = os.path.isfile(percentile_name)
+already_exists_soln       = os.path.isfile(os.path.join(cwd,'saved_runs/' + solution_name))
+already_exists_percentile = os.path.isfile(os.path.join(cwd,'saved_runs/' + percentile_name))
 
 
 
 if not load or not (already_exists_soln and already_exists_percentile): # generate solution if not wanting to load, or if wanting to load but at least one file missing
     # run model - change inputs via 'config.py'
-    sols, percentiles =simulate_range_of_R0s(control_type, timings, camp, population_frame, population) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
+    sols, percentiles =simulate_range_of_R0s(control_type, timings, population_frame, population) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
     if save:
-        object_dump(solution_name  ,  sols)
-        object_dump(percentile_name,  percentiles)
+        object_dump('saved_runs/' + solution_name  ,  sols)
+        object_dump('saved_runs/' + percentile_name,  percentiles)
 else:
-    sols        = pickle.load(open(solution_name, 'rb'))
-    percentiles = pickle.load(open(percentile_name, 'rb'))
+    sols        = pickle.load(open('saved_runs/' + solution_name, 'rb'))
+    percentiles = pickle.load(open('saved_runs/' + percentile_name, 'rb'))
 
 
+# example of generating csv (currently for middle R0 value)
+# might also want to do save specific percentiles
+# might want to include all age structure info (as currently is)
+# or might want to just sum over all age classes to get a total
+if save_csv:
+    generate_csv(sols,population_frame,'middle_R0_'+solution_name)
 
 ## ----------------------------------------------------------------------------------------
 # plots - change outputs via these below

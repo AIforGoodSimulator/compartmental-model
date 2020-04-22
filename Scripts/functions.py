@@ -8,6 +8,9 @@ import statistics
 from plotter import categories
 import os
 import pickle
+cwd = os.getcwd()
+
+
 ##
 # -----------------------------------------------------------------------------------
 ##
@@ -99,7 +102,7 @@ class simulator:
 
         sol = ode(self.ode_system,jac=None).set_integrator('dopri5').set_f_params(infection_matrix,age_categories,hospital_prob,critical_prob,control_time,beta,beta_factor)
         
-        tim = np.linspace(0,T_stop, 301) # use 141 time values
+        tim = np.linspace(0,T_stop, T_stop+1) # 1 time value per day
         
         sol.set_initial_value(y0,tim[0])
 
@@ -120,19 +123,16 @@ class simulator:
 #--------------------------------------------------------------------
 
 
-# print(simulator().run_model(200))
 
 
 
 
-def simulate_range_of_R0s(preset,timings,camp,population_frame, population): # gives solution as well as upper and lower bounds
+def simulate_range_of_R0s(preset,timings,population_frame, population): # gives solution as well as upper and lower bounds
     
     t_stop = 200
 
     beta_factor = np.float(control_data.Value[control_data.Name==preset])
 
-    # population_frame, population = preparePopulationFrame(camp)
-    
     infection_matrix = np.ones((population_frame.shape[0],population_frame.shape[0]))
     beta_list = np.linspace(params.beta_list[0],params.beta_list[2],20)
     sols = []
@@ -147,14 +147,12 @@ def simulate_range_of_R0s(preset,timings,camp,population_frame, population): # g
         for name in categories.keys():
             sol['y'] = np.asarray(sol['y'])
 
-            # print(name,categories[name]['index'])
             y_plot[categories[name]['index'],k,:] = sol['y'][categories[name]['index'],:]
             for i in range(1, population_frame.shape[0]): # age_categories
                 y_plot[categories[name]['index'],k,:] = y_plot[categories[name]['index'],k,:] + sol['y'][categories[name]['index'] + i*params.number_compartments,:]
 
 
     y_L95, y_U95, y_LQ, y_UQ, y_median = [np.zeros((params.number_compartments,n_time_points)) for i in range(5)]
-    # y_max = np.zeros((params.number_compartments,n_time_points))
 
     for name in categories.keys():
         y_L95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],2.5) for i in range(n_time_points) ])
@@ -164,8 +162,6 @@ def simulate_range_of_R0s(preset,timings,camp,population_frame, population): # g
         
         y_median[categories[name]['index'],:] = np.asarray([statistics.median(y_plot[categories[name]['index'],:,i]) for i in range(n_time_points) ])
 
-        # y_min[categories[name]['index'],:] = [min(y_plot[categories[name]['index'],:,i]) for i in range(n_time_points)]
-        # y_max[categories[name]['index'],:] = [max(y_plot[categories[name]['index'],:,i]) for i in range(n_time_points)]
 
     sols_out = []
     sols_out.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=params.beta_list[1],beta_factor=beta_factor))
@@ -179,7 +175,7 @@ def object_dump(file_name,object_to_dump):
     # check if file path exists - if not create
     outdir =  os.path.dirname(file_name)
     if not os.path.exists(outdir):
-        os.makedirs(outdir,exist_ok=True) 
+        os.makedirs(os.path.join(cwd,outdir),exist_ok=True) 
     
     with open(file_name, 'wb') as handle:
         pickle.dump(object_to_dump,handle,protocol=pickle.HIGHEST_PROTOCOL) # protocol?
@@ -188,3 +184,35 @@ def object_dump(file_name,object_to_dump):
 
 
 
+
+def generate_csv(sols,population_frame,filename):
+    csv_sol = np.transpose(sols[0]['y'])
+
+    solution_csv = pd.DataFrame(csv_sol)
+
+
+    category_map = {    '0': 'S',
+                        '1': 'E',
+                        '2': 'I',
+                        '3': 'A',
+                        '4': 'R',
+                        '5': 'H',
+                        '6': 'C',
+                        '7': 'D'}
+
+    col_names = []
+    for i in range(csv_sol.shape[1]):
+        ii = i % 8
+        jj = floor(i/8)
+        
+        col_names.append(categories[category_map[str(ii)]]['longname'] +  ': ' + str(np.asarray(population_frame.Age)[jj]) )
+
+    solution_csv.columns = col_names
+    solution_csv['Time'] = sols[0]['t']
+    # this is our dataframe to be saved
+
+    # save it
+    solution_csv.to_csv('CSV_output/' + filename + '.csv' )
+
+
+    return None
