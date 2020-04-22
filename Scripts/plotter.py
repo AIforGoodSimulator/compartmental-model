@@ -73,7 +73,7 @@ def human_format(num,dp=0):
 
 # fill_cols = ['rgba(50,50,50,0.2)','rgba(50,50,50,0.2)','rgba(50,50,50,0.2)','rgba(50,0,0,0.4)']
 ########################################################################################################################
-def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_time,no_control,confidence_range=None,y_median=None):
+def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_time,no_control,confidence_range=None):
 
     # population_plot = params.population
     if len(cats_to_plot)==0:
@@ -93,7 +93,7 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
             if name in cats_to_plot:
                 ii = 0
                 
-                for yy in confidence_range:
+                for yy in confidence_range[:-1]:
                     if ii == 0:
                         fill = None
                     else:
@@ -124,7 +124,7 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
                             }
                     lines_to_plot.append(line)
 
-    if y_median is None:
+    if confidence_range is None:
         for sol in sols:
             for name in categories.keys():
                 if name in cats_to_plot:
@@ -149,7 +149,7 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
     else:
         for name in categories.keys():
                 if name in cats_to_plot:
-                    y_plot = 100*y_median[categories[name]['index'],:]
+                    y_plot = 100*confidence_range[-1][categories[name]['index'],:]
                     
                     line =  {'x': xx, 'y': y_plot,
                             'hovertemplate': '%{y:.2f}%, %{text}',
