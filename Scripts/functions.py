@@ -6,6 +6,8 @@ from scipy.stats import norm, gamma
 import pandas as pd
 import statistics
 from plotter import categories
+import os
+import pickle
 ##
 # -----------------------------------------------------------------------------------
 ##
@@ -169,5 +171,20 @@ def simulate_range_of_R0s(preset,timings,camp,population_frame, population): # g
     sols_out.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=params.beta_list[1],beta_factor=beta_factor))
     
     return sols_out, [y_U95, y_UQ, y_LQ, y_L95, y_median] 
+
+
+
+
+def object_dump(file_name,object_to_dump):
+    # check if file path exists - if not create
+    outdir =  os.path.dirname(file_name)
+    if not os.path.exists(outdir):
+        os.makedirs(outdir,exist_ok=True) 
+    
+    with open(file_name, 'wb') as handle:
+        pickle.dump(object_to_dump,handle,protocol=pickle.HIGHEST_PROTOCOL) # protocol?
+
+    return None
+
 
 

@@ -4,14 +4,35 @@ from math import floor, ceil, exp
 from initialise_parameters import params, parameter_csv # , preparePopulationFrame, control_data
 import numpy as np
 import plotly.graph_objects as go
-from functions import simulator, simulate_range_of_R0s
+from functions import simulator, simulate_range_of_R0s, object_dump
 from plotter import categories, figure_generator, age_structure_plot, stacked_bar_plot
 from config import control_type, camp, timings, population_frame, population
+import pickle
+import os
+
+
+# load a saved solution?
+load = True
+# save generated solution? Only generates new if not loading old
+save = True
+
+solution_name   = 'saved_runs/Solution_%s_%s_%s_%s'    %(control_type,timings[0],timings[1],camp)
+percentile_name = 'saved_runs/Percentiles_%s_%s_%s_%s' %(control_type,timings[0],timings[1],camp)  
+
+already_exists_soln       = os.path.isfile(solution_name)
+already_exists_percentile = os.path.isfile(percentile_name)
 
 
 
-# run model - change inputs via 'config.py'
-sols, percentiles =simulate_range_of_R0s(control_type, timings, camp, population_frame, population) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
+if not load or not (already_exists_soln and already_exists_percentile): # generate solution if not wanting to load, or if wanting to load but at least one file missing
+    # run model - change inputs via 'config.py'
+    sols, percentiles =simulate_range_of_R0s(control_type, timings, camp, population_frame, population) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
+    if save:
+        object_dump(solution_name  ,  sols)
+        object_dump(percentile_name,  percentiles)
+else:
+    sols        = pickle.load(open(solution_name, 'rb'))
+    percentiles = pickle.load(open(percentile_name, 'rb'))
 
 
 
@@ -19,8 +40,6 @@ sols, percentiles =simulate_range_of_R0s(control_type, timings, camp, population
 # plots - change outputs via these below
 multiple_categories_to_plot    = ['A','I','D'] # categories to plot
 single_category_to_plot        = 'H'           # categories to plot in final 3 plots
-
-
 
 no_control = False
 if control_type=='No control':
