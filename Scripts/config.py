@@ -1,4 +1,4 @@
-from initialise_parameters import params, parameter_csv, preparePopulationFrame, control_data
+from initialise_parameters import preparePopulationFrame
 
 control_type = 'No control'
 camp = 'Camp_2'
