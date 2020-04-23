@@ -185,31 +185,68 @@ def object_dump(file_name,object_to_dump):
 
 
 
-def generate_csv(sols,population_frame,filename):
-    csv_sol = np.transpose(sols[0]['y'])
+def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec=None):
+    if input_type=='percentile':
+        csv_sol = np.transpose(data_to_save)
 
-    solution_csv = pd.DataFrame(csv_sol)
+        solution_csv = pd.DataFrame(csv_sol)
 
 
-    category_map = {    '0': 'S',
-                        '1': 'E',
-                        '2': 'I',
-                        '3': 'A',
-                        '4': 'R',
-                        '5': 'H',
-                        '6': 'C',
-                        '7': 'D'}
+        category_map = {    '0': 'S',
+                            '1': 'E',
+                            '2': 'I',
+                            '3': 'A',
+                            '4': 'R',
+                            '5': 'H',
+                            '6': 'C',
+                            '7': 'D'}
 
-    col_names = []
-    for i in range(csv_sol.shape[1]):
-        ii = i % 8
-        jj = floor(i/8)
-        
-        col_names.append(categories[category_map[str(ii)]]['longname'] +  ': ' + str(np.asarray(population_frame.Age)[jj]) )
+        col_names = []
+        for i in range(csv_sol.shape[1]):
+            ii = i % 8
+            # jj = floor(i/8)
+            col_names.append(categories[category_map[str(ii)]]['longname'])
+            
 
-    solution_csv.columns = col_names
-    solution_csv['Time'] = sols[0]['t']
-    # this is our dataframe to be saved
+        solution_csv.columns = col_names
+        solution_csv['Time'] = time_vec
+        # this is our dataframe to be saved
+
+
+    else:
+        csv_sol = np.transpose(data_to_save[0]['y'])
+
+        solution_csv = pd.DataFrame(csv_sol)
+
+
+        category_map = {    '0': 'S',
+                            '1': 'E',
+                            '2': 'I',
+                            '3': 'A',
+                            '4': 'R',
+                            '5': 'H',
+                            '6': 'C',
+                            '7': 'D'}
+
+        col_names = []
+        number_categories_with_age = csv_sol.shape[1]
+        for i in range(number_categories_with_age):
+            ii = i % params.number_compartments
+            jj = floor(i/params.number_compartments)
+            
+            col_names.append(categories[category_map[str(ii)]]['longname'] +  ': ' + str(np.asarray(population_frame.Age)[jj]) )
+
+        solution_csv.columns = col_names
+        solution_csv['Time'] = data_to_save[0]['t']
+        # this is our dataframe to be saved
+        for j in range(params.number_compartments):
+            indices = []
+            for i in range(floor(number_categories_with_age/params.number_compartments)):
+                indices.append(params.number_compartments*i+j)
+            
+            solution_csv[categories[category_map[str(j)]]['longname']] = solution_csv.iloc[:,indices].sum(axis=1)
+            # print()
+
 
     # save it
     solution_csv.to_csv('CSV_output/' + filename + '.csv' )

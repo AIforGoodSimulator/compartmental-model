@@ -44,7 +44,20 @@ else:
 # might want to include all age structure info (as currently is)
 # or might want to just sum over all age classes to get a total
 if save_csv:
-    generate_csv(sols,population_frame,'middle_R0_'+solution_name)
+    U95 = percentiles[0]
+    L95 = percentiles[3]
+    median = percentiles[4]
+    # print(median.shape)
+    # print(sols)
+    
+    generate_csv(median,population_frame,'median_'+solution_name,input_type='percentile',time_vec=sols[0]['t'])
+    generate_csv(L95,population_frame,'L95_'+solution_name,input_type='percentile',time_vec=sols[0]['t'])
+    generate_csv(U95,population_frame,'U95_'+solution_name,input_type='percentile',time_vec=sols[0]['t'])
+
+
+
+
+    generate_csv(sols,population_frame,'middle_R0_'+solution_name,input_type='solution')
 
 ## ----------------------------------------------------------------------------------------
 # plots - change outputs via these below
