@@ -19,6 +19,22 @@ import json
 from plotter import categories, figure_generator, age_structure_plot, stacked_bar_plot
 ########################################################################################################################
 
+
+# for now, have stopped updating since likely to use another front end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # print(example_population_frame)
 # external_stylesheets = 'https://codepen.io/chriddyp/pen/bWLwgP.css'
 tab_label_color = 'black' # "#00AEF9"

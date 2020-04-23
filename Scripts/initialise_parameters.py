@@ -109,7 +109,7 @@ params = Parameters()
 
 
 
-calculated_cats = ['S',
+calculated_categories = ['S',
         'E',
         'I',
         'A',
@@ -126,7 +126,7 @@ longname = {'S': 'Susceptible',
         'H': 'Hospitalised',
         'C': 'Critical',
         'D': 'Deaths',
-        'NI': 'New Infections',
+        'NE': 'New Exposure',
         'ND': 'New Deaths'
 }
 
@@ -138,20 +138,20 @@ shortname = {'S': 'Sus.',
         'H': 'Hosp.',
         'C': 'Crit.',
         'D': 'Deaths',
-        'NI': 'New Inf.',
+        'NE': 'New Inf.',
         'ND': 'New Deaths'
 }
 
 colour = {'S': 'rgb(0,0,255)', #'blue',
-                'E': 'rgb(255,150,255)', #'pink',
-                'I': 'rgb(255,150,50)', #'orange',
-                'A': 'rgb(255,50,50)', #'dunno',
-                'R': 'rgb(0,255,0)', #'green',
-                'H': 'rgb(255,0,0)', #'red',
-                'C': 'rgb(50,50,50)', #'black',
-                'D': 'rgb(130,0,255)', #'purple',
-                'NI': 'rgb(255,150,50)', #'orange',
-                'ND': 'rgb(130,0,255)', #'purple',
+          'E': 'rgb(255,150,255)', #'pink',
+          'I': 'rgb(255,150,50)', #'orange',
+          'A': 'rgb(255,50,50)', #'dunno',
+          'R': 'rgb(0,255,0)', #'green',
+          'H': 'rgb(255,0,0)', #'red',
+          'C': 'rgb(50,50,50)', #'black',
+          'D': 'rgb(130,0,255)', #'purple',
+          'NE': 'rgb(255,125,100)', #
+          'ND': 'rgb(150,50,150)', #
         }
 
 index = {'S': params.S_ind,
@@ -162,8 +162,8 @@ index = {'S': params.S_ind,
         'H': params.H_ind,
         'C': params.C_ind,
         'D': params.D_ind,
-        'NI': None,
-        'ND': None
+        'NE': 8,
+        'ND': 9
         }
 
 categories = {}

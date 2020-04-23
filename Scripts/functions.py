@@ -1,4 +1,4 @@
-from initialise_parameters import params, control_data, categories, calculated_cats
+from initialise_parameters import params, control_data, categories, calculated_categories
 from math import exp, ceil, log, floor, sqrt
 import numpy as np
 from scipy.integrate import ode
@@ -140,27 +140,29 @@ def simulate_range_of_R0s(preset,timings,population_frame, population): # gives 
 
     n_time_points = len(sols[0]['t'])
 
-    y_plot = np.zeros((len(calculated_cats), len(sols) , n_time_points ))
+    y_plot = np.zeros((len(categories.keys()), len(sols) , n_time_points ))
 
     for k, sol in enumerate(sols):
-        for name in calculated_cats:
-            sol['y'] = np.asarray(sol['y'])
+        sol['y'] = np.asarray(sol['y'])
+        for name in calculated_categories:
 
             y_plot[categories[name]['index'],k,:] = sol['y'][categories[name]['index'],:]
             for i in range(1, population_frame.shape[0]): # age_categories
                 y_plot[categories[name]['index'],k,:] = y_plot[categories[name]['index'],k,:] + sol['y'][categories[name]['index'] + i*params.number_compartments,:]
+        y_plot[categories['ND']['index'],k,:] = np.concatenate([[0],np.diff(y_plot[categories['D']['index'],k,:])])
 
+        yy = np.diff(y_plot[categories['S']['index'],k,:])
+        y_plot[categories['NE']['index'],k,:] = np.asarray(np.concatenate([[0],[-y for y in yy]]))
 
-    y_L95, y_U95, y_LQ, y_UQ, y_median = [np.zeros((params.number_compartments,n_time_points)) for i in range(5)]
+    y_L95, y_U95, y_LQ, y_UQ, y_median = [np.zeros((len(categories.keys()),n_time_points)) for i in range(5)]
 
-    for name in calculated_cats:
+    for name in categories.keys():
         y_L95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],2.5) for i in range(n_time_points) ])
         y_LQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],25) for i in range(n_time_points) ])
         y_UQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],75) for i in range(n_time_points) ])
         y_U95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],97.5) for i in range(n_time_points) ])
         
         y_median[categories[name]['index'],:] = np.asarray([statistics.median(y_plot[categories[name]['index'],:,i]) for i in range(n_time_points) ])
-
 
     sols_out = []
     sols_out.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=params.beta_list[1],beta_factor=beta_factor))
@@ -252,3 +254,21 @@ def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec
 
 
     return None
+
+
+def daily(yy,population_frame,name_plot):
+    if name_plot=='NE':
+        name_use = 'S' # measure new infections by people leaving susceptible category and become exposed
+    else:
+        name_use = name_plot[-1]
+
+    y_plot = 100*yy[categories[name_use]['index'],:]
+    for i in range(1, population_frame.shape[0]): # age_categories
+        y_plot = y_plot + 100*yy[categories[name_use]['index']+ i*params.number_compartments,:]
+
+    y_plot = np.diff(y_plot)    # daily change
+    if name_plot=='NE':
+        y_plot = np.asarray([-yy for yy in y_plot])
+
+    y_plot = np.concatenate([[0],y_plot])
+    return y_plot

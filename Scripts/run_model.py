@@ -13,10 +13,10 @@ cwd = os.getcwd()
 
 ##----------------------------------------------------------------
 # load a saved solution?
-load = True
+load = False
 # save generated solution? Only generates new if not loading old
 # saves as a python pickle object
-save = True
+save = False
 save_csv = True
 
 ##----------------------------------------------------------------
@@ -61,8 +61,8 @@ if save_csv:
 
 ## ----------------------------------------------------------------------------------------
 # plots - change outputs via these below
-multiple_categories_to_plot    = ['A','I','D'] # categories to plot
-single_category_to_plot        = 'H'           # categories to plot in final 3 plots
+multiple_categories_to_plot    = ['D','ND','NE','E'] # categories to plot
+single_category_to_plot        = 'NE'           # categories to plot in final 3 plots
 
 no_control = False
 if control_type=='No control':
@@ -70,20 +70,21 @@ if control_type=='No control':
 
 # plot graphs
 fig_multi_lines   = go.Figure(  figure_generator(sols,multiple_categories_to_plot,population,population_frame,timings,no_control))   # plot with lots of lines
-fig_age_structure    = go.Figure(age_structure_plot(sols,single_category_to_plot,    population,population_frame,timings,no_control))   # age structure
-fig_bar_chart     = go.Figure(  stacked_bar_plot(sols,single_category_to_plot,    population,population_frame))                      # bar chart (age structure)
+# fig_age_structure    = go.Figure(age_structure_plot(sols,single_category_to_plot,    population,population_frame,timings,no_control))   # age structure
+# fig_bar_chart     = go.Figure(  stacked_bar_plot(sols,single_category_to_plot,    population,population_frame))                      # bar chart (age structure)
 fig_uncertainty   = go.Figure(  uncertainty_plot(sols,single_category_to_plot,    population,population_frame,timings,no_control,percentiles)) # uncertainty
 
 
 # view
 fig_multi_lines.show()
-fig_age_structure.show()
-fig_bar_chart.show()
+# fig_age_structure.show()
+# fig_bar_chart.show()
 fig_uncertainty.show()
 
 
 # save
-fig_multi_lines.write_image("Figs/Disease_progress_%s.png" % camp)
-fig_age_structure.write_image("Figs/Age_structure_%s_%s.png" %(camp,categories[single_category_to_plot]['longname']))
-fig_bar_chart.write_image("Figs/Age_structure_(bar_chart)_%s_%s.png" %(camp,categories[single_category_to_plot]['longname']))
-fig_uncertainty.write_image("Figs/Uncertainty_%s_%s.png" %(camp,categories[single_category_to_plot]['longname']))
+if save:
+    fig_multi_lines.write_image("Figs/Disease_progress_%s.png" % camp)
+    # fig_age_structure.write_image("Figs/Age_structure_%s_%s.png" %(camp,categories[single_category_to_plot]['longname']))
+    # fig_bar_chart.write_image("Figs/Age_structure_(bar_chart)_%s_%s.png" %(camp,categories[single_category_to_plot]['longname']))
+    # fig_uncertainty.write_image("Figs/Uncertainty_%s_%s.png" %(camp,categories[single_category_to_plot]['longname']))

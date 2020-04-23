@@ -1,22 +1,19 @@
 import numpy as np
 from math import ceil, floor
-from initialise_parameters import params, categories, calculated_cats
+from initialise_parameters import params, categories, calculated_categories
 import plotly.graph_objects as go
+from functions import daily
 
 
 
 
 ########################################################################################################################
-def human_format(num,dp=0):
-    if num<1 and num>=0.1:
-        return '%.2f' % num
-    elif num<0.1:
-        return '%.3f' % num
+def population_format(num,dp=0):
     magnitude = 0
     while abs(num) >= 1000:
         magnitude += 1
         num /= 1000.0
-    if dp==0 and not num/10<1:
+    if dp==0 and not (num/100<1 and magnitude>=1): # unless force to be dp=1... return 0 dp if (K or M or B and number >10)
         return '%.0f%s' % (num, ['', 'K', 'M', 'B'][magnitude])
     else:
         return '%.1f%s' % (num, ['', 'K', 'M', 'B'][magnitude])
@@ -25,7 +22,7 @@ def human_format(num,dp=0):
 
 # fill_cols = ['rgba(50,50,50,0.2)','rgba(50,50,50,0.2)','rgba(50,50,50,0.2)','rgba(50,0,0,0.4)']
 ########################################################################################################################
-def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_time,no_control,confidence_range=None):
+def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_time,no_control):
 
     # population_plot = params.population
     if len(cats_to_plot)==0:
@@ -36,27 +33,31 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
     lines_to_plot = []
 
     xx = sols[0]['t']
-    if confidence_range is None:
-        for sol in sols:
-            for name in categories.keys():
-                if name in cats_to_plot and name in calculated_cats:
-                    sol['y'] = np.asarray(sol['y'])
+
+    for sol in sols:
+        for name in categories.keys():
+            if name in cats_to_plot:
+                sol['y'] = np.asarray(sol['y'])
                     
-                    # xx = sol['t']
+                if name not in calculated_categories:
+                    y_plot = daily(sol['y'],population_frame,name) # gives daily change
+                else:
                     y_plot = 100*sol['y'][categories[name]['index'],:]
                     for i in range(1, population_frame.shape[0]): # age_categories
                         y_plot = y_plot + 100*sol['y'][categories[name]['index']+ i*params.number_compartments,:]
 
 
-                    
-                    line =  {'x': xx, 'y': y_plot,
-                            'hovertemplate': '%{y:.2f}%, %{text}',
-                                            # 'Time: %{x:.1f} days<extra></extra>',
-                            'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
-                            'line': {'color': str(categories[name]['colour'])},
-                            'legendgroup': name,
-                            'name': categories[name]['longname']}
-                    lines_to_plot.append(line)
+                
+
+
+                
+                line =  {'x': xx, 'y': y_plot,
+                        'hovertemplate': '%{y:.2f}%, %{text}',
+                        'text': [population_format(i*population_plot/100) for i in y_plot],
+                        'line': {'color': str(categories[name]['colour'])},
+                        'legendgroup': name,
+                        'name': categories[name]['longname']}
+                lines_to_plot.append(line)
          
          
          
@@ -148,29 +149,29 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
                    hovermode='x',
                    xaxis= dict(
                         title='Days',
-                        showline=False,
+                        
                         automargin=True,
                         hoverformat='.0f',
                    ),
                    yaxis= dict(mirror= True,
                         title='Percentage of Total Population',
                         range= yax['range'],
-                        showline=False,
+                        
                         automargin=True,
                         type = 'linear'
                    ),
                     updatemenus = [dict(
                                             buttons=list([
                                                 dict(
-                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True, 'showline':False},
-                                                    "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True, 'showline':False,'side':'right'}
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True},
+                                                    "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [population_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True,'side':'right'}
                                                     }], # tickformat
                                                     label="Linear",
                                                     method="relayout"
                                                 ),
                                                 dict(
-                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'log', 'range': log_range,'automargin': True, 'showline':False},
-                                                    "yaxis2": {'title': 'Population','type': 'log', 'overlaying': 'y1', 'range': log_range, 'ticktext': [human_format(0.01*vec2[i]) for i in range(len(pop_log_vec))], 'tickvals': [i for i in  pop_log_vec],'automargin': True, 'showline':False,'side':'right'}
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'log', 'range': log_range,'automargin': True},
+                                                    "yaxis2": {'title': 'Population','type': 'log', 'overlaying': 'y1', 'range': log_range, 'ticktext': [population_format(0.01*vec2[i]) for i in range(len(pop_log_vec))], 'tickvals': [i for i in  pop_log_vec],'automargin': True,'side':'right'}
                                                     }], # 'tickformat': yax_form_log,
                                                     label="Logarithmic",
                                                     method="relayout"
@@ -197,10 +198,10 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
                                         yaxis2 = dict(
                                                         title = 'Population',
                                                         overlaying='y1',
-                                                        showline=False,
+                                                        
                                                         range = yax['range'],
                                                         side='right',
-                                                        ticktext = [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))],
+                                                        ticktext = [population_format(0.01*vec[i]) for i in range(len(pop_vec_lin))],
                                                         tickvals = [i for i in  pop_vec_lin],
                                                         automargin=True
                                                     )
@@ -231,10 +232,11 @@ def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,control_
     xx = sols[0]['t']
 
     for name in categories.keys():
-        if name in cats_to_plot and name in calculated_cats:
+        if name == cats_to_plot:
             ii = 0
             
             for yy in confidence_range[:-1]:
+                print(yy.shape)
                 if ii == 0:
                     fill = None
                 else:
@@ -256,7 +258,7 @@ def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,control_
                 line =  {'x': xx, 'y': y_plot,
                         'hovertemplate': '%{y:.2f}%, %{text}, ' + percentiles[ii-1] + ' percentile<extra></extra>',
                                         # 'Time: %{x:.1f} days<extra></extra>',
-                        'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
+                        'text': [population_format(i*population_plot/100) for i in y_plot],
                         'line': {'width': 0, 'color': categories[name]['colour']},
                         'fillcolor': categories[name]['fill_colour'][:-4] + opac,
                         'legendgroup': name + 'fill',
@@ -269,12 +271,12 @@ def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,control_
                 lines_to_plot.append(line)
 
     for name in categories.keys():
-            if name in cats_to_plot and name in calculated_cats:
+            if name == cats_to_plot:
                 y_plot = 100*confidence_range[-1][categories[name]['index'],:]
                 
                 line =  {'x': xx, 'y': y_plot,
                         'hovertemplate': '%{y:.2f}%, %{text}',
-                        'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
+                        'text': [population_format(i*population_plot/100) for i in y_plot],
                         'line': {'color': str(categories[name]['colour'])},
                         'legendgroup': name,
                         'name': categories[name]['longname'] + '; median'}
@@ -368,29 +370,29 @@ def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,control_
                    hovermode='x',
                    xaxis= dict(
                         title='Days',
-                        showline=False,
+                        
                         automargin=True,
                         hoverformat='.0f',
                    ),
                    yaxis= dict(mirror= True,
                         title='Percentage of Total Population',
                         range= yax['range'],
-                        showline=False,
+                        
                         automargin=True,
                         type = 'linear'
                    ),
                     updatemenus = [dict(
                                             buttons=list([
                                                 dict(
-                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True, 'showline':False},
-                                                    "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True, 'showline':False,'side':'right'}
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True},
+                                                    "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [population_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True,'side':'right'}
                                                     }], # tickformat
                                                     label="Linear",
                                                     method="relayout"
                                                 ),
                                                 dict(
-                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'log', 'range': log_range,'automargin': True, 'showline':False},
-                                                    "yaxis2": {'title': 'Population','type': 'log', 'overlaying': 'y1', 'range': log_range, 'ticktext': [human_format(0.01*vec2[i]) for i in range(len(pop_log_vec))], 'tickvals': [i for i in  pop_log_vec],'automargin': True, 'showline':False,'side':'right'}
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'log', 'range': log_range,'automargin': True},
+                                                    "yaxis2": {'title': 'Population','type': 'log', 'overlaying': 'y1', 'range': log_range, 'ticktext': [population_format(0.01*vec2[i]) for i in range(len(pop_log_vec))], 'tickvals': [i for i in  pop_log_vec],'automargin': True,'side':'right'}
                                                     }], # 'tickformat': yax_form_log,
                                                     label="Logarithmic",
                                                     method="relayout"
@@ -417,10 +419,10 @@ def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,control_
                                         yaxis2 = dict(
                                                         title = 'Population',
                                                         overlaying='y1',
-                                                        showline=False,
+                                                        
                                                         range = yax['range'],
                                                         side='right',
-                                                        ticktext = [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))],
+                                                        ticktext = [population_format(0.01*vec[i]) for i in range(len(pop_vec_lin))],
                                                         tickvals = [i for i in  pop_vec_lin],
                                                         automargin=True
                                                     )
@@ -479,7 +481,7 @@ def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,contro
 
                             'hovertemplate': '%{y:.2f}%, ' + '%{text} <br>',# +
                                             # 'Time: %{x:.1f} days<extra></extra>',
-                            'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
+                            'text': [population_format(i*population_plot/100) for i in y_plot],
 
                             'opacity': 0.5,
                             'name': legend_name}
@@ -576,29 +578,29 @@ def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,contro
                    hovermode='x',
                     xaxis= dict(
                         title='Days',
-                        showline=False,
+                        
                         automargin=True,
                         hoverformat='.0f',
                    ),
                    yaxis= dict(mirror= True,
                         title='Percentage of Total Population',
                         range= yax['range'],
-                        showline=False,
+                        
                         automargin=True,
                         type = 'linear'
                    ),
                     updatemenus = [dict(
                                             buttons=list([
                                                 dict(
-                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True, 'showline':False},
-                                                    "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True, 'showline':False,'side':'right'}
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True},
+                                                    "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [population_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True,'side':'right'}
                                                     }], # tickformat
                                                     label="Linear",
                                                     method="relayout"
                                                 ),
                                                 dict(
-                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'log', 'range': log_range,'automargin': True, 'showline':False},
-                                                    "yaxis2": {'title': 'Population','type': 'log', 'overlaying': 'y1', 'range': log_range, 'ticktext': [human_format(0.01*vec2[i]) for i in range(len(pop_log_vec))], 'tickvals': [i for i in  pop_log_vec],'automargin': True, 'showline':False,'side':'right'}
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'log', 'range': log_range,'automargin': True},
+                                                    "yaxis2": {'title': 'Population','type': 'log', 'overlaying': 'y1', 'range': log_range, 'ticktext': [population_format(0.01*vec2[i]) for i in range(len(pop_log_vec))], 'tickvals': [i for i in  pop_log_vec],'automargin': True,'side':'right'}
                                                     }], # 'tickformat': yax_form_log,
                                                     label="Logarithmic",
                                                     method="relayout"
@@ -625,10 +627,10 @@ def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,contro
                                         yaxis2 = dict(
                                                         title = 'Population',
                                                         overlaying='y1',
-                                                        showline=False,
+                                                        
                                                         range = yax['range'],
                                                         side='right',
-                                                        ticktext = [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))],
+                                                        ticktext = [population_format(0.01*vec[i]) for i in range(len(pop_vec_lin))],
                                                         tickvals = [i for i in  pop_vec_lin],
                                                         automargin=True
                                                     )
@@ -671,7 +673,7 @@ def stacked_bar_plot(sols,cats_to_plot,population_plot,population_frame):
 
                             'hovertemplate': '%{y:.2f}%, ' + '%{text} <br>',# +
                                             # 'Time: %{x:.1f} days<extra></extra>',
-                            'text': [human_format(i*population_plot/100,dp=1) for i in y_plot],
+                            'text': [population_format(i*population_plot/100) for i in y_plot],
                             # 'marker_line_width': 0,
                             # 'marker_line_color': 'black',
                             'type': 'bar',
@@ -735,14 +737,14 @@ def stacked_bar_plot(sols,cats_to_plot,population_plot,population_frame):
                    hovermode='x',
                    xaxis= dict(
                         title='Days',
-                        showline=False,
+                        
                         automargin=True,
                         hoverformat='.0f',
                    ),
                    yaxis= dict(mirror= True,
                         title='Percentage of Total Population',
                         range= yax['range'],
-                        showline=False,
+                        
                         automargin=True,
                         type = 'linear'
                    ),
@@ -751,15 +753,15 @@ def stacked_bar_plot(sols,cats_to_plot,population_plot,population_frame):
                     updatemenus = [dict(
                                             buttons=list([
                                                 dict(
-                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True, 'showline':False},
-                                                    "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True, 'showline':False,'side':'right'}
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True},
+                                                    "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [population_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True,'side':'right'}
                                                     }], # tickformat
                                                     label="Linear",
                                                     method="relayout"
                                                 ),
                                                 dict(
-                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'log', 'range': log_range,'automargin': True, 'showline':False},
-                                                    "yaxis2": {'title': 'Population','type': 'log', 'overlaying': 'y1', 'range': log_range, 'ticktext': [human_format(0.01*vec2[i]) for i in range(len(pop_log_vec))], 'tickvals': [i for i in  pop_log_vec],'automargin': True, 'showline':False,'side':'right'}
+                                                    args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'log', 'range': log_range,'automargin': True},
+                                                    "yaxis2": {'title': 'Population','type': 'log', 'overlaying': 'y1', 'range': log_range, 'ticktext': [population_format(0.01*vec2[i]) for i in range(len(pop_log_vec))], 'tickvals': [i for i in  pop_log_vec],'automargin': True,'side':'right'}
                                                     }], # 'tickformat': yax_form_log,
                                                     label="Logarithmic",
                                                     method="relayout"
@@ -786,10 +788,10 @@ def stacked_bar_plot(sols,cats_to_plot,population_plot,population_frame):
                                         yaxis2 = dict(
                                                         title = 'Population',
                                                         overlaying='y1',
-                                                        showline=False,
+                                                        
                                                         range = yax['range'],
                                                         side='right',
-                                                        ticktext = [human_format(0.01*vec[i]) for i in range(len(pop_vec_lin))],
+                                                        ticktext = [population_format(0.01*vec[i]) for i in range(len(pop_vec_lin))],
                                                         tickvals = [i for i in  pop_vec_lin],
                                                         automargin=True
                                                     )
