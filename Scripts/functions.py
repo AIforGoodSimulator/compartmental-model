@@ -1,11 +1,10 @@
-from initialise_parameters import params, control_data
+from initialise_parameters import params, control_data, categories, calculated_cats
 from math import exp, ceil, log, floor, sqrt
 import numpy as np
 from scipy.integrate import ode
 from scipy.stats import norm, gamma
 import pandas as pd
 import statistics
-from plotter import categories
 import os
 import pickle
 cwd = os.getcwd()
@@ -141,10 +140,10 @@ def simulate_range_of_R0s(preset,timings,population_frame, population): # gives 
 
     n_time_points = len(sols[0]['t'])
 
-    y_plot = np.zeros((len(categories.keys()), len(sols) , n_time_points ))
+    y_plot = np.zeros((len(calculated_cats), len(sols) , n_time_points ))
 
     for k, sol in enumerate(sols):
-        for name in categories.keys():
+        for name in calculated_cats:
             sol['y'] = np.asarray(sol['y'])
 
             y_plot[categories[name]['index'],k,:] = sol['y'][categories[name]['index'],:]
@@ -154,7 +153,7 @@ def simulate_range_of_R0s(preset,timings,population_frame, population): # gives 
 
     y_L95, y_U95, y_LQ, y_UQ, y_median = [np.zeros((params.number_compartments,n_time_points)) for i in range(5)]
 
-    for name in categories.keys():
+    for name in calculated_cats:
         y_L95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],2.5) for i in range(n_time_points) ])
         y_LQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],25) for i in range(n_time_points) ])
         y_UQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],75) for i in range(n_time_points) ])

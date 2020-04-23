@@ -106,3 +106,72 @@ class Parameters:
 
 
 params = Parameters()
+
+
+
+calculated_cats = ['S',
+        'E',
+        'I',
+        'A',
+        'R',
+        'H',
+        'C',
+        'D']
+
+longname = {'S': 'Susceptible',
+        'E': 'Exposed',
+        'I': 'Infected (symptomatic)',
+        'A': 'Asymptomatically Infected',
+        'R': 'Recovered',
+        'H': 'Hospitalised',
+        'C': 'Critical',
+        'D': 'Deaths',
+        'NI': 'New Infections',
+        'ND': 'New Deaths'
+}
+
+shortname = {'S': 'Sus.',
+        'E': 'Exp.',
+        'I': 'Inf. (symp.)',
+        'A': 'Asym.',
+        'R': 'Rec.',
+        'H': 'Hosp.',
+        'C': 'Crit.',
+        'D': 'Deaths',
+        'NI': 'New Inf.',
+        'ND': 'New Deaths'
+}
+
+colour = {'S': 'rgb(0,0,255)', #'blue',
+                'E': 'rgb(255,150,255)', #'pink',
+                'I': 'rgb(255,150,50)', #'orange',
+                'A': 'rgb(255,50,50)', #'dunno',
+                'R': 'rgb(0,255,0)', #'green',
+                'H': 'rgb(255,0,0)', #'red',
+                'C': 'rgb(50,50,50)', #'black',
+                'D': 'rgb(130,0,255)', #'purple',
+                'NI': 'rgb(255,150,50)', #'orange',
+                'ND': 'rgb(130,0,255)', #'purple',
+        }
+
+index = {'S': params.S_ind,
+        'E': params.E_ind,
+        'I': params.I_ind,
+        'A': params.A_ind,
+        'R': params.R_ind,
+        'H': params.H_ind,
+        'C': params.C_ind,
+        'D': params.D_ind,
+        'NI': None,
+        'ND': None
+        }
+
+categories = {}
+for key in longname.keys():
+    categories[key] = dict(longname = longname[key],
+                           shortname = shortname[key],
+                           colour = colour[key],
+                           fill_colour = 'rgba' + colour[key][3:-1] + ',0.1)' ,
+                           index = index[key]
+                        )
+
