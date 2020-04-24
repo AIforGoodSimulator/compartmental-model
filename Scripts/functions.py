@@ -20,7 +20,7 @@ class simulator:
 #-----------------------------------------------------------------
         
     ##
-    def ode_system(self,t,y,infection_matrix,age_categories,hospital_prob,critical_prob,control_time,beta,beta_factor):
+    def ode_system(self,t,y,infection_matrix,age_categories,hospital_prob,critical_prob,control_time,beta,beta_factor,taken_offsite_rate,remove_high_risk):
         ##
         dydt = np.zeros(y.shape)
 
@@ -29,37 +29,65 @@ class simulator:
         A_vec = [ y[params.A_ind+i*params.number_compartments] for i in range(age_categories)]
 
 
+        total_I = sum(I_vec)
+
         if t > control_time[0] and t < control_time[1]: # control in place
             control_factor = beta_factor
+            if total_I < taken_offsite_rate: # if total_I too small then can't take this many off site at once
+                taken_offsite_rate = total_I
+            remove_high_risk   = remove_high_risk
+            # else just use taken_offsite_rate
         else:
             control_factor = 1
-            
+            taken_offsite_rate = 0
+            remove_high_risk   = 0
+
         
 
 
+
         for i in range(age_categories): # age_categories
+            move_offsite = taken_offsite_rate * y[params.I_ind + i*params.number_compartments]/total_I
+
+            remove_people = 0
+            if i == age_categories - 1:
+                if y[params.S_ind + i*params.number_compartments]>remove_high_risk:
+                    remove_people = remove_high_risk # only removing high risk (within time control window)
+                else:
+                    remove_people = y[params.S_ind + i*params.number_compartments]
+
+
+                
+
+
             # S
-            dydt[params.S_ind + i*params.number_compartments] = - y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + np.dot(infection_matrix[i,:],A_vec)) 
+            dydt[params.S_ind + i*params.number_compartments] = (- y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + np.dot(infection_matrix[i,:],A_vec)) 
+                                                                    - remove_people)
             # E
             dydt[params.E_ind + i*params.number_compartments] = ( y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + np.dot(infection_matrix[i,:],A_vec))
                                                                 - params.latent_rate * y[params.E_ind + i*params.number_compartments])
             # I
-            dydt[params.I_ind + i*params.number_compartments] = (params.latent_rate * (1-params.asympt_prop) * y[params.E_ind + i*params.number_compartments] - 
-                                                                  params.removal_rate * y[params.I_ind + i*params.number_compartments])
+            dydt[params.I_ind + i*params.number_compartments] = (params.latent_rate * (1-params.asympt_prop) * y[params.E_ind + i*params.number_compartments]
+                                                                  - params.removal_rate * y[params.I_ind + i*params.number_compartments]
+                                                                  - move_offsite
+                                                                  )
             # A
-            dydt[params.A_ind + i*params.number_compartments] = (params.latent_rate * params.asympt_prop * y[params.E_ind + i*params.number_compartments] - 
-                                                                  params.removal_rate * y[params.A_ind + i*params.number_compartments])
+            dydt[params.A_ind + i*params.number_compartments] = (params.latent_rate * params.asympt_prop * y[params.E_ind + i*params.number_compartments]
+                                                                 - params.removal_rate * y[params.A_ind + i*params.number_compartments])
             # R
-            dydt[params.R_ind + i*params.number_compartments] = (params.removal_rate * (1 - hospital_prob[i]) * y[params.I_ind + i*params.number_compartments] +
-                                                                 params.removal_rate * y[params.A_ind + i*params.number_compartments] +
-                                                                 params.hosp_rate * (1 - critical_prob[i]) * y[params.H_ind + i*params.number_compartments] + 
-                                                                 params.death_rate * (1 - params.death_prob) * y[params.C_ind + i*params.number_compartments])
+            dydt[params.R_ind + i*params.number_compartments] = (params.removal_rate * (1 - hospital_prob[i]) * y[params.I_ind + i*params.number_compartments]
+                                                                 + params.removal_rate * y[params.A_ind + i*params.number_compartments]
+                                                                 + params.hosp_rate * (1 - critical_prob[i]) * y[params.H_ind + i*params.number_compartments]
+                                                                 + params.death_rate * (1 - params.death_prob) * y[params.C_ind + i*params.number_compartments]
+                                                                 + move_offsite
+                                                                 + remove_people
+                                                                 )
             # H
-            dydt[params.H_ind + i*params.number_compartments] = (params.removal_rate * (hospital_prob[i]) * y[params.I_ind + i*params.number_compartments] -
-                                                                  params.hosp_rate * y[params.H_ind + i*params.number_compartments])
+            dydt[params.H_ind + i*params.number_compartments] = (params.removal_rate * (hospital_prob[i]) * y[params.I_ind + i*params.number_compartments]
+                                                                 - params.hosp_rate * y[params.H_ind + i*params.number_compartments])
             # C
-            dydt[params.C_ind + i*params.number_compartments] = (params.hosp_rate  * (critical_prob[i]) * y[params.H_ind + i*params.number_compartments] -
-                                                                  params.death_rate * y[params.C_ind + i*params.number_compartments])
+            dydt[params.C_ind + i*params.number_compartments] = (params.hosp_rate  * (critical_prob[i]) * y[params.H_ind + i*params.number_compartments]
+                                                                 - params.death_rate * y[params.C_ind + i*params.number_compartments])
             # D
             dydt[params.D_ind + i*params.number_compartments] = params.death_rate * (params.death_prob) * y[params.C_ind + i*params.number_compartments]
 
@@ -67,7 +95,7 @@ class simulator:
     ##
     #--------------------------------------------------------------------
     ##
-    def run_model(self,T_stop,population,population_frame,infection_matrix,control_time,beta,beta_factor): # ,beta_L_factor,beta_H_factor,t_control,T_stop,vaccine_time,ICU_grow,let_HR_out):
+    def run_model(self,T_stop,population,population_frame,infection_matrix,control_time,beta,beta_factor,taken_offsite_rate,remove_high_risk): # ,beta_L_factor,beta_H_factor,t_control,T_stop,vaccine_time,ICU_grow,let_HR_out):
         
         E0 = 0
         I0 = 1/population
@@ -99,7 +127,10 @@ class simulator:
         hospital_prob = np.asarray(population_frame.p_hospitalised)
         critical_prob = np.asarray(population_frame.p_critical)
 
-        sol = ode(self.ode_system,jac=None).set_integrator('dopri5').set_f_params(infection_matrix,age_categories,hospital_prob,critical_prob,control_time,beta,beta_factor)
+        move_offsite = taken_offsite_rate/population
+        remove_hr    = remove_high_risk/population
+
+        sol = ode(self.ode_system).set_f_params(infection_matrix,age_categories,hospital_prob,critical_prob,control_time,beta,beta_factor,move_offsite,remove_hr)
         
         tim = np.linspace(0,T_stop, T_stop+1) # 1 time value per day
         
@@ -141,7 +172,7 @@ class simulator:
 
 
 
-def simulate_range_of_R0s(preset,timings,population_frame, population): # gives solution as well as upper and lower bounds
+def simulate_range_of_R0s(preset,timings,population_frame, population,taken_offsite_rate,remove_high_risk): # gives solution as well as upper and lower bounds
     
     t_stop = 200
 
@@ -151,7 +182,7 @@ def simulate_range_of_R0s(preset,timings,population_frame, population): # gives 
     beta_list = np.linspace(params.beta_list[0],params.beta_list[2],20)
     sols = []
     for beta in beta_list:
-        sols.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=beta,beta_factor=beta_factor))
+        sols.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=beta,beta_factor=beta_factor,taken_offsite_rate=taken_offsite_rate,remove_high_risk=remove_high_risk))
 
     n_time_points = len(sols[0]['t'])
 
@@ -177,7 +208,7 @@ def simulate_range_of_R0s(preset,timings,population_frame, population): # gives 
         y_median[categories[name]['index'],:] = np.asarray([statistics.median(y_plot[categories[name]['index'],:,i]) for i in range(n_time_points) ])
 
     sols_out = []
-    sols_out.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=params.beta_list[1],beta_factor=beta_factor))
+    sols_out.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=params.beta_list[1],beta_factor=beta_factor,taken_offsite_rate=taken_offsite_rate,remove_high_risk=remove_high_risk))
     
     return sols_out, [y_U95, y_UQ, y_LQ, y_L95, y_median] 
 

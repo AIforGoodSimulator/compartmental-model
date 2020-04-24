@@ -6,17 +6,17 @@ import numpy as np
 import plotly.graph_objects as go
 from functions import simulator, simulate_range_of_R0s, object_dump, generate_csv
 from plotter import figure_generator, age_structure_plot, stacked_bar_plot, uncertainty_plot
-from config import control_type, camp, timings, population_frame, population
+from config import control_type, camp, timings, population_frame, population, taken_offsite_rate, remove_high_risk
 import pickle
 import os
 cwd = os.getcwd()
 
 ##----------------------------------------------------------------
 # load a saved solution?
-load = False
+load = True
 # save generated solution? Only generates new if not loading old
 # saves as a python pickle object
-save = False
+save = True
 save_csv = True
 
 ##----------------------------------------------------------------
@@ -30,7 +30,7 @@ already_exists_percentile = os.path.isfile(os.path.join(cwd,'saved_runs/' + perc
 
 if not load or not (already_exists_soln and already_exists_percentile): # generate solution if not wanting to load, or if wanting to load but at least one file missing
     # run model - change inputs via 'config.py'
-    sols, percentiles =simulate_range_of_R0s(control_type, timings, population_frame, population) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
+    sols, percentiles =simulate_range_of_R0s(control_type, timings, population_frame, population,taken_offsite_rate,remove_high_risk) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
     if save:
         object_dump('saved_runs/' + solution_name  ,  sols)
         object_dump('saved_runs/' + percentile_name,  percentiles)
@@ -61,8 +61,8 @@ if save_csv:
 
 ## ----------------------------------------------------------------------------------------
 # plots - change outputs via these below
-multiple_categories_to_plot    = ['ND'] # categories to plot
-single_category_to_plot        = 'NE'           # categories to plot in final 3 plots
+multiple_categories_to_plot    = ['A','I','D'] # categories to plot
+single_category_to_plot        = 'D'           # categories to plot in final 3 plots
 
 no_control = False
 if control_type=='No control':
@@ -70,14 +70,14 @@ if control_type=='No control':
 
 # plot graphs
 fig_multi_lines   = go.Figure(  figure_generator(sols,multiple_categories_to_plot,population,population_frame,timings,no_control))   # plot with lots of lines
-# fig_age_structure    = go.Figure(age_structure_plot(sols,single_category_to_plot,    population,population_frame,timings,no_control))   # age structure
+fig_age_structure    = go.Figure(age_structure_plot(sols,single_category_to_plot,    population,population_frame,timings,no_control))   # age structure
 # fig_bar_chart     = go.Figure(  stacked_bar_plot(sols,single_category_to_plot,    population,population_frame))                      # bar chart (age structure)
 fig_uncertainty   = go.Figure(  uncertainty_plot(sols,single_category_to_plot,    population,population_frame,timings,no_control,percentiles)) # uncertainty
 
 
 # view
 fig_multi_lines.show()
-# fig_age_structure.show()
+fig_age_structure.show()
 # fig_bar_chart.show()
 fig_uncertainty.show()
 

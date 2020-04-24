@@ -38,7 +38,7 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
         for name in categories.keys():
             if name in cats_to_plot:
                 y_plot = np.asarray(100*sol['y_plot'][categories[name]['index']])
-                    
+                # y_plot = np.asarray(100*sol['y_plot'][categories['A']['index']]) - np.asarray(100*sol['y_plot'][categories['I']['index']])
 
 
                 
