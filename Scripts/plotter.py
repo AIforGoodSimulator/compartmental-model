@@ -1,8 +1,8 @@
 import numpy as np
 from math import ceil, floor
-from initialise_parameters import params, categories, calculated_categories
+from initialise_parameters import params, categories
 import plotly.graph_objects as go
-from functions import daily
+# from functions import daily
 
 
 
@@ -37,17 +37,8 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
     for sol in sols:
         for name in categories.keys():
             if name in cats_to_plot:
-                sol['y'] = np.asarray(sol['y'])
+                y_plot = np.asarray(100*sol['y_plot'][categories[name]['index']])
                     
-                if name not in calculated_categories:
-                    y_plot = daily(sol['y'],population_frame,name) # gives daily change
-                else:
-                    y_plot = 100*sol['y'][categories[name]['index'],:]
-                    for i in range(1, population_frame.shape[0]): # age_categories
-                        y_plot = y_plot + 100*sol['y'][categories[name]['index']+ i*params.number_compartments,:]
-
-
-                
 
 
                 
@@ -236,7 +227,7 @@ def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,control_
             ii = 0
             
             for yy in confidence_range[:-1]:
-                print(yy.shape)
+                # print(yy.shape)
                 if ii == 0:
                     fill = None
                 else:

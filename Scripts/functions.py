@@ -116,8 +116,23 @@ class simulator:
                     y_out[:,i2] = sol.y
                 else:
                     raise RuntimeError('ode solver unsuccessful')
+
+
+
+
         
-        return {'y': y_out,'t': tim}
+        y_plot = np.zeros((len(categories.keys()), len(tim) ))
+        for name in calculated_categories:
+
+            y_plot[categories[name]['index'],:] = y_out[categories[name]['index'],:]
+            for i in range(1, population_frame.shape[0]): # age_categories
+                y_plot[categories[name]['index'],:] = y_plot[categories[name]['index'],:] + y_out[categories[name]['index'] + i*params.number_compartments,:]
+        y_plot[categories['ND']['index'],:] = np.concatenate([[0],np.diff(y_plot[categories['D']['index'],:])])
+        
+        yy = np.diff(y_plot[categories['S']['index'],:])
+        y_plot[categories['NE']['index'],:] = np.asarray(np.concatenate([[0],[-y for y in yy]]))
+        
+        return {'y': y_out,'t': tim, 'y_plot': y_plot}
 
 #--------------------------------------------------------------------
 
@@ -144,15 +159,12 @@ def simulate_range_of_R0s(preset,timings,population_frame, population): # gives 
 
     for k, sol in enumerate(sols):
         sol['y'] = np.asarray(sol['y'])
-        for name in calculated_categories:
 
-            y_plot[categories[name]['index'],k,:] = sol['y'][categories[name]['index'],:]
-            for i in range(1, population_frame.shape[0]): # age_categories
-                y_plot[categories[name]['index'],k,:] = y_plot[categories[name]['index'],k,:] + sol['y'][categories[name]['index'] + i*params.number_compartments,:]
-        y_plot[categories['ND']['index'],k,:] = np.concatenate([[0],np.diff(y_plot[categories['D']['index'],k,:])])
+        #     y_plot[categories[name]['index'],k,:] = sol['y'][categories[name]['index'],:]
+        #     for i in range(1, population_frame.shape[0]): # age_categories
+        for name in categories.keys():
+            y_plot[categories[name]['index'],k,:] = sol['y_plot'][categories[name]['index']]
 
-        yy = np.diff(y_plot[categories['S']['index'],k,:])
-        y_plot[categories['NE']['index'],k,:] = np.asarray(np.concatenate([[0],[-y for y in yy]]))
 
     y_L95, y_U95, y_LQ, y_UQ, y_median = [np.zeros((len(categories.keys()),n_time_points)) for i in range(5)]
 
@@ -187,26 +199,30 @@ def object_dump(file_name,object_to_dump):
 
 
 def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec=None):
+    category_map = {    '0': 'S',
+                        '1': 'E',
+                        '2': 'I',
+                        '3': 'A',
+                        '4': 'R',
+                        '5': 'H',
+                        '6': 'C',
+                        '7': 'D',
+                        '8': 'NE',
+                        '9': 'ND'
+                        }
+
+
     if input_type=='percentile':
         csv_sol = np.transpose(data_to_save)
 
         solution_csv = pd.DataFrame(csv_sol)
 
 
-        category_map = {    '0': 'S',
-                            '1': 'E',
-                            '2': 'I',
-                            '3': 'A',
-                            '4': 'R',
-                            '5': 'H',
-                            '6': 'C',
-                            '7': 'D'}
-
         col_names = []
         for i in range(csv_sol.shape[1]):
-            ii = i % 8
+            # ii = i % 8
             # jj = floor(i/8)
-            col_names.append(categories[category_map[str(ii)]]['longname'])
+            col_names.append(categories[category_map[str(i)]]['longname'])
             
 
         solution_csv.columns = col_names
@@ -215,20 +231,11 @@ def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec
 
 
     else:
-        csv_sol = np.transpose(data_to_save[0]['y'])
+        csv_sol = np.transpose(data_to_save[0]['y']) # age structured
 
         solution_csv = pd.DataFrame(csv_sol)
 
-
-        category_map = {    '0': 'S',
-                            '1': 'E',
-                            '2': 'I',
-                            '3': 'A',
-                            '4': 'R',
-                            '5': 'H',
-                            '6': 'C',
-                            '7': 'D'}
-
+        # setup column names
         col_names = []
         number_categories_with_age = csv_sol.shape[1]
         for i in range(number_categories_with_age):
@@ -239,14 +246,10 @@ def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec
 
         solution_csv.columns = col_names
         solution_csv['Time'] = data_to_save[0]['t']
+
+        for j in range(len(categories.keys())): # params.number_compartments
+            solution_csv[categories[category_map[str(j)]]['longname']] = data_to_save[0]['y_plot'][j] # summary/non age-structured
         # this is our dataframe to be saved
-        for j in range(params.number_compartments):
-            indices = []
-            for i in range(floor(number_categories_with_age/params.number_compartments)):
-                indices.append(params.number_compartments*i+j)
-            
-            solution_csv[categories[category_map[str(j)]]['longname']] = solution_csv.iloc[:,indices].sum(axis=1)
-            # print()
 
 
     # save it
@@ -254,21 +257,3 @@ def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec
 
 
     return None
-
-
-def daily(yy,population_frame,name_plot):
-    if name_plot=='NE':
-        name_use = 'S' # measure new infections by people leaving susceptible category and become exposed
-    else:
-        name_use = name_plot[-1]
-
-    y_plot = 100*yy[categories[name_use]['index'],:]
-    for i in range(1, population_frame.shape[0]): # age_categories
-        y_plot = y_plot + 100*yy[categories[name_use]['index']+ i*params.number_compartments,:]
-
-    y_plot = np.diff(y_plot)    # daily change
-    if name_plot=='NE':
-        y_plot = np.asarray([-yy for yy in y_plot])
-
-    y_plot = np.concatenate([[0],y_plot])
-    return y_plot

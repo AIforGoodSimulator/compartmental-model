@@ -61,7 +61,7 @@ if save_csv:
 
 ## ----------------------------------------------------------------------------------------
 # plots - change outputs via these below
-multiple_categories_to_plot    = ['D','ND','NE','E'] # categories to plot
+multiple_categories_to_plot    = ['ND'] # categories to plot
 single_category_to_plot        = 'NE'           # categories to plot in final 3 plots
 
 no_control = False
