@@ -55,6 +55,7 @@ class simulator:
                     remove_people = remove_high_risk # only removing high risk (within time control window)
                 else:
                     remove_people = y[params.S_ind + i*params.number_compartments]
+            # print(move_offsite,remove_people)
 
 
                 
@@ -79,9 +80,10 @@ class simulator:
                                                                  + params.removal_rate * y[params.A_ind + i*params.number_compartments]
                                                                  + params.hosp_rate * (1 - critical_prob[i]) * y[params.H_ind + i*params.number_compartments]
                                                                  + params.death_rate * (1 - params.death_prob) * y[params.C_ind + i*params.number_compartments]
-                                                                 + move_offsite
-                                                                 + remove_people
+                                                                #  + move_offsite
+                                                                #  + remove_people
                                                                  )
+            # print(dydt[params.R_ind + i*params.number_compartments])
             # H
             dydt[params.H_ind + i*params.number_compartments] = (params.removal_rate * (hospital_prob[i]) * y[params.I_ind + i*params.number_compartments]
                                                                  - params.hosp_rate * y[params.H_ind + i*params.number_compartments])
@@ -170,16 +172,42 @@ class simulator:
 
 
 
+infection_matrix = np.asarray(pd.read_csv(os.path.join(cwd,'Parameters/Contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
+infection_matrix = infection_matrix[:,1:]
 
+# print(np.linalg.eig(infection_matrix))
 
-def simulate_range_of_R0s(preset,timings,population_frame, population,taken_offsite_rate,remove_high_risk): # gives solution as well as upper and lower bounds
+def simulate_range_of_R0s(preset,timings,population_frame, population,taken_offsite_rate,remove_high_risk,shielding=False): # gives solution as well as upper and lower bounds
     
     t_stop = 200
 
     beta_factor = np.float(control_data.Value[control_data.Name==preset])
 
-    infection_matrix = np.ones((population_frame.shape[0],population_frame.shape[0]))
+    infection_matrix = np.asarray(pd.read_csv(os.path.join(cwd,'Parameters/Contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
+    infection_matrix = infection_matrix[:,1:]
+
+    next_generation_matrix = np.matmul(0.01*np.diag(population_frame.Population) , infection_matrix )
+    # print(population_frame.Population)
+    largest_eigenvalue = max(np.linalg.eig(next_generation_matrix)[0]) # max eigenvalue
+    # print(largest_eigenvalue)
+
+
     beta_list = np.linspace(params.beta_list[0],params.beta_list[2],20)
+    beta_list = (1/largest_eigenvalue)* beta_list
+    # print(beta_list)
+
+    if shielding: # increase contact within group and decrease between groups
+        divider = -1 # determines which groups separated. -1 means only oldest group separated from the rest
+        
+        infection_matrix[:divider,:divider]  = params.shield_increase*infection_matrix[:divider,:divider]
+        infection_matrix[:divider,divider:]  = params.shield_decrease*infection_matrix[:divider,divider:]
+        infection_matrix[divider:,:divider]  = params.shield_decrease*infection_matrix[divider:,:divider]
+        infection_matrix[divider:,divider]   = params.shield_increase*infection_matrix[divider:,divider:]
+        # print(infection_matrix)
+        
+
+
+
     sols = []
     for beta in beta_list:
         sols.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=beta,beta_factor=beta_factor,taken_offsite_rate=taken_offsite_rate,remove_high_risk=remove_high_risk))

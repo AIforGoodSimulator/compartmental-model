@@ -2,6 +2,8 @@
 No control,1,,Control,Effect on infection rate,,,,
 Better hygiene,0.85,,Control,"Handing out masks, better sanitation?",need to find a sensible value,,,
 ,,,,,,,,
+Reduction in contact between groups,0.25,,Control,For shielding,,,,
+Increase in contact within group,2,,Control,For shielding,,,,
 ,,,,,,,,
 ,,,,,,,,
 R0,2,,Model Parameter,,Low,,,

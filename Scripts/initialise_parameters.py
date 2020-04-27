@@ -67,8 +67,11 @@ number_compartments = int(model_params[model_params['Name']=='number_compartment
 beta_list           = [R_0*removal_rate  for R_0 in R_0_list] # R_0 mu/N, N=1
 
 # infection_matrix    = np.ones((example_population_frame.shape[0],example_population_frame.shape[0]))
+# print(control_data)
+shield_decrease          = np.float(control_data[control_data['Name']=='Reduction in contact between groups'].Value)
+shield_increase          = np.float(control_data[control_data['Name']=='Increase in contact within group'].Value)
 
-
+# print(shield_decrease)
 # Parameters that may come into play later:
 # ICU_capacity = 8/100000
 # death prob and period given ICU care:
@@ -80,8 +83,10 @@ class Parameters:
         
         self.R_0_list = R_0_list
         self.beta_list = beta_list
+        
         self.removal_rate = removal_rate
-        # self.infection_matrix = infection_matrix
+        self.shield_increase = shield_increase
+        self.shield_decrease = shield_decrease
 
 
         self.number_compartments = number_compartments

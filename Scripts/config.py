@@ -12,8 +12,11 @@ timings = [10,100]
 control_type = 'No control'
 
 # move symptomatic cases off site
-taken_offsite_rate = 100 # people per day
+taken_offsite_rate = 0 # people per day
 
 # move uninfected high risk people off site
-remove_high_risk = 100 # people per day
+remove_high_risk = 0 # people per day
+
+# partially separate low and high risk
+shielding = False
 
