@@ -31,14 +31,15 @@ already_exists_percentile = os.path.isfile(os.path.join(cwd,'saved_runs/' + perc
 if not load or not (already_exists_soln and already_exists_percentile): # generate solution if not wanting to load, or if wanting to load but at least one file missing
     # run model - change inputs via 'config.py'
     print('running the model to produce results')
-    sols, percentiles =simulate_range_of_R0s(control_type, timings, population_frame, population,taken_offsite_rate,remove_high_risk,shielding) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
+    sols_raw,sols, percentiles =simulate_range_of_R0s(control_type, timings, population_frame, population,taken_offsite_rate,remove_high_risk,shielding) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
     if save:
+        object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name+'_all')  ,  sols_raw)
         object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name)  ,  sols)
         object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name),  percentiles)
 else:
     print('retrieving results from saved runs')
-    sols        = pickle.load(open('saved_runs/' + solution_name, 'rb'))
-    percentiles = pickle.load(open('saved_runs/' + percentile_name, 'rb'))
+    sols        = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name), 'rb'))
+    percentiles = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name), 'rb'))
 
 
 # example of generating csv (currently for middle R0 value)

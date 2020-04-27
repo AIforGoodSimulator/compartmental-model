@@ -209,9 +209,11 @@ def simulate_range_of_R0s(preset,timings,population_frame, population,taken_offs
 
 
     sols = []
+    sols_raw = {}
     for beta in beta_list:
-        sols.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=beta,beta_factor=beta_factor,taken_offsite_rate=taken_offsite_rate,remove_high_risk=remove_high_risk))
-
+        result=simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=beta,beta_factor=beta_factor,taken_offsite_rate=taken_offsite_rate,remove_high_risk=remove_high_risk)
+        sols.append(result)
+        sols_raw[beta*largest_eigenvalue/params.removal_rate]=result
     n_time_points = len(sols[0]['t'])
 
     y_plot = np.zeros((len(categories.keys()), len(sols) , n_time_points ))
@@ -238,7 +240,7 @@ def simulate_range_of_R0s(preset,timings,population_frame, population,taken_offs
     sols_out = []
     sols_out.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,control_time=timings,beta=params.beta_list[1],beta_factor=beta_factor,taken_offsite_rate=taken_offsite_rate,remove_high_risk=remove_high_risk))
     
-    return sols_out, [y_U95, y_UQ, y_LQ, y_L95, y_median] 
+    return sols_raw ,sols_out, [y_U95, y_UQ, y_LQ, y_L95, y_median] 
 
 
 
