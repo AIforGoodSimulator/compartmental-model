@@ -172,8 +172,8 @@ class simulator:
 
 
 
-infection_matrix = np.asarray(pd.read_csv(os.path.join(cwd,'Parameters/Contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
-infection_matrix = infection_matrix[:,1:]
+# infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
+# infection_matrix = infection_matrix[:,1:]
 
 # print(np.linalg.eig(infection_matrix))
 
@@ -183,7 +183,7 @@ def simulate_range_of_R0s(preset,timings,population_frame, population,taken_offs
 
     beta_factor = np.float(control_data.Value[control_data.Name==preset])
 
-    infection_matrix = np.asarray(pd.read_csv(os.path.join(cwd,'Parameters/Contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
+    infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
     infection_matrix = infection_matrix[:,1:]
 
     next_generation_matrix = np.matmul(0.01*np.diag(population_frame.Population) , infection_matrix )
@@ -312,7 +312,7 @@ def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec
 
 
     # save it
-    solution_csv.to_csv('CSV_output/' + filename + '.csv' )
+    solution_csv.to_csv(os.path.join(os.path.dirname(cwd),'CSV_output/' + filename + '.csv' ))
 
 
     return None

@@ -9,9 +9,7 @@ from scipy.stats import gamma, norm
 from math import ceil
 import os
 cwd = os.getcwd()
-
-raw_data = pd.read_csv(os.path.join(cwd,'Parameters/camp_params.csv'))
-# raw_data = pd.read_csv(os.path.join(cwd,'camp_raw_data/moria_params.csv'))
+raw_data = pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/camp_params.csv'))
 
 def preparePopulationFrame(camp_name):
     
@@ -46,7 +44,7 @@ example_population_frame, example_population = preparePopulationFrame('Camp_1')
 
 #------------------------------------------------------------
 # disease params
-parameter_csv = pd.read_csv(os.path.join(cwd,'Parameters/parameters.csv'))
+parameter_csv = pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/parameters.csv'))
 model_params = parameter_csv[parameter_csv['Type']=='Model Parameter']
 model_params = model_params.loc[:,['Name','Value']]
 control_data = parameter_csv[parameter_csv['Type']=='Control']
