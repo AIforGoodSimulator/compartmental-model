@@ -71,6 +71,11 @@ shield_increase          = np.float(control_data[control_data['Name']=='Increase
 
 better_hygiene = np.float(control_data.Value[control_data.Name=='Better hygiene'])
 
+death_rate_with_ICU = 1/(np.float(model_params[model_params['Name']=='death period with ICU'].Value))
+death_prob_with_ICU =    np.float(model_params[model_params['Name']=='death prob with ICU'].Value)
+
+
+
 # print(shield_decrease)
 # Parameters that may come into play later:
 # ICU_capacity = 8/100000
@@ -84,7 +89,6 @@ class Parameters:
         self.R_0_list = R_0_list
         self.beta_list = beta_list
         
-        self.removal_rate = removal_rate
         self.shield_increase = shield_increase
         self.shield_decrease = shield_decrease
         self.better_hygiene  = better_hygiene
@@ -92,11 +96,16 @@ class Parameters:
 
         self.number_compartments = number_compartments
 
-        self.latent_rate  = latent_rate
-        self.asympt_prop = asympt_prop
-        self.hosp_rate = hosp_rate        
-        self.death_rate = death_rate
-        self.death_prob     = death_prob
+        self.asympt_prop         = asympt_prop
+
+        self.latent_rate         = latent_rate
+        self.removal_rate    = removal_rate
+        self.hosp_rate           = hosp_rate        
+        self.death_rate          = death_rate
+        self.death_rate_with_ICU = death_rate_with_ICU
+        
+        self.death_prob          = death_prob
+        self.death_prob_with_ICU = death_prob_with_ICU
 
         self.S_ind = 0
         self.E_ind = 1
@@ -124,40 +133,63 @@ calculated_categories = ['S',
         'C',
         'D']
 
+change_in_categories = ['C'+ii for ii in calculated_categories] # gives daily change for each category
+
 longname = {'S': 'Susceptible',
-        'E': 'Exposed',
-        'I': 'Infected (symptomatic)',
-        'A': 'Asymptomatically Infected',
-        'R': 'Recovered',
-        'H': 'Hospitalised',
-        'C': 'Critical',
-        'D': 'Deaths',
-        'NE': 'New Exposure',
-        'ND': 'New Deaths'
+            'E': 'Exposed',
+            'I': 'Infected (symptomatic)',
+            'A': 'Asymptomatically Infected',
+            'R': 'Recovered',
+            'H': 'Hospitalised',
+            'C': 'Critical',
+            'D': 'Deaths',
+            'CS': 'Change in Susceptible',
+            'CE': 'Change in Exposed',
+            'CI': 'Change in Infected (symptomatic)',
+            'CA': 'Change in Asymptomatically Infected',
+            'CR': 'Change in Recovered',
+            'CH': 'Change in Hospitalised',
+            'CC': 'Change in Critical',
+            'CD': 'Change in Deaths',
+            'Ninf': 'Change in total active infections', # sum of E, I, A
 }
 
 shortname = {'S': 'Sus.',
-        'E': 'Exp.',
-        'I': 'Inf. (symp.)',
-        'A': 'Asym.',
-        'R': 'Rec.',
-        'H': 'Hosp.',
-        'C': 'Crit.',
-        'D': 'Deaths',
-        'NE': 'New Inf.',
-        'ND': 'New Deaths'
+             'E':  'Exp.',
+             'I':  'Inf. (symp.)',
+             'A':  'Asym.',
+             'R':  'Rec.',
+             'H':  'Hosp.',
+             'C':  'Crit.',
+             'D':  'Deaths',
+             'CS': 'Change in Sus.',
+             'CE': 'Change in Exp.',
+             'CI': 'Change in Inf. (symp.)',
+             'CA': 'Change in Asym.',
+             'CR': 'Change in Rec.',
+             'CH': 'Change in Hosp.',
+             'CC': 'Change in Crit.',
+             'CD': 'Change in Deaths',
+             'Ninf': 'New Infected', # newly exposed to the disease = - change in susceptibles
 }
 
-colour = {'S': 'rgb(0,0,255)', #'blue',
-          'E': 'rgb(255,150,255)', #'pink',
-          'I': 'rgb(255,150,50)', #'orange',
-          'A': 'rgb(255,50,50)', #'dunno',
-          'R': 'rgb(0,255,0)', #'green',
-          'H': 'rgb(255,0,0)', #'red',
-          'C': 'rgb(50,50,50)', #'black',
-          'D': 'rgb(130,0,255)', #'purple',
-          'NE': 'rgb(255,125,100)', #
-          'ND': 'rgb(150,50,150)', #
+colour = {'S':  'rgb(0,0,255)', #'blue',
+          'E':  'rgb(255,150,255)', #'pink',
+          'I':  'rgb(255,150,50)', #'orange',
+          'A':  'rgb(255,50,50)', #'dunno',
+          'R':  'rgb(0,255,0)', #'green',
+          'H':  'rgb(255,0,0)', #'red',
+          'C':  'rgb(50,50,50)', #'black',
+          'D':  'rgb(130,0,255)', #'purple',
+          'CS': 'rgb(0,0,255)', #'blue',
+          'CE': 'rgb(255,150,255)', #'pink',
+          'CI': 'rgb(255,150,50)', #'orange',
+          'CA': 'rgb(255,50,50)', #'dunno',
+          'CR': 'rgb(0,255,0)', #'green',
+          'CH': 'rgb(255,0,0)', #'red',
+          'CC': 'rgb(50,50,50)', #'black',
+          'CD': 'rgb(130,0,255)', #'purple',
+          'Ninf': 'rgb(255,125,100)', #
         }
 
 index = {'S': params.S_ind,
@@ -168,8 +200,15 @@ index = {'S': params.S_ind,
         'H': params.H_ind,
         'C': params.C_ind,
         'D': params.D_ind,
-        'NE': 8,
-        'ND': 9
+        'CS': 8,
+        'CE': 9,
+        'CI': 10,
+        'CA': 11,
+        'CR': 12,
+        'CH': 13,
+        'CC': 14,
+        'CD': 15,
+        'Ninf': 16,
         }
 
 categories = {}

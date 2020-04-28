@@ -15,7 +15,7 @@ control_dict = dict( # contains our 6 different control options. Can choose any 
     better_hygiene = dict(value = params.better_hygiene,
                         timing = [10,200]),
 
-    hospital_capacity = dict(value = 20), # haven't yet implemented in ode
+    ICU_capacity = dict(value = 20/population),
                         
     # 4
     # move symptomatic cases off site
@@ -25,7 +25,7 @@ control_dict = dict( # contains our 6 different control options. Can choose any 
     # 5
     # partially separate low and high risk
     # (for now) assumed that if do this, do for entire course of epidemic
-    shielding = dict(used= False), 
+    shielding = dict(used= True), 
 
     # 6
     # move uninfected high risk people off site

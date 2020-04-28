@@ -15,16 +15,24 @@ cwd = os.getcwd()
 
 ##----------------------------------------------------------------
 # load a saved solution?
-load = False
+load = True
 # save generated solution? Only generates new if not loading old
 # saves as a python pickle object
 save = True
 save_csv = True
 # plot output?
 plot_output = True
+save_plots  = True # needs plot_output to be True
 
 ##----------------------------------------------------------------
-param_string = "Camp=%s_hygeineT=%s_remInfRate=%s_remInfT=%s_Shield=%s_RemHrRate=%s_RemHrTime=%s" %(camp,control_dict['better_hygiene']['timing'],control_dict['remove_symptomatic']['rate'],control_dict['remove_symptomatic']['timing'],control_dict['shielding']['used'],control_dict['remove_high_risk']['rate'],control_dict['remove_high_risk']['timing'])
+param_string = "Camp=%s_hygieneT=%s_remInfRate=%s_remInfT=%s_Shield=%s_RemHrRate=%s_RemHrTime=%s_ICU=%s_" %(camp,
+                                                                                                           control_dict['better_hygiene']['timing'],
+                                                                                                           round(population*control_dict['remove_symptomatic']['rate'],1),
+                                                                                                           control_dict['remove_symptomatic']['timing'],
+                                                                                                           control_dict['shielding']['used'],
+                                                                                                           round(population*control_dict['remove_high_risk']['rate'],1),
+                                                                                                           control_dict['remove_high_risk']['timing'],
+                                                                                                           round(population*control_dict['ICU_capacity']['value'],1))
 solution_name   = 'Solution_' + param_string    
 percentile_name = 'Percentiles_'  + param_string
 
@@ -92,8 +100,9 @@ if plot_output:
 
 
     # save
-    if save:
-        fig_multi_lines.write_image(os.path.join(os.path.dirname(cwd),"Figs/Disease_progress_%s.png" % param_string))
-        fig_age_structure.write_image("Figs/Age_structure_%s_%s.png" %(categories[single_category_to_plot]['longname'],param_string))
-        fig_bar_chart.write_image("Figs/Age_structure_(bar_chart)_%s_%s.png" %(categories[single_category_to_plot]['longname'],param_string))
-        fig_uncertainty.write_image("Figs/Uncertainty_%s_%s.png" %(categories[single_category_to_plot]['longname'],param_string))
+    if save_plots:
+        plotString = "_%s_%s" %(categories[single_category_to_plot]['longname'],param_string)
+        fig_multi_lines.write_image(   os.path.join(os.path.dirname(cwd), "Figs/Disease_progress_%s.png" % param_string))
+        fig_age_structure.write_image( os.path.join(os.path.dirname(cwd), "Figs/Age_structure" + plotString + ".png" ))
+        fig_bar_chart.write_image(     os.path.join(os.path.dirname(cwd), "Figs/Age_structure_(bar_chart)" + plotString + ".png" ))
+        fig_uncertainty.write_image(   os.path.join(os.path.dirname(cwd), "Figs/Uncertainty" + plotString + ".png" ))
