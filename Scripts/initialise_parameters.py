@@ -69,6 +69,8 @@ beta_list           = [R_0*removal_rate  for R_0 in R_0_list] # R_0 mu/N, N=1
 shield_decrease          = np.float(control_data[control_data['Name']=='Reduction in contact between groups'].Value)
 shield_increase          = np.float(control_data[control_data['Name']=='Increase in contact within group'].Value)
 
+better_hygiene = np.float(control_data.Value[control_data.Name=='Better hygiene'])
+
 # print(shield_decrease)
 # Parameters that may come into play later:
 # ICU_capacity = 8/100000
@@ -85,6 +87,7 @@ class Parameters:
         self.removal_rate = removal_rate
         self.shield_increase = shield_increase
         self.shield_decrease = shield_decrease
+        self.better_hygiene  = better_hygiene
 
 
         self.number_compartments = number_compartments

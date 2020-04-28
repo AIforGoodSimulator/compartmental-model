@@ -1,22 +1,35 @@
-from initialise_parameters import preparePopulationFrame
+from initialise_parameters import preparePopulationFrame, params
 import numpy as np
 
 # camp
 camp = 'Camp_2'
 population_frame, population = preparePopulationFrame(camp)
 
-# control timings
-timings = [10,100]
+# from github issue
+# if not used, set timings to e.g. [0,0] or any other interval of 0 length or outside caluclated window
 
-# choice of no control, or better hygeine
-control_type = 'No control'
+control_dict = dict( # contains our 6 different control options. Can choose any combination of these 6. Suggest limit to all occuring at similar times
 
-# move symptomatic cases off site
-taken_offsite_rate = 0 # people per day
+    # 1
+    # if True, reduces transmission rate by params.better_hygiene
+    better_hygiene = dict(value = params.better_hygiene,
+                        timing = [10,200]),
 
-# move uninfected high risk people off site
-remove_high_risk = 0 # people per day
+    hospital_capacity = dict(value = 20), # haven't yet implemented in ode
+                        
+    # 4
+    # move symptomatic cases off site
+    remove_symptomatic = dict(rate = 10/population,  # people per day
+                            timing = [10,200]),
 
-# partially separate low and high risk
-shielding = False
+    # 5
+    # partially separate low and high risk
+    # (for now) assumed that if do this, do for entire course of epidemic
+    shielding = dict(used= False), 
 
+    # 6
+    # move uninfected high risk people off site
+    remove_high_risk = dict(rate = 20/population,  # people per day
+                            timing = [10,200])
+
+)

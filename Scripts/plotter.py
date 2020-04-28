@@ -22,7 +22,7 @@ def population_format(num,dp=0):
 
 # fill_cols = ['rgba(50,50,50,0.2)','rgba(50,50,50,0.2)','rgba(50,50,50,0.2)','rgba(50,0,0,0.4)']
 ########################################################################################################################
-def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_time,no_control):
+def figure_generator(sols,cats_to_plot,population_plot,population_frame):
 
     # population_plot = params.population
     if len(cats_to_plot)==0:
@@ -98,37 +98,37 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
     shapes=[]
     annots=[]
 
-    if control_time[0]!=control_time[1] and not no_control:
-        shapes.append(dict(
-                # filled Blue Control Rectangle
-                type="rect",
-                x0= control_time[0],
-                y0=0,
-                x1= control_time[1],
-                y1= yax['range'][1],
-                line=dict(
-                    color="LightSkyBlue",
-                    width=0,
-                ),
-                fillcolor="LightSkyBlue",
-                opacity= 0.15
-            ))
+    # if control_time[0]!=control_time[1] and not no_control:
+    #     shapes.append(dict(
+    #             # filled Blue Control Rectangle
+    #             type="rect",
+    #             x0= control_time[0],
+    #             y0=0,
+    #             x1= control_time[1],
+    #             y1= yax['range'][1],
+    #             line=dict(
+    #                 color="LightSkyBlue",
+    #                 width=0,
+    #             ),
+    #             fillcolor="LightSkyBlue",
+    #             opacity= 0.15
+    #         ))
 
-        annots.append(dict(
-                x  = 0.5*(control_time[0] + control_time[1]),
-                y  = 0.5,
-                text="<b>Control<br>" + "<b> In <br>" + "<b> Place",
-                textangle=0,
-                font=dict(
-                    size= font_size*(30/24),
-                    color="blue"
-                ),
-                showarrow=False,
-                opacity=0.4,
-                xshift= 0,
-                xref = 'x',
-                yref = 'paper',
-        ))
+    #     annots.append(dict(
+    #             x  = 0.5*(control_time[0] + control_time[1]),
+    #             y  = 0.5,
+    #             text="<b>Control<br>" + "<b> In <br>" + "<b> Place",
+    #             textangle=0,
+    #             font=dict(
+    #                 size= font_size*(30/24),
+    #                 color="blue"
+    #             ),
+    #             showarrow=False,
+    #             opacity=0.4,
+    #             xshift= 0,
+    #             xref = 'x',
+    #             yref = 'paper',
+    #     ))
 
 
     layout = go.Layout(
@@ -206,7 +206,7 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame,control_
 
 
 ################################################################################################################################################################
-def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,control_time,no_control,confidence_range=None):
+def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,confidence_range=None):
 
     if len(cats_to_plot)==0:
         cats_to_plot=['I']
@@ -319,37 +319,37 @@ def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,control_
     shapes=[]
     annots=[]
 
-    if control_time[0]!=control_time[1] and not no_control:
-        shapes.append(dict(
-                # filled Blue Control Rectangle
-                type="rect",
-                x0= control_time[0],
-                y0=0,
-                x1= control_time[1],
-                y1= yax['range'][1],
-                line=dict(
-                    color="LightSkyBlue",
-                    width=0,
-                ),
-                fillcolor="LightSkyBlue",
-                opacity= 0.15
-            ))
+    # if control_time[0]!=control_time[1] and not no_control:
+    #     shapes.append(dict(
+    #             # filled Blue Control Rectangle
+    #             type="rect",
+    #             x0= control_time[0],
+    #             y0=0,
+    #             x1= control_time[1],
+    #             y1= yax['range'][1],
+    #             line=dict(
+    #                 color="LightSkyBlue",
+    #                 width=0,
+    #             ),
+    #             fillcolor="LightSkyBlue",
+    #             opacity= 0.15
+    #         ))
 
-        annots.append(dict(
-                x  = 0.5*(control_time[0] + control_time[1]),
-                y  = 0.5,
-                text="<b>Control<br>" + "<b> In <br>" + "<b> Place",
-                textangle=0,
-                font=dict(
-                    size= font_size*(30/24),
-                    color="blue"
-                ),
-                showarrow=False,
-                opacity=0.4,
-                xshift= 0,
-                xref = 'x',
-                yref = 'paper',
-        ))
+    #     annots.append(dict(
+    #             x  = 0.5*(control_time[0] + control_time[1]),
+    #             y  = 0.5,
+    #             text="<b>Control<br>" + "<b> In <br>" + "<b> Place",
+    #             textangle=0,
+    #             font=dict(
+    #                 size= font_size*(30/24),
+    #                 color="blue"
+    #             ),
+    #             showarrow=False,
+    #             opacity=0.4,
+    #             xshift= 0,
+    #             xref = 'x',
+    #             yref = 'paper',
+    #     ))
 
 
     layout = go.Layout(
@@ -447,7 +447,7 @@ def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,control_
 
 
 ########################################################################################################################
-def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,control_time,no_control): # ,confidence_range=None
+def age_structure_plot(sols,cats_to_plot,population_plot,population_frame): # ,confidence_range=None
 
     # population_plot = params.population
 
@@ -501,37 +501,37 @@ def age_structure_plot(sols,cats_to_plot,population_plot,population_frame,contro
 
     shapes=[]
     annots=[]
-    if control_time[0]!=control_time[1] and not no_control:
-        shapes.append(dict(
-                # filled Blue Control Rectangle
-                type="rect",
-                x0= control_time[0],
-                y0=0,
-                x1= control_time[1],
-                y1= yax['range'][1],
-                line=dict(
-                    color="LightSkyBlue",
-                    width=0,
-                ),
-                fillcolor="LightSkyBlue",
-                opacity= 0.15
-            ))
+    # if control_time[0]!=control_time[1] and not no_control:
+    #     shapes.append(dict(
+    #             # filled Blue Control Rectangle
+    #             type="rect",
+    #             x0= control_time[0],
+    #             y0=0,
+    #             x1= control_time[1],
+    #             y1= yax['range'][1],
+    #             line=dict(
+    #                 color="LightSkyBlue",
+    #                 width=0,
+    #             ),
+    #             fillcolor="LightSkyBlue",
+    #             opacity= 0.15
+    #         ))
 
-        annots.append(dict(
-                x  = 0.5*(control_time[0] + control_time[1]),
-                y  = 0.5,
-                text="<b>Control<br>" + "<b> In <br>" + "<b> Place",
-                textangle=0,
-                font=dict(
-                    size= font_size*(30/24),
-                    color="blue"
-                ),
-                showarrow=False,
-                opacity=0.4,
-                xshift= 0,
-                xref = 'x',
-                yref = 'paper',
-        ))
+    #     annots.append(dict(
+    #             x  = 0.5*(control_time[0] + control_time[1]),
+    #             y  = 0.5,
+    #             text="<b>Control<br>" + "<b> In <br>" + "<b> Place",
+    #             textangle=0,
+    #             font=dict(
+    #                 size= font_size*(30/24),
+    #                 color="blue"
+    #             ),
+    #             showarrow=False,
+    #             opacity=0.4,
+    #             xshift= 0,
+    #             xref = 'x',
+    #             yref = 'paper',
+    #     ))
 
     yy2 = [0]
     for i in range(8):

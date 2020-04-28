@@ -6,9 +6,11 @@ import numpy as np
 import plotly.graph_objects as go
 from functions import simulator, simulate_range_of_R0s, object_dump, generate_csv
 from plotter import figure_generator, age_structure_plot, stacked_bar_plot, uncertainty_plot
-from config import control_type, camp, timings, population_frame, population, taken_offsite_rate, remove_high_risk, shielding
+from config import camp, population_frame, population, control_dict
 import pickle
 import os
+
+# cd into Scripts
 cwd = os.getcwd()
 
 ##----------------------------------------------------------------
@@ -18,9 +20,11 @@ load = False
 # saves as a python pickle object
 save = True
 save_csv = True
+# plot output?
+plot_output = True
 
 ##----------------------------------------------------------------
-param_string = "%s_%s_%s_%s_%s_%s_%s" %(camp,timings[0],timings[1],control_type,taken_offsite_rate,remove_high_risk,shielding)
+param_string = "Camp=%s_hygeineT=%s_remInfRate=%s_remInfT=%s_Shield=%s_RemHrRate=%s_RemHrTime=%s" %(camp,control_dict['better_hygiene']['timing'],control_dict['remove_symptomatic']['rate'],control_dict['remove_symptomatic']['timing'],control_dict['shielding']['used'],control_dict['remove_high_risk']['rate'],control_dict['remove_high_risk']['timing'])
 solution_name   = 'Solution_' + param_string    
 percentile_name = 'Percentiles_'  + param_string
 
@@ -31,7 +35,7 @@ already_exists_percentile = os.path.isfile(os.path.join(cwd,'saved_runs/' + perc
 if not load or not (already_exists_soln and already_exists_percentile): # generate solution if not wanting to load, or if wanting to load but at least one file missing
     # run model - change inputs via 'config.py'
     print('running the model to produce results')
-    sols_raw,sols, percentiles =simulate_range_of_R0s(control_type, timings, population_frame, population,taken_offsite_rate,remove_high_risk,shielding) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
+    sols_raw,sols, percentiles =simulate_range_of_R0s(population_frame, population, control_dict) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
     if save:
         object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name+'_all')  ,  sols_raw)
         object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name)  ,  sols)
@@ -61,33 +65,35 @@ if save_csv:
 
     generate_csv(sols,population_frame,'middle_R0_'+solution_name,input_type='solution')
 
+
+
+
 ## ----------------------------------------------------------------------------------------
-# # plots - change outputs via these below
-# print('generating dynamic plots in plotly')
-# multiple_categories_to_plot    = ['E','A','I','R','H','C','D'] # categories to plot
-# single_category_to_plot        = 'R'           # categories to plot in final 3 plots
+if plot_output:
+    # plots - change outputs via these below
+    print('generating dynamic plots in plotly')
+    multiple_categories_to_plot    = ['E','A','I','R','H','C','D'] # categories to plot
+    single_category_to_plot        = 'R'           # categories to plot in final 3 plots
 
-# no_control = False
-# if control_type=='No control':
-#     no_control = True
+    no_control = True # otherwise plots blue bar
 
-# # plot graphs
-# fig_multi_lines   = go.Figure(  figure_generator(sols,multiple_categories_to_plot,population,population_frame,timings,no_control))   # plot with lots of lines
-# fig_age_structure    = go.Figure(age_structure_plot(sols,single_category_to_plot,    population,population_frame,timings,no_control))   # age structure
-# fig_bar_chart     = go.Figure(  stacked_bar_plot(sols,single_category_to_plot,    population,population_frame))                      # bar chart (age structure)
-# fig_uncertainty   = go.Figure(  uncertainty_plot(sols,single_category_to_plot,    population,population_frame,timings,no_control,percentiles)) # uncertainty
-
-
-# # view
-# fig_multi_lines.show()
-# fig_age_structure.show()
-# fig_bar_chart.show()
-# fig_uncertainty.show()
+    # plot graphs
+    fig_multi_lines   = go.Figure(  figure_generator(sols,multiple_categories_to_plot,population,population_frame))   # plot with lots of lines
+    fig_age_structure    = go.Figure(age_structure_plot(sols,single_category_to_plot,    population,population_frame))   # age structure
+    fig_bar_chart     = go.Figure(  stacked_bar_plot(sols,single_category_to_plot,    population,population_frame))                      # bar chart (age structure)
+    fig_uncertainty   = go.Figure(  uncertainty_plot(sols,single_category_to_plot,    population,population_frame,percentiles)) # uncertainty
 
 
-# # save
-# if save:
-#     fig_multi_lines.write_image(os.path.join(os.path.dirname(cwd),"Figs/Disease_progress_%s.png" % camp))
-#     # fig_age_structure.write_image("Figs/Age_structure_%s_%s.png" %(camp,categories[single_category_to_plot]['longname']))
-#     # fig_bar_chart.write_image("Figs/Age_structure_(bar_chart)_%s_%s.png" %(camp,categories[single_category_to_plot]['longname']))
-#     # fig_uncertainty.write_image("Figs/Uncertainty_%s_%s.png" %(camp,categories[single_category_to_plot]['longname']))
+    # view
+    fig_multi_lines.show()
+    fig_age_structure.show()
+    fig_bar_chart.show()
+    fig_uncertainty.show()
+
+
+    # save
+    if save:
+        fig_multi_lines.write_image(os.path.join(os.path.dirname(cwd),"Figs/Disease_progress_%s.png" % param_string))
+        fig_age_structure.write_image("Figs/Age_structure_%s_%s.png" %(categories[single_category_to_plot]['longname'],param_string))
+        fig_bar_chart.write_image("Figs/Age_structure_(bar_chart)_%s_%s.png" %(categories[single_category_to_plot]['longname'],param_string))
+        fig_uncertainty.write_image("Figs/Uncertainty_%s_%s.png" %(categories[single_category_to_plot]['longname'],param_string))
