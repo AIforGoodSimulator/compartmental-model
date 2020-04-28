@@ -25,19 +25,20 @@ plot_output = True
 save_plots  = True # needs plot_output to be True
 
 ##----------------------------------------------------------------
-param_string = "Camp=%s_hygieneT=%s_remInfRate=%s_remInfT=%s_Shield=%s_RemHrRate=%s_RemHrTime=%s_ICU=%s_" %(camp,
+param_string = "Camp=%s_hygieneT=%s_remInfRate=%s_remInfT=%s_Shield=%s_RemHrRate=%s_RemHrTime=%s_ICU=%s" %(camp,
                                                                                                            control_dict['better_hygiene']['timing'],
-                                                                                                           round(population*control_dict['remove_symptomatic']['rate'],1),
+                                                                                                           ceil(population*control_dict['remove_symptomatic']['rate']),
                                                                                                            control_dict['remove_symptomatic']['timing'],
                                                                                                            control_dict['shielding']['used'],
-                                                                                                           round(population*control_dict['remove_high_risk']['rate'],1),
+                                                                                                           ceil(population*control_dict['remove_high_risk']['rate']),
                                                                                                            control_dict['remove_high_risk']['timing'],
-                                                                                                           round(population*control_dict['ICU_capacity']['value'],1))
+                                                                                                           ceil(population*control_dict['ICU_capacity']['value']))
 solution_name   = 'Solution_' + param_string    
 percentile_name = 'Percentiles_'  + param_string
 
-already_exists_soln       = os.path.isfile(os.path.join(cwd,'saved_runs/' + solution_name))
-already_exists_percentile = os.path.isfile(os.path.join(cwd,'saved_runs/' + percentile_name))
+already_exists_soln       = os.path.isfile(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'))
+already_exists_percentile = os.path.isfile(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'))
+
 
 
 if not load or not (already_exists_soln and already_exists_percentile): # generate solution if not wanting to load, or if wanting to load but at least one file missing
@@ -45,19 +46,17 @@ if not load or not (already_exists_soln and already_exists_percentile): # genera
     print('running the model to produce results')
     sols_raw,sols, percentiles =simulate_range_of_R0s(population_frame, population, control_dict) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
     if save:
-        object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name+'_all')  ,  sols_raw)
-        object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name)  ,  sols)
-        object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name),  percentiles)
+        object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name + '_all.pickle'),  sols_raw)
+        object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'),  sols)
+        object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'),  percentiles)
 else:
     print('retrieving results from saved runs')
-    sols        = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name), 'rb'))
-    percentiles = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name), 'rb'))
+    sols        = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'), 'rb'))
+    percentiles = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'), 'rb'))
 
 
-# example of generating csv (currently for middle R0 value)
-# might also want to do save specific percentiles
-# might want to include all age structure info (as currently is)
-# or might want to just sum over all age classes to get a total
+# example of generating csv (currently for medium R0 value and for certain percentiles)
+# might want to include all age structure info for percentiles as well as medium R0
 if save_csv:
     print('saving outputs as csv files')
 
@@ -80,7 +79,7 @@ if save_csv:
 if plot_output:
     # plots - change outputs via these below
     print('generating dynamic plots in plotly')
-    multiple_categories_to_plot    = ['E','A','I','R','H','C','D'] # categories to plot
+    multiple_categories_to_plot    = ['E','A','I','R','H','C','D','O'] # categories to plot
     single_category_to_plot        = 'R'           # categories to plot in final 3 plots
 
     no_control = True # otherwise plots blue bar

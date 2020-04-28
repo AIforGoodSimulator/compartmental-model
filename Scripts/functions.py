@@ -57,7 +57,7 @@ class simulator:
             move_sick_offsite = remove_symptomatic_rate * y[params.I_ind + i*params.number_compartments]/total_I # no age bias in who is moved
 
             # removing susceptible high risk individuals
-            # these are just removed from the system
+            # these are moved into 'offsite'
             if i == age_categories - 1 and t > remove_high_risk['timing'][0] and t < remove_high_risk['timing'][1]:
                 remove_high_risk_people = min(remove_high_risk['rate'],y[params.S_ind + i*params.number_compartments]) # only removing high risk (within time control window). Can't remove more than we have
             else:
@@ -111,6 +111,8 @@ class simulator:
             dydt[params.D_ind + i*params.number_compartments] = (params.death_rate * (params.death_prob) * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # non ICU
                                                                 + params.death_rate_with_ICU * (params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # ICU
                                                                 )
+            # O
+            dydt[params.O_ind + i*params.number_compartments] = remove_high_risk_people
 
 
         return dydt
@@ -126,7 +128,9 @@ class simulator:
         H0 = 0
         C0 = 0
         D0 = 0
-        S0 = 1 - I0 - R0 - C0 - H0 - D0
+        O0 = 0 # offsite
+
+        S0 = 1 - I0 - R0 - C0 - H0 - D0 - O0
         
         age_categories = int(population_frame.shape[0])
 
@@ -144,6 +148,8 @@ class simulator:
             y0[params.H_ind + i*params.number_compartments] = (population_vector[i]/100)*H0
             y0[params.C_ind + i*params.number_compartments] = (population_vector[i]/100)*C0
             y0[params.D_ind + i*params.number_compartments] = (population_vector[i]/100)*D0
+            y0[params.O_ind + i*params.number_compartments] = (population_vector[i]/100)*O0
+
         
 
         hospital_prob = np.asarray(population_frame.p_hospitalised)
@@ -280,15 +286,17 @@ def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec
                         '5':  'H',
                         '6':  'C',
                         '7':  'D',
-                        '8':  'CS',
-                        '9':  'CE',
-                        '10': 'CI',
-                        '11': 'CA',
-                        '12': 'CR',
-                        '13': 'CH',
-                        '14': 'CC',
-                        '15': 'CD',
-                        '16': 'Ninf',
+                        '8':  'O',
+                        '9':  'CS',
+                        '10': 'CE',
+                        '11': 'CI',
+                        '12': 'CA',
+                        '13': 'CR',
+                        '14': 'CH',
+                        '15': 'CC',
+                        '16': 'CD',
+                        '17': 'CO',
+                        '18': 'Ninf',
                         }
 
 

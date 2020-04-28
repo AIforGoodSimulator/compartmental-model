@@ -115,6 +115,8 @@ class Parameters:
         self.H_ind = 5
         self.C_ind = 6
         self.D_ind = 7
+        self.O_ind = 8
+
 
 
 
@@ -131,7 +133,8 @@ calculated_categories = ['S',
         'R',
         'H',
         'C',
-        'D']
+        'D',
+        'O']
 
 change_in_categories = ['C'+ii for ii in calculated_categories] # gives daily change for each category
 
@@ -143,6 +146,7 @@ longname = {'S': 'Susceptible',
             'H': 'Hospitalised',
             'C': 'Critical',
             'D': 'Deaths',
+            'O': 'Offsite',
             'CS': 'Change in Susceptible',
             'CE': 'Change in Exposed',
             'CI': 'Change in Infected (symptomatic)',
@@ -151,6 +155,7 @@ longname = {'S': 'Susceptible',
             'CH': 'Change in Hospitalised',
             'CC': 'Change in Critical',
             'CD': 'Change in Deaths',
+            'CO': 'Change in Offsite',
             'Ninf': 'Change in total active infections', # sum of E, I, A
 }
 
@@ -162,6 +167,7 @@ shortname = {'S': 'Sus.',
              'H':  'Hosp.',
              'C':  'Crit.',
              'D':  'Deaths',
+             'O': 'Offsite',
              'CS': 'Change in Sus.',
              'CE': 'Change in Exp.',
              'CI': 'Change in Inf. (symp.)',
@@ -170,6 +176,7 @@ shortname = {'S': 'Sus.',
              'CH': 'Change in Hosp.',
              'CC': 'Change in Crit.',
              'CD': 'Change in Deaths',
+             'CO': 'Change in Offsite',
              'Ninf': 'New Infected', # newly exposed to the disease = - change in susceptibles
 }
 
@@ -181,6 +188,7 @@ colour = {'S':  'rgb(0,0,255)', #'blue',
           'H':  'rgb(255,0,0)', #'red',
           'C':  'rgb(50,50,50)', #'black',
           'D':  'rgb(130,0,255)', #'purple',
+          'O':  'rgb(130,100,150)', #'dunno',
           'CS': 'rgb(0,0,255)', #'blue',
           'CE': 'rgb(255,150,255)', #'pink',
           'CI': 'rgb(255,150,50)', #'orange',
@@ -189,6 +197,7 @@ colour = {'S':  'rgb(0,0,255)', #'blue',
           'CH': 'rgb(255,0,0)', #'red',
           'CC': 'rgb(50,50,50)', #'black',
           'CD': 'rgb(130,0,255)', #'purple',
+          'CO':  'rgb(130,100,150)', #'dunno',
           'Ninf': 'rgb(255,125,100)', #
         }
 
@@ -200,15 +209,17 @@ index = {'S': params.S_ind,
         'H': params.H_ind,
         'C': params.C_ind,
         'D': params.D_ind,
-        'CS': 8,
-        'CE': 9,
-        'CI': 10,
-        'CA': 11,
-        'CR': 12,
-        'CH': 13,
-        'CC': 14,
-        'CD': 15,
-        'Ninf': 16,
+        'O': params.O_ind,
+        'CS': 9,
+        'CE': 10,
+        'CI': 11,
+        'CA': 12,
+        'CR': 13,
+        'CH': 14,
+        'CC': 15,
+        'CD': 16,
+        'CO': 17,
+        'Ninf': 18,
         }
 
 categories = {}
