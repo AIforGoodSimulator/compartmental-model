@@ -1,4 +1,3 @@
-
 import pandas as pd
 from math import floor, ceil, exp
 from initialise_parameters import params, parameter_csv, categories

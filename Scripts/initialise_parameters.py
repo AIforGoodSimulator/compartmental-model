@@ -9,7 +9,8 @@ from scipy.stats import gamma, norm
 from math import ceil
 import os
 cwd = os.getcwd()
-raw_data = pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/camp_params.csv'))
+# raw_data = pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/camp_params.csv'))
+raw_data = pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/moria_params.csv'))
 
 def preparePopulationFrame(camp_name):
     
@@ -38,7 +39,7 @@ def preparePopulationFrame(camp_name):
 
 
 # example_population_frame, example_population = preparePopulationFrame('Moria')
-example_population_frame, example_population = preparePopulationFrame('Camp_1')
+# example_population_frame, example_population = preparePopulationFrame('Camp_1')
 # print(example_population_frame)
 
 

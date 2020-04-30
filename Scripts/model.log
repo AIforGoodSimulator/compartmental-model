@@ -1,0 +1,3 @@
+2020-04-30 01:41:37,584 - compartment_model - INFO - running the model to produce results
+2020-04-30 01:41:37,585 - compartment_model - INFO - saving outputs as csv files
+2020-04-30 01:41:37,656 - compartment_model - INFO - generating dynamic plots in plotly

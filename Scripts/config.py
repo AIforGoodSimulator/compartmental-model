@@ -2,7 +2,7 @@ from initialise_parameters import preparePopulationFrame, params
 import numpy as np
 
 # camp
-camp = 'Camp_2'
+camp = 'Moria'
 population_frame, population = preparePopulationFrame(camp)
 
 # from github issue

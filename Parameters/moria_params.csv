@@ -1,0 +1,10 @@
+,Variable,Camp,Age,Hosp_given_symptomatic,Critical_given_hospitalised,Value,Notes
+0,Population_structure,Moria,0-9,0.1,5.0,21.053475935828878,
+1,Population_structure,Moria,10-19,0.3,5.0,17.336898395721924,
+2,Population_structure,Moria,20-29,1.2,5.0,26.35294117647059,
+3,Population_structure,Moria,30-39,3.2,5.0,17.15508021390374,
+4,Population_structure,Moria,40-49,4.9,6.3,9.240641711229946,
+5,Population_structure,Moria,50-59,10.2,12.2,5.550802139037433,
+6,Population_structure,Moria,60-69,16.6,27.4,2.5401069518716577,
+7,Population_structure,Moria,70-79,24.3,43.2,0.770053475935829,
+8,Total_population,Moria,,,,18700.0,
