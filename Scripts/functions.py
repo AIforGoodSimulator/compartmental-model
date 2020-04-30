@@ -7,6 +7,7 @@ import pandas as pd
 import statistics
 import os
 import pickle
+from tqdm import tqdm
 cwd = os.getcwd()
 
 
@@ -318,8 +319,37 @@ def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec
         solution_csv['Time'] = time_vec
         # this is our dataframe to be saved
 
+    elif input_type=='raw':
 
-    else:
+        final_frame=pd.DataFrame()
+
+        for key, value in tqdm(data_to_save.items()):
+            csv_sol = np.transpose(value['y']) # age structured
+
+            solution_csv = pd.DataFrame(csv_sol)
+
+            # setup column names
+            col_names = []
+            number_categories_with_age = csv_sol.shape[1]
+            for i in range(number_categories_with_age):
+                ii = i % params.number_compartments
+                jj = floor(i/params.number_compartments)
+
+                col_names.append(categories[category_map[str(ii)]]['longname'] +  ': ' + str(np.asarray(population_frame.Age)[jj]) )
+
+            solution_csv.columns = col_names
+            solution_csv['Time'] = value['t']
+
+            for j in range(len(categories.keys())): # params.number_compartments
+                solution_csv[categories[category_map[str(j)]]['longname']] = value['y_plot'][j] # summary/non age-structured
+            
+            solution_csv['R0']=[key]*solution_csv.shape[0]
+            final_frame=pd.concat([final_frame, solution_csv], ignore_index=True)
+
+        solution_csv=final_frame
+        #this is our dataframe to be saved
+
+    elif input_type=='solution':
         csv_sol = np.transpose(data_to_save[0]['y']) # age structured
 
         solution_csv = pd.DataFrame(csv_sol)

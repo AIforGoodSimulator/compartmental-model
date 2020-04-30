@@ -5,9 +5,21 @@ import numpy as np
 import plotly.graph_objects as go
 from functions import simulator, simulate_range_of_R0s, object_dump, generate_csv
 from plotter import figure_generator, age_structure_plot, stacked_bar_plot, uncertainty_plot
-from config import camp, population_frame, population, control_dict
 import pickle
 import os
+#import the config file for the experimental setup 
+# baseline experiment
+# from configs.baseline import camp, population_frame, population, control_dict
+# better hygiene from day 0
+# from configs.better_hygiene import camp, population_frame, population, control_dict
+# build up ICU capacity from 6 to 100
+# from configs.icu100 import camp, population_frame, population, control_dict
+# remove people form the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
+# from configs.remove_symptomatic import camp, population_frame, population, control_dict
+# shielding the old population/high risk
+# from configs.shielding import camp, population_frame, population, control_dict
+# remove high risk people form the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
+from configs.remove_highrisk import camp, population_frame, population, control_dict
 
 # cd into Scripts
 cwd = os.getcwd()
@@ -20,7 +32,7 @@ load = True
 save = True
 save_csv = True
 # plot output?
-plot_output = True
+plot_output = False
 save_plots  = True # needs plot_output to be True
 
 ##----------------------------------------------------------------
@@ -50,8 +62,10 @@ if not load or not (already_exists_soln and already_exists_percentile): # genera
         object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'),  percentiles)
 else:
     print('retrieving results from saved runs')
+    sols_raw    = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '_all.pickle'), 'rb'))
     sols        = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'), 'rb'))
     percentiles = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'), 'rb'))
+
 
 
 # example of generating csv (currently for medium R0 value and for certain percentiles)
@@ -65,11 +79,12 @@ if save_csv:
     # print(median.shape)
     # print(sols)
     
-    generate_csv(median,population_frame,'median_'+solution_name,input_type='percentile',time_vec=sols[0]['t'])
-    generate_csv(L95,population_frame,'L95_'+solution_name,input_type='percentile',time_vec=sols[0]['t'])
-    generate_csv(U95,population_frame,'U95_'+solution_name,input_type='percentile',time_vec=sols[0]['t'])
+    # generate_csv(median,population_frame,'median_'+solution_name,input_type='percentile',time_vec=sols[0]['t'])
+    # generate_csv(L95,population_frame,'L95_'+solution_name,input_type='percentile',time_vec=sols[0]['t'])
+    # generate_csv(U95,population_frame,'U95_'+solution_name,input_type='percentile',time_vec=sols[0]['t'])
 
-    generate_csv(sols,population_frame,'middle_R0_'+solution_name,input_type='solution')
+    generate_csv(sols_raw,population_frame,'all_R0_'+solution_name,input_type='raw')
+    # generate_csv(sols,population_frame,'middle_R0_'+solution_name,input_type='solution')
 
 
 
