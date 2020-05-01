@@ -3,6 +3,7 @@ import numpy as np
 
 # camp
 camp = 'Moria'
+#need to put the population frame in use here too for testing purposes
 population_frame, population = preparePopulationFrame(camp)
 
 # from github issue
