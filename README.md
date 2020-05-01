@@ -17,16 +17,19 @@ pip install -r requirements.txt
 Here is the workflow in generating CSVs for the report
 
 1. Prepare population level data
-⋅⋅⋅ Go to **Parameters** folder and open up **Prepare camp parameters.ipynb** where you use the **camp_params_template.csv** modify it with the age data from the camp of interest and save it as a seperate csv file
+
+⋅⋅⋅Go to **Parameters** folder and open up **Prepare camp parameters.ipynb** where you use the **camp_params_template.csv** modify it with the age data from the camp of interest and save it as a seperate csv file
 
 2. Prepare contact matrix data
-⋅⋅⋅ Again in the **Parameters** folder, open up **Prepare contact matrix.ipynb** where you use the **Contact_matrix_wuhan.csv** modify it with the csv just being created on camp population level data. Save it as a seperate csv file
+
+⋅⋅⋅Again in the **Parameters** folder, open up **Prepare contact matrix.ipynb** where you use the **Contact_matrix_wuhan.csv** modify it with the csv just being created on camp population level data. Save it as a seperate csv file
 
 3. Change the directories pointing towards the population level data and contact matrix data
 * go to **Scripts** and open **initalise_parameters.py** and change the csv import for population data
 * go to **Scripts** and open **functions.py** and change the csv import for contact matrix
 
 4. Define the config file used to run the experiment
+
 ⋅⋅⋅Can modify the **config.py** under the **Scripts** directory or go into **configs** folder to set up the file and go to **run_model.py** to adjust for the import.
 
 For example:
@@ -47,5 +50,6 @@ from configs.hygiene import camp, population_frame, population, control_dict
 python run_model.py
 ```
 
-6. Retrieve outputs from *CSV_output folder 
+6. Retrieve outputs from **CSV_output** folder
+
 ⋅⋅⋅ These are the csvs that we will use to make a plot
