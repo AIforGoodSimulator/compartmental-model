@@ -9,6 +9,7 @@ import os
 import pickle
 from tqdm import tqdm
 cwd = os.getcwd()
+import pdb
 
 
 ##
@@ -46,7 +47,9 @@ class simulator:
         else:
             remove_symptomatic_rate = 0
 
-
+        S_removal = 0
+        for i in range(age_categories - remove_high_risk['n_categories_removed'],age_categories):
+            S_removal += y[params.S_ind + i*params.number_compartments] # add all old people to remove
 
 
         for i in range(age_categories):
@@ -59,8 +62,8 @@ class simulator:
 
             # removing susceptible high risk individuals
             # these are moved into 'offsite'
-            if i == age_categories - 1 and t > remove_high_risk['timing'][0] and t < remove_high_risk['timing'][1]:
-                remove_high_risk_people = min(remove_high_risk['rate'],y[params.S_ind + i*params.number_compartments]) # only removing high risk (within time control window). Can't remove more than we have
+            if i in range(age_categories - remove_high_risk['n_categories_removed'],age_categories) and t > remove_high_risk['timing'][0] and t < remove_high_risk['timing'][1]:
+                remove_high_risk_people = min(remove_high_risk['rate'],S_removal) # only removing high risk (within time control window). Can't remove more than we have
             else:
                 remove_high_risk_people = 0
             
@@ -76,7 +79,7 @@ class simulator:
             # ODE system:
             # S
             dydt[params.S_ind + i*params.number_compartments] = (- y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + np.dot(infection_matrix[i,:],A_vec)) 
-                                                                    - remove_high_risk_people)
+                                                                    - remove_high_risk_people * y[params.S_ind + i*params.number_compartments] / S_removal )
             # E
             dydt[params.E_ind + i*params.number_compartments] = ( y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + np.dot(infection_matrix[i,:],A_vec))
                                                                 - params.latent_rate * y[params.E_ind + i*params.number_compartments])
@@ -113,7 +116,7 @@ class simulator:
                                                                 + params.death_rate_with_ICU * (params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # ICU
                                                                 )
             # O
-            dydt[params.O_ind + i*params.number_compartments] = remove_high_risk_people
+            dydt[params.O_ind + i*params.number_compartments] = remove_high_risk_people * y[params.S_ind + i*params.number_compartments] / S_removal
 
 
         return dydt
