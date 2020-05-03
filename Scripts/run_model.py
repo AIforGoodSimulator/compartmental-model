@@ -33,7 +33,7 @@ load = True
 save = True
 save_csv = True
 # plot output?
-plot_output = False
+plot_output = True
 save_plots  = True # needs plot_output to be True
 
 ##----------------------------------------------------------------
