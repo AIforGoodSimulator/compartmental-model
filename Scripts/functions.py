@@ -208,21 +208,22 @@ class simulator:
 
 
 
-def simulate_range_of_R0s(population_frame, population, control_dict): # gives solution for middle R0, as well as solutions for a range of R0s between an upper and lower bound
+def simulate_range_of_R0s(population_frame, population, control_dict, camp): # gives solution for middle R0, as well as solutions for a range of R0s between an upper and lower bound
     
     t_stop = 200
 
 
     # infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
-    infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/moria_contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
+    infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix_' + camp + '.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
     infection_matrix = infection_matrix[:,1:]
 
     next_generation_matrix = np.matmul(0.01*np.diag(population_frame.Population) , infection_matrix )
     largest_eigenvalue = max(np.linalg.eig(next_generation_matrix)[0]) # max eigenvalue
+    
 
 
     beta_list = np.linspace(params.beta_list[0],params.beta_list[2],20)
-    beta_list = (1/largest_eigenvalue)* beta_list
+    beta_list = np.real((1/largest_eigenvalue)* beta_list) # in case eigenvalue imaginary
 
     if control_dict['shielding']['used']: # increase contact within group and decrease between groups
         divider = -1 # determines which groups separated. -1 means only oldest group separated from the rest
