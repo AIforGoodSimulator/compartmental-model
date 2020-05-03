@@ -1,5 +1,4 @@
 from initialise_parameters import preparePopulationFrame, params
-import numpy as np
 
 # camp
 camp = 'Moria'
@@ -30,6 +29,7 @@ control_dict = dict( # contains our 6 different control options. Can choose any 
     # 6
     # move uninfected high risk people off site
     remove_high_risk = dict(rate = 50/population,  # people per day
+                            n_categories_removed = 2, # remove oldest n categories
                             timing = [0,50])
     #amount of people per day 20 50
     #timing from 0-50 0-30

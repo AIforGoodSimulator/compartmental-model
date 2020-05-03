@@ -10,7 +10,7 @@ import os
 
 #import the config file for the experimental setup 
 # baseline experiment
-# from configs.baseline import camp, population_frame, population, control_dict
+from configs.baseline import camp, population_frame, population, control_dict
 # better hygiene from day 0
 # from configs.better_hygiene import camp, population_frame, population, control_dict
 # build up ICU capacity from 6 to 100
