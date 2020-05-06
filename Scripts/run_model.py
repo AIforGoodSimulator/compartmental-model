@@ -22,7 +22,7 @@ from configs.baseline import camp, population_frame, population, control_dict
 # remove high risk people form the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
 # from configs.remove_highrisk import camp, population_frame, population, control_dict
 
-def run_simulation():
+def run_simulation(mode='experiment'):
     # cd into Scripts
     cwd = os.getcwd()
 
@@ -68,7 +68,8 @@ def run_simulation():
         sols        = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'), 'rb'))
         percentiles = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'), 'rb'))
 
-
+    if mode=='test':
+        return sols_raw
 
     # example of generating csv (currently for medium R0 value and for certain percentiles)
     # might want to include all age structure info for percentiles as well as medium R0
@@ -125,4 +126,4 @@ def run_simulation():
     return None
 
 if __name__=='__main__':
-    run_simulation()
+    _=run_simulation()
