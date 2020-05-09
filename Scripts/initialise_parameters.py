@@ -29,6 +29,8 @@ def preparePopulationFrame(camp_name):
 
     population_frame = population_frame.rename(columns={'Value': "Population"})
 
+    # make sure population frame.value sum to 100
+    # population_frame.loc[:,'Population']=population_frame.Population/sum(population_frame.Population)
 
     population_size = population_size[population_size['Variable']=='Total_population']
     population_size = np.float(population_size.Value)
