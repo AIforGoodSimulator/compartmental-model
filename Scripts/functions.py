@@ -208,11 +208,8 @@ class simulator:
 
 
 
-def simulate_range_of_R0s(population_frame, population, control_dict, camp): # gives solution for middle R0, as well as solutions for a range of R0s between an upper and lower bound
+def simulate_range_of_R0s(population_frame, population, control_dict, camp,t_stop=200): # gives solution for middle R0, as well as solutions for a range of R0s between an upper and lower bound
     
-    t_stop = 200
-
-
     # infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
     infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix_' + camp + '.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
     infection_matrix = infection_matrix[:,1:]
