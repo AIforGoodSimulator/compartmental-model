@@ -101,19 +101,19 @@ class simulator:
             # H
             dydt[params.H_ind + i*params.number_compartments] = (params.removal_rate * (hospital_prob[i]) * y[params.I_ind + i*params.number_compartments]
                                                                  - params.hosp_rate * y[params.H_ind + i*params.number_compartments]
-                                                                 + params.death_rate * (1 - params.death_prob) * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # recovered from critical care
-                                                                 + params.death_rate_with_ICU * (1 - params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # ICU
+                                                                #  + params.death_rate * (1 - params.death_prob) * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # recovered despite no ICU (0, since now assume death_prob is 1)
+                                                                 + params.death_rate_with_ICU * (1 - params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # recovered from ICU
                                                                  + move_sick_offsite  * (hospital_prob[i]) # proportion of removed people who were hospitalised once removed (no delay)
 
                                                                  )
             # C
             dydt[params.C_ind + i*params.number_compartments] = (params.hosp_rate  * (critical_prob[i]) * y[params.H_ind + i*params.number_compartments]
-                                                                 - params.death_rate * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # without ICU
+                                                                 - params.death_rate * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # without ICU treatment
                                                                  - params.death_rate_with_ICU * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # up to hosp capacity get treatment
                                                                  )
             # D
-            dydt[params.D_ind + i*params.number_compartments] = (params.death_rate * (params.death_prob) * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # non ICU
-                                                                + params.death_rate_with_ICU * (params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # ICU
+            dydt[params.D_ind + i*params.number_compartments] = (params.death_rate * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # died without ICU treatment (all cases that don't get treatment die)
+                                                                + params.death_rate_with_ICU * (params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # died despite attempted ICU treatment
                                                                 )
             # O
             dydt[params.O_ind + i*params.number_compartments] = remove_high_risk_people * y[params.S_ind + i*params.number_compartments] / S_removal

@@ -60,7 +60,6 @@ removal_rate   = 1/(np.float(model_params[model_params['Name']=='removal period'
 hosp_rate                   = 1/(np.float(model_params[model_params['Name']=='hosp period'].Value))
 death_rate                  = 1/(np.float(model_params[model_params['Name']=='death period'].Value))
 
-death_prob          = np.float(model_params[model_params['Name']=='death prob'].Value)
 number_compartments = int(model_params[model_params['Name']=='number_compartments'].Value)
 
 beta_list           = [R_0*removal_rate  for R_0 in R_0_list] # R_0 mu/N, N=1
@@ -105,7 +104,6 @@ class Parameters:
         self.death_rate          = death_rate
         self.death_rate_with_ICU = death_rate_with_ICU
         
-        self.death_prob          = death_prob
         self.death_prob_with_ICU = death_prob_with_ICU
 
         self.S_ind = 0
