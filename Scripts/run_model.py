@@ -34,13 +34,14 @@ def run_simulation(mode='experiment'):
     save = True
     save_csv = True
     # plot output?
-    plot_output = True
-    save_plots  = True # needs plot_output to be True
+    plot_output = False
+    save_plots  = False # needs plot_output to be True
     #simulation timestep
     t_sim=200
 
     ##----------------------------------------------------------------
-    param_string = "Camp=%s_hygieneT=%s_remInfRate=%s_remInfT=%s_Shield=%s_RemHrRate=%s_RemHrTime=%s_ICU=%s" %(camp,
+    param_string = "Camp=%s_%shygieneT=%s_remInfRate=%s_remInfT=%s_Shield=%s_RemHrRate=%s_RemHrTime=%s_ICU=%s" %(camp,
+                                                                                                                control_dict['better_hygiene']['value'],
                                                                                                                control_dict['better_hygiene']['timing'],
                                                                                                                ceil(population*control_dict['remove_symptomatic']['rate']),
                                                                                                                control_dict['remove_symptomatic']['timing'],
@@ -62,12 +63,12 @@ def run_simulation(mode='experiment'):
         sols_raw,sols, percentiles =simulate_range_of_R0s(population_frame, population, control_dict, camp,t_stop=t_sim) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
         if save:
             object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name + '_all.pickle'),  sols_raw)
-            object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'),  sols)
-            object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'),  percentiles)
+            # object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'),  sols)
+            # object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'),  percentiles)
     else:
         print('retrieving results from saved runs')
         sols_raw    = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '_all.pickle'), 'rb'))
-        sols        = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'), 'rb'))
+        # sols        = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'), 'rb'))
         percentiles = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'), 'rb'))
 
     if mode=='test':

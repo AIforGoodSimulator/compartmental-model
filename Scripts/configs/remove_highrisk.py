@@ -30,7 +30,7 @@ control_dict = dict( # contains our 6 different control options. Can choose any 
     # move uninfected high risk people off site
     remove_high_risk = dict(rate = 50/population,  # people per day
                             n_categories_removed = 2, # remove oldest n categories
-                            timing = [0,50])
+                            timing = [0,30])
     #amount of people per day 20 50
     #timing from 0-50 0-30
 
