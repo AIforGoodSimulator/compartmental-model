@@ -22,7 +22,7 @@ class simulator:
 #-----------------------------------------------------------------
         
     ##
-    def ode_system(self,t,y,infection_matrix,age_categories,hospital_prob,critical_prob,beta,better_hygiene,remove_symptomatic,remove_high_risk,ICU_capacity):
+    def ode_system(self,t,y,infection_matrix,age_categories,symptomatic_prob,hospital_prob,critical_prob,beta,better_hygiene,remove_symptomatic,remove_high_risk,ICU_capacity):
         ##
         dydt = np.zeros(y.shape)
 
@@ -78,18 +78,18 @@ class simulator:
 
             # ODE system:
             # S
-            dydt[params.S_ind + i*params.number_compartments] = (- y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + np.dot(infection_matrix[i,:],A_vec)) 
+            dydt[params.S_ind + i*params.number_compartments] = (- y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + params.AsymptInfectiousFactor*np.dot(infection_matrix[i,:],A_vec)) 
                                                                     - remove_high_risk_people * y[params.S_ind + i*params.number_compartments] / S_removal )
             # E
-            dydt[params.E_ind + i*params.number_compartments] = ( y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + np.dot(infection_matrix[i,:],A_vec))
+            dydt[params.E_ind + i*params.number_compartments] = (  y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + params.AsymptInfectiousFactor*np.dot(infection_matrix[i,:],A_vec))
                                                                 - params.latent_rate * y[params.E_ind + i*params.number_compartments])
             # I
-            dydt[params.I_ind + i*params.number_compartments] = (params.latent_rate * (1-params.asympt_prop) * y[params.E_ind + i*params.number_compartments]
+            dydt[params.I_ind + i*params.number_compartments] = (params.latent_rate * (1-symptomatic_prob[i]) * y[params.E_ind + i*params.number_compartments]
                                                                   - params.removal_rate * y[params.I_ind + i*params.number_compartments]
                                                                   - move_sick_offsite
                                                                   )
             # A
-            dydt[params.A_ind + i*params.number_compartments] = (params.latent_rate * params.asympt_prop * y[params.E_ind + i*params.number_compartments]
+            dydt[params.A_ind + i*params.number_compartments] = (params.latent_rate * symptomatic_prob[i] * y[params.E_ind + i*params.number_compartments]
                                                                  - params.removal_rate * y[params.A_ind + i*params.number_compartments])
             # R
             dydt[params.R_ind + i*params.number_compartments] = (params.removal_rate * (1 - hospital_prob[i]) * y[params.I_ind + i*params.number_compartments]
@@ -140,9 +140,11 @@ class simulator:
 
         y0 = np.zeros(params.number_compartments*age_categories) 
 
-        population_vector = np.asarray(population_frame.Population)
-        # print(population_vector)
+        population_vector = np.asarray(population_frame.Population_structure)
 
+        
+        
+        # initial conditions
         for i in range(age_categories):
             y0[params.S_ind + i*params.number_compartments] = (population_vector[i]/100)*S0
             y0[params.E_ind + i*params.number_compartments] = (population_vector[i]/100)*E0
@@ -155,12 +157,12 @@ class simulator:
             y0[params.O_ind + i*params.number_compartments] = (population_vector[i]/100)*O0
 
         
-
+        symptomatic_prob = np.asarray(population_frame.p_symptomatic)
         hospital_prob = np.asarray(population_frame.p_hospitalised)
         critical_prob = np.asarray(population_frame.p_critical)
 
 
-        sol = ode(self.ode_system).set_f_params(infection_matrix,age_categories,hospital_prob,critical_prob,beta,control_dict['better_hygiene'],control_dict['remove_symptomatic'],control_dict['remove_high_risk'],control_dict['ICU_capacity'])
+        sol = ode(self.ode_system).set_f_params(infection_matrix,age_categories,symptomatic_prob,hospital_prob,critical_prob,beta,control_dict['better_hygiene'],control_dict['remove_symptomatic'],control_dict['remove_high_risk'],control_dict['ICU_capacity'])
         
         tim = np.linspace(0,T_stop, T_stop+1) # 1 time value per day
         
@@ -214,7 +216,7 @@ def simulate_range_of_R0s(population_frame, population, control_dict, camp,t_sto
     infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix_' + camp + '.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
     infection_matrix = infection_matrix[:,1:]
 
-    next_generation_matrix = np.matmul(0.01*np.diag(population_frame.Population) , infection_matrix )
+    next_generation_matrix = np.matmul(0.01*np.diag(population_frame.Population_structure) , infection_matrix )
     largest_eigenvalue = max(np.linalg.eig(next_generation_matrix)[0]) # max eigenvalue
     
 
@@ -273,7 +275,7 @@ def object_dump(file_name,object_to_dump):
         os.makedirs(os.path.join(cwd,outdir),exist_ok=True) 
     
     with open(file_name, 'wb') as handle:
-        pickle.dump(object_to_dump,handle,protocol=pickle.HIGHEST_PROTOCOL) # protocol?
+        pickle.dump(object_to_dump,handle,protocol=pickle.HIGHEST_PROTOCOL)
 
     return None
 
@@ -290,15 +292,15 @@ def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec
                         '6':  'C',
                         '7':  'D',
                         '8':  'O',
-                        '9':  'CS',
-                        '10': 'CE',
-                        '11': 'CI',
-                        '12': 'CA',
-                        '13': 'CR',
-                        '14': 'CH',
-                        '15': 'CC',
-                        '16': 'CD',
-                        '17': 'CO',
+                        '9':  'CS', # change in S
+                        '10': 'CE', # change in E
+                        '11': 'CI', # change in I
+                        '12': 'CA', # change in A
+                        '13': 'CR', # change in R
+                        '14': 'CH', # change in H
+                        '15': 'CC', # change in C
+                        '16': 'CD', # change in D
+                        '17': 'CO', # change in O
                         '18': 'Ninf',
                         }
 
@@ -311,8 +313,6 @@ def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec
 
         col_names = []
         for i in range(csv_sol.shape[1]):
-            # ii = i % 8
-            # jj = floor(i/8)
             col_names.append(categories[category_map[str(i)]]['longname'])
             
 

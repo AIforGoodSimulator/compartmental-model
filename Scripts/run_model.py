@@ -28,13 +28,13 @@ def run_simulation(mode='experiment'):
 
     ##----------------------------------------------------------------
     # load a saved solution?
-    load = False
+    load = True
     # save generated solution? Only generates new if not loading old
     # saves as a python pickle object
     save = True
     save_csv = True
     # plot output?
-    plot_output = False
+    plot_output = True
     save_plots  = False # needs plot_output to be True
     #simulation timestep
     t_sim=200
@@ -60,7 +60,7 @@ def run_simulation(mode='experiment'):
     if not load or not (already_exists_soln and already_exists_percentile): # generate solution if not wanting to load, or if wanting to load but at least one file missing
         # run model - change inputs via 'config.py'
         print('running the model to produce results')
-        sols_raw,sols, percentiles =simulate_range_of_R0s(population_frame, population, control_dict, camp,t_stop=t_sim) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
+        sols_raw,sols, percentiles = simulate_range_of_R0s(population_frame, population, control_dict, camp,t_stop=t_sim) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
         if save:
             object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name + '_all.pickle'),  sols_raw)
             # object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'),  sols)
@@ -100,7 +100,7 @@ def run_simulation(mode='experiment'):
         # plots - change outputs via these below
         print('generating dynamic plots in plotly')
         multiple_categories_to_plot    = ['E','A','I','R','H','C','D','O'] # categories to plot
-        single_category_to_plot        = 'R'           # categories to plot in final 3 plots
+        single_category_to_plot        = 'D'           # categories to plot in final 3 plots
 
         # plot graphs
         fig_multi_lines   = go.Figure(  figure_generator(sols,multiple_categories_to_plot,population,population_frame))   # plot with lots of lines
