@@ -101,8 +101,6 @@ def run_simulation(mode='experiment'):
         multiple_categories_to_plot    = ['E','A','I','R','H','C','D','O'] # categories to plot
         single_category_to_plot        = 'R'           # categories to plot in final 3 plots
 
-        no_control = True # otherwise plots blue bar
-
         # plot graphs
         fig_multi_lines   = go.Figure(  figure_generator(sols,multiple_categories_to_plot,population,population_frame))   # plot with lots of lines
         fig_age_structure    = go.Figure(age_structure_plot(sols,single_category_to_plot,    population,population_frame))   # age structure
