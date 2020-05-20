@@ -191,7 +191,22 @@ def cumulative_all_table(df):
 		cumulative={}
 		for param in table_params:
 			if param=='Susceptible':
-				cumulative[param]=(N-(group[param].tail(1).values[0]))*0.5
+				param09='Susceptible: 0-9'
+				param1019='Susceptible: Oct-19'
+				param2029='Susceptible: 20-29'
+				param3039='Susceptible: 30-39'
+				param4049='Susceptible: 40-49'
+				param5059='Susceptible: 50-59'
+				param6069='Susceptible: 60-69'
+				param7079='Susceptible: 70-79'
+				cumulative[param]=((N*0.2105-(group[param09].tail(1).values[0]))*0.4+
+									(N*0.1734-(group[param1019].tail(1).values[0]))*0.25+
+									(N*0.2635-(group[param2029].tail(1).values[0]))*0.37+
+									(N*0.1716-(group[param3039].tail(1).values[0]))*0.42+
+									(N*0.0924-(group[param4049].tail(1).values[0]))*0.51+
+									(N*0.0555-(group[param5059].tail(1).values[0]))*0.59+
+									(N*0.0254-(group[param6069].tail(1).values[0]))*0.72+
+									(N*0.0077-(group[param7079].tail(1).values[0]))*0.76)
 			elif param=='Deaths':
 				cumulative[param]=(group[param].tail(1).values[0])
 			elif param=='Hospitalised' or param=='Critical':
@@ -247,7 +262,7 @@ def cumulative_age_table(df):
 						'<9 years', '10-19 years', '20-29 years', '30-39 years', '40-49 years', '50-59 years','60-69 years',
 						'70+ years'])]
 	table_params=['Susceptible','Hospitalised','Critical','Deaths']
-	params_select=['Susceptible','Deaths']
+	params_select=['Susceptible:','Deaths']
 	params_accu=['Hospitalised','Critical']
 	columns_to_select=[]
 	columns_to_acc=[]
@@ -263,14 +278,56 @@ def cumulative_age_table(df):
 	six_month_select={}
 
 	for column in columns_to_select:
-		if 'Susceptible' in column:
-			first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.5).quantile([.25, .75])
-			three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.5).quantile([.25, .75])
-			six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.5).quantile([.25, .75])
+		if 'Susceptible:' in column:
+			if '0-9' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.4).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.4).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.4).quantile([.25, .75])
+			elif 'Oct-19' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.25).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.25).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.25).quantile([.25, .75])
+			elif '20-29' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.37).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.37).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.37).quantile([.25, .75])
+			elif '30-39' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.42).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.42).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.42).quantile([.25, .75])
+			elif '40-49' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.51).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.51).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.51).quantile([.25, .75])
+			elif '50-59' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.59).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.59).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.59).quantile([.25, .75])
+			elif '60-69' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.72).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.72).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.72).quantile([.25, .75])
+			elif '70-79' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.76).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.76).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.76).quantile([.25, .75])
 		else:
 			first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month)[column].quantile([.25, .75])
 			three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month)[column].quantile([.25, .75])
 			six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month)[column].quantile([.25, .75])
+
+	first_month_select['Susceptible']={0.25:0,0.75:0}
+	three_month_select['Susceptible']={0.25:0,0.75:0}
+	six_month_select['Susceptible']={0.25:0,0.75:0}
+	for column in columns_to_select:
+		if 'Susceptible:' in column:
+			first_month_select['Susceptible'][0.25]+=first_month_select[column][0.25]
+			first_month_select['Susceptible'][0.75]+=first_month_select[column][0.75]
+			three_month_select['Susceptible'][0.25]+=three_month_select[column][0.25]
+			three_month_select['Susceptible'][0.75]+=three_month_select[column][0.75]
+			six_month_select['Susceptible'][0.25]+=six_month_select[column][0.25]
+			six_month_select['Susceptible'][0.75]+=six_month_select[column][0.75]
+
 	first_month_accu={}
 	three_month_accu={}
 	six_month_accu={}
@@ -280,7 +337,7 @@ def cumulative_age_table(df):
 		six_month_accu[column]=df.groupby('R0')[[column,'Time']].apply(find_six_months)[column].quantile([.25, .75])
 	first_month = Merge(first_month_select, first_month_accu) 
 	third_month = Merge(three_month_select, three_month_accu) 
-	sixth_month = Merge(six_month_select, six_month_accu) 
+	sixth_month = Merge(six_month_select, six_month_accu)
 	first_month_count=np.empty(36,dtype="S15")
 	for key,item in first_month.items():
 		if key=='Susceptible':
