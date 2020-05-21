@@ -1,5 +1,7 @@
 # Compartment model from AIforGood Simulator
 
+[![Deon badge](https://img.shields.io/badge/ethics%20checklist-deon-brightgreen.svg?style=popout-square)](http://deon.drivendata.org/)
+
 AIforGood Simulator aims to provide epidimology modelling help to humanitarian NGOs who are working to contain coronavirus outbreak in refugee camps. Please fill out the contact form on [our website](https://www.aiforgoodsimulator.com) if you want to get in touch or volunteer with us.
 
 # Model description

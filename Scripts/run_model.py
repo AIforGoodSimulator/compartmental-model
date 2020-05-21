@@ -34,7 +34,7 @@ def run_simulation(mode='experiment'):
     save = True
     save_csv = True
     # plot output?
-    plot_output = True
+    plot_output = False
     save_plots  = False # needs plot_output to be True
     #simulation timestep
     t_sim=200
