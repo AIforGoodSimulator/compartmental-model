@@ -3,26 +3,26 @@
 [![Deon badge](https://img.shields.io/badge/ethics%20checklist-deon-brightgreen.svg?style=popout-square)](http://deon.drivendata.org/)
 
 ## A. Data Collection
- - [ ] **A.1 Informed consent**: If there are human subjects, have they given informed consent, where subjects affirmatively opt-in and have a clear understanding of the data uses to which they consent?
- - [ ] **A.2 Collection bias**: Have we considered sources of bias that could be introduced during data collection and survey design and taken steps to mitigate those?
- - [ ] **A.3 Limit PII exposure**: Have we considered ways to minimize exposure of personally identifiable information (PII) for example through anonymization or not collecting information that isn't relevant for analysis?
+ - [ ] **A.1 Informed consent**: If there are human subjects, have they given informed consent, where subjects affirmatively opt-in and have a clear understanding of the data uses to which they consent? (we only have aggregate statiscs shared from the NGOs we work with which in turn they have sought consent from the residents)
+ - [ ] **A.2 Collection bias**: Have we considered sources of bias that could be introduced during data collection and survey design and taken steps to mitigate those? (there are a few sournces bias that could lead to a wrong etimate of the total population within the camp since the camp entry and exit can be fluid and there are situations where miscounts occur. People's age data might not be entirely accurate because people might have lost their birth certificates)
+ - [ ] **A.3 Limit PII exposure**: Have we considered ways to minimize exposure of personally identifiable information (PII) for example through anonymization or not collecting information that isn't relevant for analysis? (Here we only use aggregate statistics of age in 10 year bucket therefore no PII is processed)
 
 ## B. Data Storage
- - [ ] **B.1 Data security**: Do we have a plan to protect and secure data (e.g., encryption at rest and in transit, access controls on internal users and third parties, access logs, and up-to-date software)?
- - [ ] **B.2 Right to be forgotten**: Do we have a mechanism through which an individual can request their personal information be removed?
- - [ ] **B.3 Data retention plan**: Is there a schedule or plan to delete the data after it is no longer needed?
+ - [ ] **B.1 Data security**: Do we have a plan to protect and secure data (e.g., encryption at rest and in transit, access controls on internal users and third parties, access logs, and up-to-date software)? (this is something we should implement even for internal users)
+ - [ ] **B.2 Right to be forgotten**: Do we have a mechanism through which an individual can request their personal information be removed? (no unless the NGOs rescind the data from us)
+ - [ ] **B.3 Data retention plan**: Is there a schedule or plan to delete the data after it is no longer needed? (we should have this where the analysis are done and reports are produced then we can get rid of the original raw data)
 
 ## C. Analysis
- - [ ] **C.1 Missing perspectives**: Have we sought to address blindspots in the analysis through engagement with relevant stakeholders (e.g., checking assumptions and discussing implications with affected communities and subject matter experts)?
- - [ ] **C.2 Dataset bias**: Have we examined the data for possible sources of bias and taken steps to mitigate or address these biases (e.g., stereotype perpetuation, confirmation bias, imbalanced classes, or omitted confounding variables)?
- - [ ] **C.3 Honest representation**: Are our visualizations, summary statistics, and reports designed to honestly represent the underlying data?
- - [ ] **C.4 Privacy in analysis**: Have we ensured that data with PII are not used or displayed unless necessary for the analysis?
- - [ ] **C.5 Auditability**: Is the process of generating the analysis well documented and reproducible if we discover issues in the future?
+ - [ ] **C.1 Missing perspectives**: Have we sought to address blindspots in the analysis through engagement with relevant stakeholders (e.g., checking assumptions and discussing implications with affected communities and subject matter experts)? (we are listening to epidimiology experts in their approach and model the covid19 outbreak with their suggested parameters and we will demo out report with people working in the camps to see if all the assumptions going into the model can hold up)
+ - [ ] **C.2 Dataset bias**: Have we examined the data for possible sources of bias and taken steps to mitigate or address these biases (e.g., stereotype perpetuation, confirmation bias, imbalanced classes, or omitted confounding variables)? (the bias we know of are from the collection side so we don't yet have a plan to de-bias)
+ - [ ] **C.3 Honest representation**: Are our visualizations, summary statistics, and reports designed to honestly represent the underlying data? (Yes - and this will involve having more than one pair of eyes examinign the report and visulisations at least two developers should complete this task for code review purposes)
+ - [ ] **C.4 Privacy in analysis**: Have we ensured that data with PII are not used or displayed unless necessary for the analysis? (Yes)
+ - [ ] **C.5 Auditability**: Is the process of generating the analysis well documented and reproducible if we discover issues in the future? (Yes we have refactored the code and will write up tests to make sure the code is reproducible. Pending a working document on how the report is produced (all the logic that is coded up to produce table and plots))
 
 ## D. Modeling
- - [ ] **D.1 Proxy discrimination**: Have we ensured that the model does not rely on variables or proxies for variables that are unfairly discriminatory?
+ - [ ] **D.1 Proxy discrimination**: Have we ensured that the model does not rely on variables or proxies for variables that are unfairly discriminatory? 
  - [ ] **D.2 Fairness across groups**: Have we tested model results for fairness with respect to different affected groups (e.g., tested for disparate error rates)?
- - [ ] **D.3 Metric selection**: Have we considered the effects of optimizing for our defined metrics and considered additional metrics?
+ - [ ] **D.3 Metric selection**: Have we considered the effects of optimizing for our defined metrics and considered additional metrics? 
  - [ ] **D.4 Explainability**: Can we explain in understandable terms a decision the model made in cases where a justification is needed?
  - [ ] **D.5 Communicate bias**: Have we communicated the shortcomings, limitations, and biases of the model to relevant stakeholders in ways that can be generally understood?
 
