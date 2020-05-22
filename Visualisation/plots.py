@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
 from ipywidgets import fixed,interactive,Layout
-from preprocess import *
+from preprocess import read_preprocess_file,load_interventions
 import ipywidgets as widgets
 
 def plot_by_age(column,df):
@@ -60,7 +60,7 @@ def plot_by_age_interactive(plot_by_age,df):
 	return container
 
 def plot_one_intervention_horizontal(column,baseline,one_intervention_dict):
-	fig, ax = plt.subplots(1, 10, sharex='col', sharey='row',figsize=(25,5))
+	fig, ax = plt.subplots(1, len(one_intervention_dict)+1, sharex='col', sharey='row',figsize=(25,5))
 	sns.lineplot(x="Time", y=column,ci="sd",data=baseline,ax=ax[0])
 	ax[0].title.set_text('Baseline')
 	i=1
@@ -70,16 +70,8 @@ def plot_one_intervention_horizontal(column,baseline,one_intervention_dict):
 		i+=1
 
 def plot_one_intervention_horizontal_interactive(plot_one_intervention_horizontal,baseline):
-	import glob
-	from pathlib import Path
 	folder_path='./model_outcomes/one_intervention/'
-	one_intervention_files=[]
-	for file in glob.glob(folder_path+"*.csv"):
-		one_intervention_files.append(file)
-	one_intervention_dict={}
-	for file in one_intervention_files:
-		path=Path(file)
-		one_intervention_dict[path.stem]=read_preprocess_file(file)
+	one_intervention_dict=load_interventions(folder_path)
 	w = interactive(plot_one_intervention_horizontal,
 					column=widgets.Select(
 					options=['Infected (symptomatic)','Hospitalised','Critical','Deaths'],
@@ -101,7 +93,7 @@ def plot_one_intervention_vertical(column,one_intervention_dict):
 	for key,value in one_intervention_dict.items():
 		peak_values[key]=value.groupby('R0')[column].max().mean()
 	peak_values_sorted={k: v for k, v in sorted(peak_values.items(), key=lambda item: item[1],reverse=True)}
-	fig, ax = plt.subplots(9, 1, sharex='row', sharey=True,figsize=(15,20))
+	fig, ax = plt.subplots(len(one_intervention_dict), 1, sharex='row', sharey=True,figsize=(15,20))
 	i=0
 	for key in peak_values_sorted.keys():
 		sns.lineplot(x="Time", y=column,ci="sd",data=one_intervention_dict[key],ax=ax[i])
@@ -110,16 +102,8 @@ def plot_one_intervention_vertical(column,one_intervention_dict):
 		i+=1
 
 def plot_one_intervention_vertical_interactive(plot_one_intervention_vertical):
-	import glob
-	from pathlib import Path
 	folder_path='./model_outcomes/one_intervention/'
-	one_intervention_files=[]
-	for file in glob.glob(folder_path+"*.csv"):
-		one_intervention_files.append(file)
-	one_intervention_dict={}
-	for file in one_intervention_files:
-		path=Path(file)
-		one_intervention_dict[path.stem]=read_preprocess_file(file)
+	one_intervention_dict=load_interventions(folder_path)
 	w = interactive(plot_one_intervention_vertical,
 					column=widgets.Select(
 					options=['Infected (symptomatic)','Hospitalised','Critical','Deaths'],
@@ -143,16 +127,8 @@ def plot_intervention_comparison(scenarioDict,firstIntervention,secondInterventi
 	ax[1].title.set_text(secondIntervention)
 
 def plot_intervention_comparison_interactive(plot_intervention_comparison,baseline):
-	import glob
-	from pathlib import Path
 	folder_path='./model_outcomes/one_intervention/'
-	one_intervention_files=[]
-	for file in glob.glob(folder_path+"*.csv"):
-		one_intervention_files.append(file)
-	selectedInterventions={}
-	for file in one_intervention_files:
-		path=Path(file)
-		selectedInterventions[path.stem]=read_preprocess_file(file)
+	selectedInterventions=load_interventions(folder_path)
 	selectedInterventions['do nothing']=baseline
 	first = widgets.Dropdown(options=selectedInterventions.keys(),value='do nothing',description='Compare:',disabled=False)
 	second = widgets.Dropdown(options=selectedInterventions.keys(),value='shielding',description='With:',disabled=False)

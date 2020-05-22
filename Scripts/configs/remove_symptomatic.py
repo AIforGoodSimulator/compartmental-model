@@ -18,8 +18,9 @@ control_dict = dict( # contains our 6 different control options. Can choose any 
                         
     # 4
     # move symptomatic cases off site 200 days in total simulation time
-    remove_symptomatic = dict(rate = 50/population,  # people per day
-                            timing = [0,100]),
+    remove_symptomatic = dict(rate = 10/population,  # people per day
+                            timing = [15,100]),
+    # will be good to know the capacity of quanrantine/isolation centre
 
     # 5
     # partially separate low and high risk

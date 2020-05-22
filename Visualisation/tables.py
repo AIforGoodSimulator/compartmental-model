@@ -2,6 +2,8 @@
 
 import numpy as np
 import pandas as pd
+from preprocess import read_preprocess_file,load_interventions
+
 
 def incidence_all_table(df):
 	#calculate Peak Day IQR and Peak Number IQR for each of the 'incident' variables to plot
@@ -589,7 +591,62 @@ def cumulative_age_table(df):
 	count_table_age = pd.DataFrame(data=d, index=arrays)
 	return count_table_age
 
-			
+
+
+def effectiveness_table_total(baseline,styler=True):
+	folder_path='./model_outcomes/one_intervention/'
+	selectedInterventions=load_interventions(folder_path)
+	table_params=['Susceptible','Hospitalised','Critical','Deaths']
+	cum_table_baseline=cumulative_all_table(baseline)
+	baseline_numbers=cum_table_baseline.loc[:,'Counts'].apply(lambda x: [int(i) for i in x.split('-')])
+	baseline_numbers_separate = pd.DataFrame(baseline_numbers.tolist(), columns=['25%','75%'])
+	#write a function to generate effectiveness table:
+	comparisonTable={}
+	if styler:
+		colouringTable={}
+	for key,value in selectedInterventions.items():
+		cumTable=cumulative_all_table(value)
+		intervention_numbers=pd.DataFrame(cumTable.loc[:,'Counts'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
+		differencePercentage=(baseline_numbers_separate-intervention_numbers)/baseline_numbers_separate*100
+		prettyOutput=[]
+		for _,row in differencePercentage.round(0).astype(int).iterrows():
+			if row['25%']<0:
+				output1=-row['25%']
+			else:
+				output1=row['25%']
+			if row['75%']<0:
+				output2=-row['75%']
+			else:
+				output2=row['75%']
+			if output2>output1:
+				prettyOutput.append(str(output1)+'%-'+str(output2)+'%')
+			else:
+				prettyOutput.append(str(output2)+'%-'+str(output1)+'%')
+		comparisonTable[key]=prettyOutput
+		if styler:
+			medianValues=[]
+			for _,row in differencePercentage.iterrows():
+				if row['25%']<0:
+					output1=-row['25%']
+				else:
+					output1=row['25%']
+				if row['75%']<0:
+					output2=-row['75%']
+				else:
+					output2=row['75%']
+				medianValues.append((output1+output2)/2)
+			colouringTable[key]=medianValues
+	comparisonTable['Total']=table_params
+	comparisondf=pd.DataFrame.from_dict(comparisonTable).set_index('Total')
+	if styler:
+		colouringTable['Total']=table_params
+		colouringdf=pd.DataFrame.from_dict(colouringTable).set_index('Total')
+		def colorhighestinrow(row):
+			mask=(colouringdf.loc[row.name,:]==colouringdf.loc[row.name,:].max())
+			c=np.select([mask==True], ['green'])
+			return [f'background-color: {i}' for i in c]
+		return(comparisondf.style.apply(colorhighestinrow,axis='columns'))
+	return comparisondf
 #read in the baseline file
 # baseline=read_preprocess_file(file_path+'/baseline.csv')
 
