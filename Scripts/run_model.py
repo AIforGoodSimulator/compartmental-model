@@ -38,9 +38,10 @@ def run_simulation(mode='experiment'):
     save_plots  = False # needs plot_output to be True
     #simulation timestep
     t_sim = 200
+    numberOfIterations = 500 # suggest 800-1000 for real thing
 
     ##----------------------------------------------------------------
-    param_string = "Camp=%s_%shygieneT=%s_remInfRate=%s_remInfT=%s_Shield=%s_RemHrRate=%s_RemHrTime=%s_ICU=%s" %(camp,
+    param_string = "Camp=%s_%shygieneT=%s_remInfRate=%s_remInfT=%s_Shield=%s_RemHrRate=%s_RemHrTime=%s_ICU=%s_NumIts=%s" %(camp,
                                                                                                                 control_dict['better_hygiene']['value'],
                                                                                                                control_dict['better_hygiene']['timing'],
                                                                                                                ceil(population*control_dict['remove_symptomatic']['rate']),
@@ -48,33 +49,39 @@ def run_simulation(mode='experiment'):
                                                                                                                control_dict['shielding']['used'],
                                                                                                                ceil(population*control_dict['remove_high_risk']['rate']),
                                                                                                                control_dict['remove_high_risk']['timing'],
-                                                                                                               ceil(population*control_dict['ICU_capacity']['value']))
+                                                                                                               ceil(population*control_dict['ICU_capacity']['value']),
+                                                                                                               numberOfIterations
+                                                                                                               )
     solution_name   = 'Solution_' + param_string    
     percentile_name = 'Percentiles_'  + param_string
 
-    already_exists_soln       = os.path.isfile(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'))
-    already_exists_percentile = os.path.isfile(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'))
+    sols_raw_Name    = os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '_all.pickle')
+    StandardSol_Name = os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '_Standard.pickle')
+    percentiles_Name = os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle')
+
+    already_exists_sols_raw   = os.path.isfile(sols_raw_Name)
+    already_exists_soln       = os.path.isfile(StandardSol_Name)
+    already_exists_percentile = os.path.isfile(percentiles_Name)
 
 
 
-    if not load or not (already_exists_soln and already_exists_percentile): # generate solution if not wanting to load, or if wanting to load but at least one file missing
+    if not load or not (already_exists_sols_raw and already_exists_soln and already_exists_percentile): # generate solution if not wanting to load, or if wanting to load but at least one file missing
         # run model - change inputs via 'config.py'
         print('running the model to produce results')
         # sols_raw, StandardSol, percentiles = simulate_range_of_R0s(population_frame, population, control_dict, camp,t_stop=t_sim) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
         # sols_raw, StandardSol, percentiles = simulate_range_of_R0s(population_frame, population, control_dict, camp,t_stop=t_sim) # returns solution for middle R0 and then minimum and maximum values by scanning across a range defined by low and high R0
         
-        numberOfIterations = 500 # suggest 800-1000 for real thing
         sols_raw, StandardSol, percentiles, configDict = SimulateOverRangeOfParameters(population_frame, population, control_dict, camp, numberOfIterations, t_sim)
 
         if save:
-            object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name + numberOfIterations + '_all.pickle'),  sols_raw)
-            object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'),  StandardSol)
-            object_dump(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + '.pickle'),  percentiles)
+            object_dump(sols_raw_Name,     sols_raw)
+            object_dump(StandardSol_Name,  StandardSol)
+            object_dump(percentiles_Name,  percentiles)
     else:
         print('retrieving results from saved runs')
-        sols_raw    = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name + numberOfIterations  + '_all.pickle'), 'rb'))
-        StandardSol = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + solution_name   + '.pickle'), 'rb'))
-        percentiles = pickle.load(open(os.path.join(os.path.dirname(cwd),'saved_runs/' + percentile_name + numberOfIterations + '.pickle'), 'rb'))
+        sols_raw    = pickle.load(open(sols_raw_Name,    'rb'))
+        StandardSol = pickle.load(open(StandardSol_Name, 'rb'))
+        percentiles = pickle.load(open(percentiles_Name, 'rb'))
 
     if mode=='test':
         return sols_raw
