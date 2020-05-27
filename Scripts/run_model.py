@@ -10,13 +10,11 @@ import os
 
 #import the config file for the experimental setup 
 # baseline experiment
-from configs.baseline import camp, population_frame, population, control_dict
+# from configs.baseline import camp, population_frame, population, control_dict
 # better hygiene from day 0
 # from configs.better_hygiene import camp, population_frame, population, control_dict
-# build up ICU capacity from 6 to 100
-# from configs.icu100 import camp, population_frame, population, control_dict
 # remove people form the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
-# from configs.remove_symptomatic import camp, population_frame, population, control_dict
+from configs.remove_symptomatic import camp, population_frame, population, control_dict
 # shielding the old population/high risk
 # from configs.shielding import camp, population_frame, population, control_dict
 # remove high risk people form the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
@@ -31,7 +29,7 @@ def run_simulation(mode='experiment'):
     load = False
     # save generated solution? Only generates new if not loading old
     # saves as a python pickle object
-    save = True
+    save = False
     save_csv = True
     # plot output?
     plot_output = False
@@ -77,13 +75,13 @@ def run_simulation(mode='experiment'):
 
         if save:
             object_dump(sols_raw_Name,     sols_raw)
-            object_dump(StandardSol_Name,  StandardSol)
-            object_dump(percentiles_Name,  percentiles)
+            # object_dump(StandardSol_Name,  StandardSol)
+            # object_dump(percentiles_Name,  percentiles)
     else:
         print('retrieving results from saved runs')
         sols_raw    = pickle.load(open(sols_raw_Name,    'rb'))
-        StandardSol = pickle.load(open(StandardSol_Name, 'rb'))
-        percentiles = pickle.load(open(percentiles_Name, 'rb'))
+        # StandardSol = pickle.load(open(StandardSol_Name, 'rb'))
+        # percentiles = pickle.load(open(percentiles_Name, 'rb'))
 
     if mode=='test':
         return sols_raw

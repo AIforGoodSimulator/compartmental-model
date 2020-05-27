@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from preprocess import read_preprocess_file,load_interventions
 
-
 def incidence_all_table(df):
 	#calculate Peak Day IQR and Peak Number IQR for each of the 'incident' variables to plot
 	table_params=['Infected (symptomatic)','Hospitalised','Critical','Change in Deaths']
@@ -27,7 +26,7 @@ def incidence_all_table(df):
 		q75_day, q25_day = np.percentile(day, [75 ,25])
 		q75_number, q25_number = np.percentile(number, [75 ,25])
 		iqr_table[param]=((int(round(q25_day)), int(round(q75_day))),(int(round(q25_number)), int(round(q75_number))))
-	table_columns={'Infected (symptomatic)':'Incidence of Symptomatic Cases','Hospitalised':'Hospital Demand',
+	table_columns={'Infected (symptomatic)':'Incidence of Symptomatic Cases','Hospitalised':'Hospitalisation Demand',
 					'Critical':'Critical Care Demand','Change in Deaths':'Incidence of Deaths' }
 	outcome=[]
 	peak_day=[]
@@ -38,7 +37,36 @@ def incidence_all_table(df):
 		peak_number.append(f'{iqr_table[param][1][0]}-{iqr_table[param][1][1]}')
 	data={'Outcome':outcome,'Peak Day IQR':peak_day,'Peak Number IQR':peak_number}
 	incidence_table=pd.DataFrame.from_dict(data)
-	return incidence_table
+
+	th_props = [
+		('font-size', '15px'),
+		('text-align', 'center'),
+		('font-weight', 'bold'),
+		('color', '#6d6d6d'),
+	 	('background-color', '#f7f7f9')
+	 	]
+
+	# Set CSS properties for td elements in dataframe
+	td_props = [
+		('font-size', '15px'),
+		('text-align', 'center')
+		]
+	caption_props = [
+		('font-size','15px'),
+		('text-align', 'center')
+	]
+	# Set table styles
+
+	styles = [
+		dict(selector="th", props=th_props),
+		dict(selector="td", props=td_props),
+		dict(selector="caption",props=caption_props)
+	  ]
+	incidence_table_out=(incidence_table.style
+	 .set_caption('Table 1. peak day and peak number for incidences of different disease states of COVID19')
+	 .hide_index()
+	 .set_table_styles(styles))
+	return incidence_table_out
 
 def incidence_age_table(df):
 	#calculate age specific Peak Day IQR and Peak Number IQR for each of the 'incident' variables to contruct table
@@ -175,7 +203,35 @@ def incidence_age_table(df):
 				peak_number[26]=f'{iqr_table_age[key][1][0]}-{iqr_table_age[key][1][1]}'
 	d = {'Peak Day, IQR': peak_day.astype(str), 'Peak Number, IQR': peak_number.astype(str)}
 	incidence_table_age = pd.DataFrame(data=d, index=arrays)
-	return incidence_table_age
+	th_props = [
+		('font-size', '15px'),
+		# ('font-weight', 'bold'),
+		# ('color', '#6d6d6d'),
+	 # 	('background-color', '#f7f7f9')
+	 	]
+
+	# Set CSS properties for td elements in dataframe
+	td_props = [
+		('font-size', '15px'),
+		('text-align', 'center')
+		]
+
+	caption_props = [
+		('font-size','15px'),
+		('text-align', 'center')
+	]
+	# Set table styles
+
+	styles = [
+		dict(selector="th", props=th_props),
+		dict(selector="td", props=td_props),
+		dict(selector="caption",props=caption_props)
+	  ]
+
+	incidence_table_out=(incidence_table_age.style
+	 .set_caption('Table 2. peak day and peak number for incidences of different disease states of COVID19 breakdown by age')
+	 .set_table_styles(styles))
+	return incidence_table_out
 
 def cumulative_all_table(df):
 	#now we try to calculate the total count
@@ -223,7 +279,36 @@ def cumulative_all_table(df):
 		cumulative_count.append(f'{int(round(q25_count))}-{int(round(q75_count))}')
 	data={'Totals':['Symptomatic Cases','Hospital Person-Days','Critical Person-days','Deaths'],'Counts':cumulative_count}
 	cumulative_table=pd.DataFrame.from_dict(data)
-	return cumulative_table
+	th_props = [
+		('font-size', '15px'),
+		('text-align', 'center'),
+		('font-weight', 'bold'),
+		('color', '#6d6d6d'),
+	 	('background-color', '#f7f7f9')
+	 	]
+
+	# Set CSS properties for td elements in dataframe
+	td_props = [
+		('font-size', '15px'),
+		('text-align', 'center')
+		]
+	caption_props = [
+		('font-size','15px'),
+		('text-align', 'center')
+	]
+	# Set table styles
+
+	styles = [
+		dict(selector="th", props=th_props),
+		dict(selector="td", props=td_props),
+		dict(selector="caption",props=caption_props)
+		]
+	cumulative_table_out=(cumulative_table.style
+	 .set_caption('Table 3. Cumulative case counts of different disease states of COVID19')
+	 .hide_index()
+	 .set_table_styles(styles))
+
+	return cumulative_table_out
 
 def find_first_month(df):
 	return df[df['Time']==30]
@@ -589,7 +674,35 @@ def cumulative_age_table(df):
 	d = {'First month': first_month_count.astype(str), 'First three months': three_month_count.astype(str),
 	'First six months': six_month_count.astype(str)}
 	count_table_age = pd.DataFrame(data=d, index=arrays)
-	return count_table_age
+	th_props = [
+		('font-size', '15px'),
+		# ('font-weight', 'bold'),
+		# ('color', '#6d6d6d'),
+	 # 	('background-color', '#f7f7f9')
+	 	]
+
+	# Set CSS properties for td elements in dataframe
+	td_props = [
+		('font-size', '15px'),
+		('text-align', 'center')
+		]
+
+	caption_props = [
+		('font-size','15px'),
+		('text-align', 'center')
+	]
+	# Set table styles
+
+	styles = [
+		dict(selector="th", props=th_props),
+		dict(selector="td", props=td_props),
+		dict(selector="caption",props=caption_props)
+	  ]
+
+	count_table_age_out=(count_table_age.style
+	 .set_caption('Table 4. Cumulative case counts of different disease states of COVID19 breakdown by age')
+	 .set_table_styles(styles))
+	return count_table_age_out
 
 
 

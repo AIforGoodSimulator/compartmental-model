@@ -6,58 +6,105 @@ from ipywidgets import fixed,interactive,Layout
 from preprocess import read_preprocess_file,load_interventions
 import ipywidgets as widgets
 
-def plot_by_age(column,df):
-	fig, ax = plt.subplots(1, 9, sharex='col', sharey='row',figsize=(20,5),constrained_layout=True)
-	for key in df.columns:
-		if key==column:
-			sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[0])
-			ax[0].title.set_text('all ages')
-		elif '0-9' in key:
-			if key.startswith(column):
-				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[1])
-				ax[1].title.set_text('<9 years')
-		elif 'Oct-19' in key:
-			if key.startswith(column):
-				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[2])
-				ax[2].title.set_text('10-19 years')
-		elif '20-29' in key:
-			if key.startswith(column):
-				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[3])
-				ax[3].title.set_text('20-29 years')
-		elif '30-39' in key:
-			if key.startswith(column):
-				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[4])
-				ax[4].title.set_text('30-39 years')
-		elif '40-49' in key:
-			if key.startswith(column):
-				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[5])
-				ax[5].title.set_text('40-49 years')
-		elif '50-59' in key:
-			if key.startswith(column):
-				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[6])
-				ax[6].title.set_text('50-59 years')
-		elif '60-69' in key:
-			if key.startswith(column):
-				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[7])
-				ax[7].title.set_text('60-69 years')
-		elif '70+' in key:
-			if key.startswith(column):
-				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[8])
-				ax[8].title.set_text('70+ years')
+# def plot_by_age(column,df):
+# 	fig, ax = plt.subplots(1, 9, sharex='col', sharey='row',figsize=(20,5),constrained_layout=True)
+# 	for key in df.columns:
+# 		if key==column:
+# 			sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[0])
+# 			ax[0].title.set_text('all ages')
+# 		elif '0-9' in key:
+# 			if key.startswith(column):
+# 				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[1])
+# 				ax[1].title.set_text('<9 years')
+# 		elif 'Oct-19' in key:
+# 			if key.startswith(column):
+# 				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[2])
+# 				ax[2].title.set_text('10-19 years')
+# 		elif '20-29' in key:
+# 			if key.startswith(column):
+# 				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[3])
+# 				ax[3].title.set_text('20-29 years')
+# 		elif '30-39' in key:
+# 			if key.startswith(column):
+# 				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[4])
+# 				ax[4].title.set_text('30-39 years')
+# 		elif '40-49' in key:
+# 			if key.startswith(column):
+# 				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[5])
+# 				ax[5].title.set_text('40-49 years')
+# 		elif '50-59' in key:
+# 			if key.startswith(column):
+# 				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[6])
+# 				ax[6].title.set_text('50-59 years')
+# 		elif '60-69' in key:
+# 			if key.startswith(column):
+# 				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[7])
+# 				ax[7].title.set_text('60-69 years')
+# 		elif '70+' in key:
+# 			if key.startswith(column):
+# 				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[8])
+# 				ax[8].title.set_text('70+ years')
 
-def plot_by_age_interactive(plot_by_age,df):
-	w = interactive(plot_by_age,column=widgets.Dropdown(
-				options=['Infected (symptomatic)','Hospitalised','Critical','Deaths'],
-				value='Infected (symptomatic)',
-				description='Category:'
-				),df=fixed(df))
-	words = widgets.Label('Plot the do nothing scenario in four different categories split by age groups')
-	container=widgets.VBox([words,w])
-	container.layout.width = '100%'
-	container.layout.border = '2px solid grey'
-	container.layout.justify_content = 'space-around'
-	container.layout.align_items = 'center'
-	return container
+# def plot_by_age_interactive(plot_by_age,df):
+# 	w = interactive(plot_by_age,column=widgets.Dropdown(
+# 				options=['Infected (symptomatic)','Hospitalised','Critical','Deaths'],
+# 				value='Infected (symptomatic)',
+# 				description='Category:'
+# 				),df=fixed(df))
+# 	words = widgets.Label('Plot the do nothing scenario in four different categories split by age groups')
+# 	container=widgets.VBox([words,w])
+# 	container.layout.width = '100%'
+# 	container.layout.border = '2px solid grey'
+# 	container.layout.justify_content = 'space-around'
+# 	container.layout.align_items = 'center'
+# 	return container
+
+def plot_by_age_all(df):
+	fig, ax = plt.subplots(4, 9, sharex='col', sharey='row',figsize=(20,20),constrained_layout=True)
+	columns_to_plot=['Infected (symptomatic)','Hospitalised','Critical','Deaths']
+	i=0
+	fontdict={'fontsize':15}
+	for column in columns_to_plot:
+		for key in df.columns:
+			if key==column:
+				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[i,0])
+				ax[i,0].title.set_text('all ages',fontdict)
+			elif '0-9' in key:
+				if key.startswith(column):
+					sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[i,1])
+					ax[i,1].title.set_text('<9 years',fontdict)
+			elif 'Oct-19' in key:
+				if key.startswith(column):
+					sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[i,2])
+					ax[i,2].title.set_text('10-19 years',fontdict)
+			elif '20-29' in key:
+				if key.startswith(column):
+					sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[i,3])
+					ax[i,3].title.set_text('20-29 years',fontdict)
+			elif '30-39' in key:
+				if key.startswith(column):
+					sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[i,4])
+					ax[i,4].title.set_text('30-39 years',fontdict)
+			elif '40-49' in key:
+				if key.startswith(column):
+					sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[i,5])
+					ax[i,5].title.set_text('40-49 years',fontdict)
+			elif '50-59' in key:
+				if key.startswith(column):
+					sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[i,6])
+					ax[i,6].title.set_text('50-59 years',fontdict)
+			elif '60-69' in key:
+				if key.startswith(column):
+					sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[i,7])
+					ax[i,7].title.set_text('60-69 years',fontdict)
+			elif '70+' in key:
+				if key.startswith(column):
+					sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[i,8])
+					ax[i,8].title.set_text('70+ years',fontdict)
+		i+=1
+	fig.suptitle('Fig.1 Plots of changes in symptomatically infected cases, hopitalisation cases, critical care cases and death incidents over the course of simulation datys',
+		fontsize=20)
+
 
 def plot_one_intervention_horizontal(column,baseline,one_intervention_dict):
 	fig, ax = plt.subplots(1, len(one_intervention_dict)+1, sharex='col', sharey='row',figsize=(25,5))
