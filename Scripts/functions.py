@@ -220,12 +220,28 @@ class simulator:
 #--------------------------------------------------------------------
 
 
-
-
-
-def simulate_range_of_R0s(population_frame, population, control_dict, camp, t_stop=200): # gives solution for middle R0, as well as solutions for a range of R0s between an upper and lower bound
+def GeneratePercentiles(sols):
+    n_time_points = len(sols[0]['t'])
     
-    # infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
+    y_plot = np.zeros((len(categories.keys()), len(sols) , n_time_points ))
+
+    for k, sol in enumerate(sols):
+        sol['y'] = np.asarray(sol['y'])
+        for name in categories.keys():
+            y_plot[categories[name]['index'],k,:] = sol['y_plot'][categories[name]['index']]
+
+    y_L95, y_U95, y_LQ, y_UQ, y_median = [np.zeros((len(categories.keys()),n_time_points)) for i in range(5)]
+
+    for name in categories.keys():
+        y_L95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],2.5) for i in range(n_time_points) ])
+        y_LQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],25) for i in range(n_time_points) ])
+        y_UQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],75) for i in range(n_time_points) ])
+        y_U95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],97.5) for i in range(n_time_points) ])
+        
+        y_median[categories[name]['index'],:] = np.asarray([statistics.median(y_plot[categories[name]['index'],:,i]) for i in range(n_time_points) ])
+    return [y_U95, y_UQ, y_LQ, y_L95, y_median]
+
+def GenerateInfectionMatrix(population_frame,camp,control_dict):
     infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix_' + camp + '.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
     infection_matrix = infection_matrix[:,1:]
 
@@ -244,9 +260,14 @@ def simulate_range_of_R0s(population_frame, population, control_dict, camp, t_st
         infection_matrix[:divider,divider:]  = params.shield_decrease*infection_matrix[:divider,divider:]
         infection_matrix[divider:,:divider]  = params.shield_decrease*infection_matrix[divider:,:divider]
         infection_matrix[divider:,divider]   = params.shield_increase*infection_matrix[divider:,divider:]
-        
+    
+    return infection_matrix, beta_list, largest_eigenvalue
 
 
+
+def simulate_range_of_R0s(population_frame, population, control_dict, camp, t_stop=200): # gives solution for middle R0, as well as solutions for a range of R0s between an upper and lower bound
+    
+    infection_matrix, beta_list, largest_eigenvalue = GenerateInfectionMatrix(population_frame,camp,control_dict)
 
     sols = []
     sols_raw = {}
@@ -254,24 +275,8 @@ def simulate_range_of_R0s(population_frame, population, control_dict, camp, t_st
         result=simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,beta=beta,control_dict=control_dict)
         sols.append(result)
         sols_raw[beta*largest_eigenvalue/params.removal_rate]=result
-    n_time_points = len(sols[0]['t'])
 
-    y_plot = np.zeros((len(categories.keys()), len(sols) , n_time_points ))
-
-    for k, sol in enumerate(sols):
-        sol['y'] = np.asarray(sol['y'])
-        for name in categories.keys():
-            y_plot[categories[name]['index'],k,:] = sol['y_plot'][categories[name]['index']]
-
-    y_L95, y_U95, y_LQ, y_UQ, y_median = [np.zeros((len(categories.keys()),n_time_points)) for i in range(5)]
-
-    for name in categories.keys():
-        y_L95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],2.5) for i in range(n_time_points) ])
-        y_LQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],25) for i in range(n_time_points) ])
-        y_UQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],75) for i in range(n_time_points) ])
-        y_U95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],97.5) for i in range(n_time_points) ])
-        
-        y_median[categories[name]['index'],:] = np.asarray([statistics.median(y_plot[categories[name]['index'],:,i]) for i in range(n_time_points) ])
+    [y_U95, y_UQ, y_LQ, y_L95, y_median] = GeneratePercentiles(sols)
 
     StandardSol = []
     StandardSol.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,beta=params.beta_list[1],control_dict=control_dict))
@@ -282,28 +287,9 @@ def simulate_range_of_R0s(population_frame, population, control_dict, camp, t_st
 
 
 
-
 def SimulateOverRangeOfParameters(population_frame, population, control_dict, camp, numberOfIterations, t_stop=200):
     
-    infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix_' + camp + '.csv')))
-    infection_matrix = infection_matrix[:,1:]
-
-    next_generation_matrix = np.matmul(0.01*np.diag(population_frame.Population_structure) , infection_matrix )
-    largest_eigenvalue = max(np.linalg.eig(next_generation_matrix)[0]) # max eigenvalue
-    
-
-
-    beta_list = np.linspace(params.beta_list[0],params.beta_list[2],20)
-    beta_list = np.real((1/largest_eigenvalue)* beta_list) # in case eigenvalue imaginary
-
-    if control_dict['shielding']['used']: # increase contact within group and decrease between groups
-        divider = -1 # determines which groups separated. -1 means only oldest group separated from the rest
-        
-        infection_matrix[:divider,:divider]  = params.shield_increase*infection_matrix[:divider,:divider]
-        infection_matrix[:divider,divider:]  = params.shield_decrease*infection_matrix[:divider,divider:]
-        infection_matrix[divider:,:divider]  = params.shield_decrease*infection_matrix[divider:,:divider]
-        infection_matrix[divider:,divider]   = params.shield_increase*infection_matrix[divider:,divider:]
-        
+    infection_matrix, beta_list, largest_eigenvalue = GenerateInfectionMatrix(population_frame,camp,control_dict)
 
     ParamCsv = pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/GeneratedParams.csv'))
 
@@ -321,7 +307,7 @@ def SimulateOverRangeOfParameters(population_frame, population, control_dict, ca
         deathRateNoIcu = 1/ParamCsv.DeathNoICUPeriod[ii]
 
         
-        result=simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,beta=beta,
+        result = simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,beta=beta,
                                 control_dict= control_dict,
                                 latentRate  = latentRate,
                                 removalRate = removalRate,
@@ -330,6 +316,7 @@ def SimulateOverRangeOfParameters(population_frame, population, control_dict, ca
                                 deathRateNoIcu = deathRateNoIcu
                                 )
         sols.append(result)
+
         Dict = dict(beta       = beta,
                 latentRate     = latentRate,
                 removalRate    = removalRate,
@@ -339,24 +326,8 @@ def SimulateOverRangeOfParameters(population_frame, population, control_dict, ca
                 )
         configDict.append(Dict)
         sols_raw[ParamCsv.R0[ii]]=result
-    n_time_points = len(sols[0]['t'])
 
-    y_plot = np.zeros((len(categories.keys()), len(sols) , n_time_points ))
-
-    for k, sol in enumerate(sols):
-        sol['y'] = np.asarray(sol['y'])
-        for name in categories.keys():
-            y_plot[categories[name]['index'],k,:] = sol['y_plot'][categories[name]['index']]
-
-    y_L95, y_U95, y_LQ, y_UQ, y_median = [np.zeros((len(categories.keys()),n_time_points)) for i in range(5)]
-
-    for name in categories.keys():
-        y_L95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],2.5) for i in range(n_time_points) ])
-        y_LQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],25) for i in range(n_time_points) ])
-        y_UQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],75) for i in range(n_time_points) ])
-        y_U95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],97.5) for i in range(n_time_points) ])
-        
-        y_median[categories[name]['index'],:] = np.asarray([statistics.median(y_plot[categories[name]['index'],:,i]) for i in range(n_time_points) ])
+    [y_U95, y_UQ, y_LQ, y_L95, y_median] = GeneratePercentiles(sols)
 
     # standard run
     StandardSol = []

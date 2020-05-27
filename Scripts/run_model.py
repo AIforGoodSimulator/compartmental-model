@@ -52,6 +52,8 @@ def run_simulation(mode='experiment'):
                                                                                                                ceil(population*control_dict['ICU_capacity']['value']),
                                                                                                                numberOfIterations
                                                                                                                )
+
+
     solution_name   = 'Solution_' + param_string    
     percentile_name = 'Percentiles_'  + param_string
 
