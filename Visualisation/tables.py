@@ -27,7 +27,7 @@ def incidence_all_table(df):
 		q75_day, q25_day = np.percentile(day, [75 ,25])
 		q75_number, q25_number = np.percentile(number, [75 ,25])
 		iqr_table[param]=((int(round(q25_day)), int(round(q75_day))),(int(round(q25_number)), int(round(q75_number))))
-	table_columns={'Infected (symptomatic)':'Incidence of Symptomatic Cases','Hospitalised':'All Hospital Demand',
+	table_columns={'Infected (symptomatic)':'Incidence of Symptomatic Cases','Hospitalised':'Hospital Demand',
 					'Critical':'Critical Care Demand','Change in Deaths':'Incidence of Deaths' }
 	outcome=[]
 	peak_day=[]
@@ -163,7 +163,7 @@ def incidence_age_table(df):
 			elif key.startswith('Critical'):
 				peak_day[25]=f'{iqr_table_age[key][0][0]}-{iqr_table_age[key][0][1]}'
 				peak_number[25]=f'{iqr_table_age[key][1][0]}-{iqr_table_age[key][1][1]}'
-		elif '70-79' in key:
+		elif '70+' in key:
 			if key.startswith('Infected (symptomatic)'):
 				peak_day[8]=f'{iqr_table_age[key][0][0]}-{iqr_table_age[key][0][1]}'
 				peak_number[8]=f'{iqr_table_age[key][1][0]}-{iqr_table_age[key][1][1]}'
@@ -200,7 +200,7 @@ def cumulative_all_table(df):
 				param4049='Susceptible: 40-49'
 				param5059='Susceptible: 50-59'
 				param6069='Susceptible: 60-69'
-				param7079='Susceptible: 70-79'
+				param7079='Susceptible: 70+'
 				cumulative[param]=((N*0.2105-(group[param09].tail(1).values[0]))*0.4+
 									(N*0.1734-(group[param1019].tail(1).values[0]))*0.25+
 									(N*0.2635-(group[param2029].tail(1).values[0]))*0.37+
@@ -309,7 +309,7 @@ def cumulative_age_table(df):
 				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.72).quantile([.25, .75])
 				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.72).quantile([.25, .75])
 				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.72).quantile([.25, .75])
-			elif '70-79' in column:
+			elif '70+' in column:
 				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.76).quantile([.25, .75])
 				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.76).quantile([.25, .75])
 				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.76).quantile([.25, .75])
@@ -413,7 +413,7 @@ def cumulative_age_table(df):
 				first_month_count[25]=f'{int(round(first_month[key][0.25]))}-{int(round(first_month[key][0.75]))}'
 			elif key.startswith('Deaths'):
 				first_month_count[34]=f'{int(round(first_month[key][0.25]))}-{int(round(first_month[key][0.75]))}'
-		elif '70-79' in key:
+		elif '70+' in key:
 			if key.startswith('Susceptible'):
 				first_month_count[8]=f'{int(round(first_month[key][0.25]))}-{int(round(first_month[key][0.75]))}'
 			elif key.startswith('Hospitalised'):
@@ -495,7 +495,7 @@ def cumulative_age_table(df):
 				three_month_count[25]=f'{int(round(third_month[key][0.25]))}-{int(round(third_month[key][0.75]))}'
 			elif key.startswith('Deaths'):
 				three_month_count[34]=f'{int(round(third_month[key][0.25]))}-{int(round(third_month[key][0.75]))}'
-		elif '70-79' in key:
+		elif '70+' in key:
 			if key.startswith('Susceptible'):
 				three_month_count[8]=f'{int(round(third_month[key][0.25]))}-{int(round(third_month[key][0.75]))}'
 			elif key.startswith('Hospitalised'):
@@ -577,7 +577,7 @@ def cumulative_age_table(df):
 				six_month_count[25]=f'{int(round(sixth_month[key][0.25]))}-{int(round(sixth_month[key][0.75]))}'
 			elif key.startswith('Deaths'):
 				six_month_count[34]=f'{int(round(sixth_month[key][0.25]))}-{int(round(sixth_month[key][0.75]))}'
-		elif '70-79' in key:
+		elif '70+' in key:
 			if key.startswith('Susceptible'):
 				six_month_count[8]=f'{int(round(sixth_month[key][0.25]))}-{int(round(sixth_month[key][0.75]))}'
 			elif key.startswith('Hospitalised'):

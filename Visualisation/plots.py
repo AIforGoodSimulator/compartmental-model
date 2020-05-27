@@ -40,7 +40,7 @@ def plot_by_age(column,df):
 			if key.startswith(column):
 				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[7])
 				ax[7].title.set_text('60-69 years')
-		elif '70-79' in key:
+		elif '70+' in key:
 			if key.startswith(column):
 				sns.lineplot(x="Time", y=key,ci="sd",data=df,ax=ax[8])
 				ax[8].title.set_text('70+ years')

@@ -10,7 +10,7 @@ import os
 
 #import the config file for the experimental setup 
 # baseline experiment
-# from configs.baseline import camp, population_frame, population, control_dict
+from configs.baseline import camp, population_frame, population, control_dict
 # better hygiene from day 0
 # from configs.better_hygiene import camp, population_frame, population, control_dict
 # build up ICU capacity from 6 to 100
@@ -20,7 +20,7 @@ import os
 # shielding the old population/high risk
 # from configs.shielding import camp, population_frame, population, control_dict
 # remove high risk people form the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
-from configs.remove_highrisk import camp, population_frame, population, control_dict
+# from configs.remove_highrisk import camp, population_frame, population, control_dict
 
 def run_simulation(mode='experiment'):
     # cd into Scripts

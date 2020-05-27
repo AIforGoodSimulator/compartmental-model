@@ -310,7 +310,7 @@ def SimulateOverRangeOfParameters(population_frame, population, control_dict, ca
     sols = []
     configDict = []
     sols_raw = {}
-    for ii in range(min(numberOfIterations,len(ParamCsv))):
+    for ii in tqdm(range(min(numberOfIterations,len(ParamCsv)))):
         latentRate  = 1/ParamCsv.LatentPeriod[ii]
         removalRate = 1/ParamCsv.RemovalPeriod[ii]
         
