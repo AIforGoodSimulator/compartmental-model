@@ -5,16 +5,16 @@ Reduction in contact between groups,0.25,,Control,For shielding,,assumed
 Increase in contact within group,2,,Control,For shielding,,assumed
 ,,,,,,
 ,,,,,,
-R0,3,,Model Parameter,,Low,
-R0,4,,Model Parameter,,Medium,
-R0,5,,Model Parameter,,High,
+R0,3,,Model Parameter,,Low,Need
+R0,4,,Model Parameter,,Medium,Need
+R0,5,,Model Parameter,,High,Need
 ,,,,,,
 latent period,4,Days,Model Parameter,Time to become infectious,In source uses gamma dist,"1, Table S1"
 infectious period,5,Days,Model Parameter,Time infectious,In source uses gamma dist,"1, Table S1"
 hosp period,8,Days,Model Parameter,Time stay in hosp,In source uses gamma dist,"1, Table S1"
 ,,,,,,
 ,,,,,,
-death period,2,Days,Model Parameter,"Time to die after getting to critical condition, without care",without ICU,
+death period,2,Days,Model Parameter,"Time to die after getting to critical condition, without care",without ICU,Need
 death period with ICU,10,Days,Model Parameter,"Time to die after getting to critical condition, with care",with ICU - not yet factored in,"1, Table S1"
 ,,,,,,
 infectiousness of asymptomatic,0.5,,Model Parameter,Asymptomatic cases less infectious,,"1, Table S1"

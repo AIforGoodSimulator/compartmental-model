@@ -22,16 +22,19 @@ class simulator:
 #-----------------------------------------------------------------
         
     ##
-    def ode_system(self,t,y,infection_matrix,age_categories,symptomatic_prob,hospital_prob,critical_prob,beta,better_hygiene,remove_symptomatic,remove_high_risk,ICU_capacity):
+    def ode_system(self,t,y, # state of system
+                            infection_matrix,age_categories,symptomatic_prob,hospital_prob,critical_prob,beta, # params
+                            latentRate,removalRate,hospRate,deathRateICU,deathRateNoIcu, # more params
+                            better_hygiene,remove_symptomatic,remove_high_risk,ICU_capacity # control
+                            ):
         ##
         dydt = np.zeros(y.shape)
 
         I_vec = [ y[params.I_ind+i*params.number_compartments] for i in range(age_categories)]
-
-        A_vec = [ y[params.A_ind+i*params.number_compartments] for i in range(age_categories)]
-
+        # H_vec = [ y[params.H_ind+i*params.number_compartments] for i in range(age_categories)]
         C_vec = [ y[params.C_ind+i*params.number_compartments] for i in range(age_categories)]
 
+        A_vec = [ y[params.A_ind+i*params.number_compartments] for i in range(age_categories)]
 
         total_I = sum(I_vec)
 
@@ -82,38 +85,38 @@ class simulator:
                                                                     - remove_high_risk_people * y[params.S_ind + i*params.number_compartments] / S_removal )
             # E
             dydt[params.E_ind + i*params.number_compartments] = (  y[params.S_ind + i*params.number_compartments] * control_factor * beta * (np.dot(infection_matrix[i,:],I_vec) + params.AsymptInfectiousFactor*np.dot(infection_matrix[i,:],A_vec))
-                                                                - params.latent_rate * y[params.E_ind + i*params.number_compartments])
+                                                                - latentRate * y[params.E_ind + i*params.number_compartments])
             # I
-            dydt[params.I_ind + i*params.number_compartments] = (params.latent_rate * (1-symptomatic_prob[i]) * y[params.E_ind + i*params.number_compartments]
-                                                                  - params.removal_rate * y[params.I_ind + i*params.number_compartments]
+            dydt[params.I_ind + i*params.number_compartments] = (latentRate * (1-symptomatic_prob[i]) * y[params.E_ind + i*params.number_compartments]
+                                                                  - removalRate * y[params.I_ind + i*params.number_compartments]
                                                                   - move_sick_offsite
                                                                   )
             # A
-            dydt[params.A_ind + i*params.number_compartments] = (params.latent_rate * symptomatic_prob[i] * y[params.E_ind + i*params.number_compartments]
-                                                                 - params.removal_rate * y[params.A_ind + i*params.number_compartments])
-            # R
-            dydt[params.R_ind + i*params.number_compartments] = (params.removal_rate * (1 - hospital_prob[i]) * y[params.I_ind + i*params.number_compartments]
-                                                                 + params.removal_rate * y[params.A_ind + i*params.number_compartments]
-                                                                 + params.hosp_rate * (1 - critical_prob[i]) * y[params.H_ind + i*params.number_compartments]
-                                                                 + move_sick_offsite  * (1 - hospital_prob[i]) # proportion of removed people who recovered once removed (no delay)
-                                                                #  + remove_high_risk_people # now these removed people are just taken out of the system
-                                                                 )
+            dydt[params.A_ind + i*params.number_compartments] = (latentRate * symptomatic_prob[i] * y[params.E_ind + i*params.number_compartments]
+                                                                 - removalRate * y[params.A_ind + i*params.number_compartments])
             # H
-            dydt[params.H_ind + i*params.number_compartments] = (params.removal_rate * (hospital_prob[i]) * y[params.I_ind + i*params.number_compartments]
-                                                                 - params.hosp_rate * y[params.H_ind + i*params.number_compartments]
-                                                                #  + params.death_rate * (1 - params.death_prob) * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # recovered despite no ICU (0, since now assume death_prob is 1)
-                                                                 + params.death_rate_with_ICU * (1 - params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # recovered from ICU
+            dydt[params.H_ind + i*params.number_compartments] = (removalRate * (hospital_prob[i]) * y[params.I_ind + i*params.number_compartments]
+                                                                 - hospRate * y[params.H_ind + i*params.number_compartments]
+                                                                #  + deathRateNoIcu * (1 - params.death_prob) * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # recovered despite no ICU (0, since now assume death_prob is 1)
+                                                                 + deathRateICU * (1 - params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # recovered from ICU
                                                                  + move_sick_offsite  * (hospital_prob[i]) # proportion of removed people who were hospitalised once removed (no delay)
 
                                                                  )
             # C
-            dydt[params.C_ind + i*params.number_compartments] = (params.hosp_rate  * (critical_prob[i]) * y[params.H_ind + i*params.number_compartments]
-                                                                 - params.death_rate * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # without ICU treatment
-                                                                 - params.death_rate_with_ICU * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # up to hosp capacity get treatment
+            dydt[params.C_ind + i*params.number_compartments] = (hospRate  * (critical_prob[i]) * y[params.H_ind + i*params.number_compartments]
+                                                                 - deathRateNoIcu * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # without ICU treatment
+                                                                 - deathRateICU * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # up to hosp capacity get treatment
                                                                  )
+            # R
+            dydt[params.R_ind + i*params.number_compartments] = (removalRate * (1 - hospital_prob[i]) * y[params.I_ind + i*params.number_compartments]
+                                                                 + removalRate * y[params.A_ind + i*params.number_compartments]
+                                                                 + hospRate * (1 - critical_prob[i]) * y[params.H_ind + i*params.number_compartments]
+                                                                 + move_sick_offsite  * (1 - hospital_prob[i]) # proportion of removed people who recovered once removed (no delay)
+                                                                 )
+            
             # D
-            dydt[params.D_ind + i*params.number_compartments] = (params.death_rate * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # died without ICU treatment (all cases that don't get treatment die)
-                                                                + params.death_rate_with_ICU * (params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # died despite attempted ICU treatment
+            dydt[params.D_ind + i*params.number_compartments] = (deathRateNoIcu * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # died without ICU treatment (all cases that don't get treatment die)
+                                                                + deathRateICU * (params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # died despite attempted ICU treatment
                                                                 )
             # O
             dydt[params.O_ind + i*params.number_compartments] = remove_high_risk_people * y[params.S_ind + i*params.number_compartments] / S_removal
@@ -123,7 +126,14 @@ class simulator:
     ##
     #--------------------------------------------------------------------
     ##
-    def run_model(self,T_stop,population,population_frame,infection_matrix,beta,control_dict): # ,beta_L_factor,beta_H_factor,t_control,T_stop,vaccine_time,ICU_grow,let_HR_out):
+    def run_model(self,T_stop,population,population_frame,infection_matrix,beta,
+                control_dict,  # control
+                latentRate     = params.latent_rate,
+                removalRate    = params.removal_rate,
+                hospRate       = params.hosp_rate,
+                deathRateICU   = params.death_rate_with_ICU,
+                deathRateNoIcu = params.death_rate # more params
+                ):
         
         E0 = 0
         I0 = 1/population
@@ -162,7 +172,10 @@ class simulator:
         critical_prob = np.asarray(population_frame.p_critical)
 
 
-        sol = ode(self.ode_system).set_f_params(infection_matrix,age_categories,symptomatic_prob,hospital_prob,critical_prob,beta,control_dict['better_hygiene'],control_dict['remove_symptomatic'],control_dict['remove_high_risk'],control_dict['ICU_capacity'])
+        sol = ode(self.ode_system).set_f_params(infection_matrix,age_categories,symptomatic_prob,hospital_prob,critical_prob,beta, # params
+                latentRate,removalRate,hospRate,deathRateICU,deathRateNoIcu, # more params
+                control_dict['better_hygiene'],control_dict['remove_symptomatic'],control_dict['remove_high_risk'],control_dict['ICU_capacity'] # control params
+                )
         
         tim = np.linspace(0,T_stop, T_stop+1) # 1 time value per day
         
@@ -210,7 +223,7 @@ class simulator:
 
 
 
-def simulate_range_of_R0s(population_frame, population, control_dict, camp,t_stop=200): # gives solution for middle R0, as well as solutions for a range of R0s between an upper and lower bound
+def simulate_range_of_R0s(population_frame, population, control_dict, camp, t_stop=200): # gives solution for middle R0, as well as solutions for a range of R0s between an upper and lower bound
     
     # infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
     infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix_' + camp + '.csv'))) #np.ones((population_frame.shape[0],population_frame.shape[0]))
@@ -260,10 +273,99 @@ def simulate_range_of_R0s(population_frame, population, control_dict, camp,t_sto
         
         y_median[categories[name]['index'],:] = np.asarray([statistics.median(y_plot[categories[name]['index'],:,i]) for i in range(n_time_points) ])
 
-    sols_out = []
-    sols_out.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,beta=params.beta_list[1],control_dict=control_dict))
+    StandardSol = []
+    StandardSol.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,beta=params.beta_list[1],control_dict=control_dict))
     
-    return sols_raw ,sols_out, [y_U95, y_UQ, y_LQ, y_L95, y_median] 
+    return sols_raw, StandardSol, [y_U95, y_UQ, y_LQ, y_L95, y_median] 
+
+
+
+
+
+
+def SimulateOverRangeOfParameters(population_frame, population, control_dict, camp, numberOfIterations, t_stop=200):
+    
+    infection_matrix = np.asarray(pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/Contact_matrix_' + camp + '.csv')))
+    infection_matrix = infection_matrix[:,1:]
+
+    next_generation_matrix = np.matmul(0.01*np.diag(population_frame.Population_structure) , infection_matrix )
+    largest_eigenvalue = max(np.linalg.eig(next_generation_matrix)[0]) # max eigenvalue
+    
+
+
+    beta_list = np.linspace(params.beta_list[0],params.beta_list[2],20)
+    beta_list = np.real((1/largest_eigenvalue)* beta_list) # in case eigenvalue imaginary
+
+    if control_dict['shielding']['used']: # increase contact within group and decrease between groups
+        divider = -1 # determines which groups separated. -1 means only oldest group separated from the rest
+        
+        infection_matrix[:divider,:divider]  = params.shield_increase*infection_matrix[:divider,:divider]
+        infection_matrix[:divider,divider:]  = params.shield_decrease*infection_matrix[:divider,divider:]
+        infection_matrix[divider:,:divider]  = params.shield_decrease*infection_matrix[divider:,:divider]
+        infection_matrix[divider:,divider]   = params.shield_increase*infection_matrix[divider:,divider:]
+        
+
+    ParamCsv = pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/GeneratedParams.csv'))
+
+    sols = []
+    configDict = []
+    sols_raw = {}
+    for ii in range(min(numberOfIterations,len(ParamCsv))):
+        latentRate  = 1/ParamCsv.LatentPeriod[ii]
+        removalRate = 1/ParamCsv.RemovalPeriod[ii]
+        
+        beta        = removalRate*ParamCsv.R0[ii]/largest_eigenvalue
+        
+        hospRate       = 1/ParamCsv.HospPeriod[ii]
+        deathRateICU   = 1/ParamCsv.DeathICUPeriod[ii]
+        deathRateNoIcu = 1/ParamCsv.DeathNoICUPeriod[ii]
+
+        
+        result=simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,beta=beta,
+                                control_dict= control_dict,
+                                latentRate  = latentRate,
+                                removalRate = removalRate,
+                                hospRate    = hospRate,
+                                deathRateICU = deathRateICU,
+                                deathRateNoIcu = deathRateNoIcu
+                                )
+        sols.append(result)
+        Dict = dict(beta       = beta,
+                latentRate     = latentRate,
+                removalRate    = removalRate,
+                hospRate       = hospRate,
+                deathRateICU   = deathRateICU,
+                deathRateNoIcu = deathRateNoIcu
+                )
+        configDict.append(Dict)
+        sols_raw[ParamCsv.R0[ii]]=result
+    n_time_points = len(sols[0]['t'])
+
+    y_plot = np.zeros((len(categories.keys()), len(sols) , n_time_points ))
+
+    for k, sol in enumerate(sols):
+        sol['y'] = np.asarray(sol['y'])
+        for name in categories.keys():
+            y_plot[categories[name]['index'],k,:] = sol['y_plot'][categories[name]['index']]
+
+    y_L95, y_U95, y_LQ, y_UQ, y_median = [np.zeros((len(categories.keys()),n_time_points)) for i in range(5)]
+
+    for name in categories.keys():
+        y_L95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],2.5) for i in range(n_time_points) ])
+        y_LQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],25) for i in range(n_time_points) ])
+        y_UQ[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],75) for i in range(n_time_points) ])
+        y_U95[categories[name]['index'],:] = np.asarray([ np.percentile(y_plot[categories[name]['index'],:,i],97.5) for i in range(n_time_points) ])
+        
+        y_median[categories[name]['index'],:] = np.asarray([statistics.median(y_plot[categories[name]['index'],:,i]) for i in range(n_time_points) ])
+
+    # standard run
+    StandardSol = []
+    StandardSol.append(simulator().run_model(T_stop=t_stop,infection_matrix=infection_matrix,population=population,population_frame=population_frame,beta=params.beta_list[1],control_dict=control_dict))
+    
+    return sols_raw, StandardSol, [y_U95, y_UQ, y_LQ, y_L95, y_median], configDict
+
+
+
 
 
 

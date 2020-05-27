@@ -7,7 +7,7 @@ Moria,30-39,0.42,1.85,30,17.16,,Hosp/Crit data from,0.002331,5.608385999
 Moria,40-49,0.51,5.43,30,9.24,,"Table S2, Source 1",0.0083079,10.7670384
 Moria,50-59,0.59,15.05,30,5.55,,,0.0266385,20.73807225
 Moria,60-69,0.72,33.29,30,2.54,,"Population Structure, total pop from",0.0719064,25.616655
-Moria,70-79,0.76,61.76,30,0.77,,moria_params.csv,0.1408128,15.2077824
+Moria,70+,0.76,61.76,30,0.77,,moria_params.csv,0.1408128,15.2077824
 ,,,,,,,,,
 ,,,,,,,,Just using for back of envelope exp no. crit calculation,Just a back of the envelope calculation
 ,,,,,,,,"Multiply sympt,  hosp, crit",If 100% get the infection and all get treatment with 75% prob of success
