@@ -1,5 +1,5 @@
 ﻿Name,Value,Unit,Type,Explanation,Notes,Source (see word doc)
-Better hygiene,0.25,,Control,"Effect on infection rate. Handing out masks, better sanitation?",,assumed
+Better hygiene,0.7,,Control,"Effect on infection rate. Handing out masks, better sanitation?",,assumed
 ,,,,,,
 Reduction in contact between groups,0.25,,Control,For shielding,,assumed
 Increase in contact within group,2,,Control,For shielding,,assumed

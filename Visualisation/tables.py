@@ -2,6 +2,8 @@
 
 import numpy as np
 import pandas as pd
+from preprocess import read_preprocess_file,load_interventions
+
 
 def incidence_all_table(df):
 	#calculate Peak Day IQR and Peak Number IQR for each of the 'incident' variables to plot
@@ -191,7 +193,22 @@ def cumulative_all_table(df):
 		cumulative={}
 		for param in table_params:
 			if param=='Susceptible':
-				cumulative[param]=(N-(group[param].tail(1).values[0]))*0.5
+				param09='Susceptible: 0-9'
+				param1019='Susceptible: Oct-19'
+				param2029='Susceptible: 20-29'
+				param3039='Susceptible: 30-39'
+				param4049='Susceptible: 40-49'
+				param5059='Susceptible: 50-59'
+				param6069='Susceptible: 60-69'
+				param7079='Susceptible: 70-79'
+				cumulative[param]=((N*0.2105-(group[param09].tail(1).values[0]))*0.4+
+									(N*0.1734-(group[param1019].tail(1).values[0]))*0.25+
+									(N*0.2635-(group[param2029].tail(1).values[0]))*0.37+
+									(N*0.1716-(group[param3039].tail(1).values[0]))*0.42+
+									(N*0.0924-(group[param4049].tail(1).values[0]))*0.51+
+									(N*0.0555-(group[param5059].tail(1).values[0]))*0.59+
+									(N*0.0254-(group[param6069].tail(1).values[0]))*0.72+
+									(N*0.0077-(group[param7079].tail(1).values[0]))*0.76)
 			elif param=='Deaths':
 				cumulative[param]=(group[param].tail(1).values[0])
 			elif param=='Hospitalised' or param=='Critical':
@@ -247,7 +264,7 @@ def cumulative_age_table(df):
 						'<9 years', '10-19 years', '20-29 years', '30-39 years', '40-49 years', '50-59 years','60-69 years',
 						'70+ years'])]
 	table_params=['Susceptible','Hospitalised','Critical','Deaths']
-	params_select=['Susceptible','Deaths']
+	params_select=['Susceptible:','Deaths']
 	params_accu=['Hospitalised','Critical']
 	columns_to_select=[]
 	columns_to_acc=[]
@@ -263,14 +280,56 @@ def cumulative_age_table(df):
 	six_month_select={}
 
 	for column in columns_to_select:
-		if 'Susceptible' in column:
-			first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.5).quantile([.25, .75])
-			three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.5).quantile([.25, .75])
-			six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.5).quantile([.25, .75])
+		if 'Susceptible:' in column:
+			if '0-9' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.4).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.4).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.4).quantile([.25, .75])
+			elif 'Oct-19' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.25).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.25).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.25).quantile([.25, .75])
+			elif '20-29' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.37).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.37).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.37).quantile([.25, .75])
+			elif '30-39' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.42).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.42).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.42).quantile([.25, .75])
+			elif '40-49' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.51).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.51).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.51).quantile([.25, .75])
+			elif '50-59' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.59).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.59).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.59).quantile([.25, .75])
+			elif '60-69' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.72).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.72).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.72).quantile([.25, .75])
+			elif '70-79' in column:
+				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.76).quantile([.25, .75])
+				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.76).quantile([.25, .75])
+				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.76).quantile([.25, .75])
 		else:
 			first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month)[column].quantile([.25, .75])
 			three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month)[column].quantile([.25, .75])
 			six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month)[column].quantile([.25, .75])
+
+	first_month_select['Susceptible']={0.25:0,0.75:0}
+	three_month_select['Susceptible']={0.25:0,0.75:0}
+	six_month_select['Susceptible']={0.25:0,0.75:0}
+	for column in columns_to_select:
+		if 'Susceptible:' in column:
+			first_month_select['Susceptible'][0.25]+=first_month_select[column][0.25]
+			first_month_select['Susceptible'][0.75]+=first_month_select[column][0.75]
+			three_month_select['Susceptible'][0.25]+=three_month_select[column][0.25]
+			three_month_select['Susceptible'][0.75]+=three_month_select[column][0.75]
+			six_month_select['Susceptible'][0.25]+=six_month_select[column][0.25]
+			six_month_select['Susceptible'][0.75]+=six_month_select[column][0.75]
+
 	first_month_accu={}
 	three_month_accu={}
 	six_month_accu={}
@@ -280,7 +339,7 @@ def cumulative_age_table(df):
 		six_month_accu[column]=df.groupby('R0')[[column,'Time']].apply(find_six_months)[column].quantile([.25, .75])
 	first_month = Merge(first_month_select, first_month_accu) 
 	third_month = Merge(three_month_select, three_month_accu) 
-	sixth_month = Merge(six_month_select, six_month_accu) 
+	sixth_month = Merge(six_month_select, six_month_accu)
 	first_month_count=np.empty(36,dtype="S15")
 	for key,item in first_month.items():
 		if key=='Susceptible':
@@ -532,7 +591,62 @@ def cumulative_age_table(df):
 	count_table_age = pd.DataFrame(data=d, index=arrays)
 	return count_table_age
 
-			
+
+
+def effectiveness_table_total(baseline,styler=True):
+	folder_path='./model_outcomes/one_intervention/'
+	selectedInterventions=load_interventions(folder_path)
+	table_params=['Susceptible','Hospitalised','Critical','Deaths']
+	cum_table_baseline=cumulative_all_table(baseline)
+	baseline_numbers=cum_table_baseline.loc[:,'Counts'].apply(lambda x: [int(i) for i in x.split('-')])
+	baseline_numbers_separate = pd.DataFrame(baseline_numbers.tolist(), columns=['25%','75%'])
+	#write a function to generate effectiveness table:
+	comparisonTable={}
+	if styler:
+		colouringTable={}
+	for key,value in selectedInterventions.items():
+		cumTable=cumulative_all_table(value)
+		intervention_numbers=pd.DataFrame(cumTable.loc[:,'Counts'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
+		differencePercentage=(baseline_numbers_separate-intervention_numbers)/baseline_numbers_separate*100
+		prettyOutput=[]
+		for _,row in differencePercentage.round(0).astype(int).iterrows():
+			if row['25%']<0:
+				output1=-row['25%']
+			else:
+				output1=row['25%']
+			if row['75%']<0:
+				output2=-row['75%']
+			else:
+				output2=row['75%']
+			if output2>output1:
+				prettyOutput.append(str(output1)+'%-'+str(output2)+'%')
+			else:
+				prettyOutput.append(str(output2)+'%-'+str(output1)+'%')
+		comparisonTable[key]=prettyOutput
+		if styler:
+			medianValues=[]
+			for _,row in differencePercentage.iterrows():
+				if row['25%']<0:
+					output1=-row['25%']
+				else:
+					output1=row['25%']
+				if row['75%']<0:
+					output2=-row['75%']
+				else:
+					output2=row['75%']
+				medianValues.append((output1+output2)/2)
+			colouringTable[key]=medianValues
+	comparisonTable['Total']=table_params
+	comparisondf=pd.DataFrame.from_dict(comparisonTable).set_index('Total')
+	if styler:
+		colouringTable['Total']=table_params
+		colouringdf=pd.DataFrame.from_dict(colouringTable).set_index('Total')
+		def colorhighestinrow(row):
+			mask=(colouringdf.loc[row.name,:]==colouringdf.loc[row.name,:].max())
+			c=np.select([mask==True], ['green'])
+			return [f'background-color: {i}' for i in c]
+		return(comparisondf.style.apply(colorhighestinrow,axis='columns'))
+	return comparisondf
 #read in the baseline file
 # baseline=read_preprocess_file(file_path+'/baseline.csv')
 
