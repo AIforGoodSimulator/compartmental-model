@@ -233,7 +233,7 @@ def incidence_age_table(df):
 	 .set_table_styles(styles))
 	return incidence_table_out
 
-def cumulative_all_table(df):
+def cumulative_all_table(df,display=True):
 	#now we try to calculate the total count
 	#cases: (N-exposed)*0.5 since the asymptomatic rate is 0.5
 	#hopistal days: cumulative count of hospitalisation bucket
@@ -279,6 +279,8 @@ def cumulative_all_table(df):
 		cumulative_count.append(f'{int(round(q25_count))}-{int(round(q75_count))}')
 	data={'Totals':['Symptomatic Cases','Hospital Person-Days','Critical Person-days','Deaths'],'Counts':cumulative_count}
 	cumulative_table=pd.DataFrame.from_dict(data)
+	if display!=True:
+		return cumulative_table
 	th_props = [
 		('font-size', '15px'),
 		('text-align', 'center'),
@@ -705,19 +707,17 @@ def cumulative_age_table(df):
 
 
 
-def effectiveness_table_total(baseline,styler=True):
-	folder_path='./model_outcomes/one_intervention/'
-	selectedInterventions=load_interventions(folder_path)
-	table_params=['Susceptible','Hospitalised','Critical','Deaths']
-	cum_table_baseline=cumulative_all_table(baseline)
+def effectiveness_table(baseline,selectedInterventions,display=True):
+	table_params=['Symptomatic Cases','Hospital Person-Days','Critical Person-days','Deaths']
+	cum_table_baseline=cumulative_all_table(baseline,display=False)
 	baseline_numbers=cum_table_baseline.loc[:,'Counts'].apply(lambda x: [int(i) for i in x.split('-')])
 	baseline_numbers_separate = pd.DataFrame(baseline_numbers.tolist(), columns=['25%','75%'])
 	#write a function to generate effectiveness table:
 	comparisonTable={}
-	if styler:
+	if display:
 		colouringTable={}
 	for key,value in selectedInterventions.items():
-		cumTable=cumulative_all_table(value)
+		cumTable=cumulative_all_table(value,display=False)
 		intervention_numbers=pd.DataFrame(cumTable.loc[:,'Counts'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
 		differencePercentage=(baseline_numbers_separate-intervention_numbers)/baseline_numbers_separate*100
 		prettyOutput=[]
@@ -735,30 +735,69 @@ def effectiveness_table_total(baseline,styler=True):
 			else:
 				prettyOutput.append(str(output2)+'%-'+str(output1)+'%')
 		comparisonTable[key]=prettyOutput
-		if styler:
+		if display:
 			medianValues=[]
 			for _,row in differencePercentage.iterrows():
 				if row['25%']<0:
 					output1=-row['25%']
 				else:
-					output1=row['25%']
+					output1=-row['25%']
 				if row['75%']<0:
 					output2=-row['75%']
 				else:
-					output2=row['75%']
+					output2=-row['75%']
 				medianValues.append((output1+output2)/2)
 			colouringTable[key]=medianValues
 	comparisonTable['Total']=table_params
 	comparisondf=pd.DataFrame.from_dict(comparisonTable).set_index('Total')
-	if styler:
+	if display:
 		colouringTable['Total']=table_params
 		colouringdf=pd.DataFrame.from_dict(colouringTable).set_index('Total')
 		def colorhighestinrow(row):
 			mask=(colouringdf.loc[row.name,:]==colouringdf.loc[row.name,:].max())
 			c=np.select([mask==True], ['green'])
 			return [f'background-color: {i}' for i in c]
-		return(comparisondf.style.apply(colorhighestinrow,axis='columns'))
+		th_props = [
+		('font-size', '15px'),
+		('text-align', 'center'),
+		('font-weight', 'bold'),
+		('color', '#6d6d6d'),
+	 	('background-color', '#f7f7f9')
+	 	]
+
+		# Set CSS properties for td elements in dataframe
+		td_props = [
+			('font-size', '15px'),
+			('text-align', 'center')
+			]
+		caption_props = [
+			('font-size','15px'),
+			('text-align', 'center')
+		]
+		# Set table styles
+
+		styles = [
+			dict(selector="th", props=th_props),
+			dict(selector="td", props=td_props),
+			dict(selector="caption",props=caption_props)
+			]
+		return(comparisondf.style
+			.apply(colorhighestinrow,axis='columns')
+			.set_caption('Table 3. Cumulative case counts of different disease states of COVID19')
+			.set_table_styles(styles))
 	return comparisondf
-#read in the baseline file
-# baseline=read_preprocess_file(file_path+'/baseline.csv')
+
+def effectiveness_table_all(baseline):
+	folder_path='./model_outcomes/one_intervention/'
+	selectedInterventions=load_interventions(folder_path)
+	#sort the collection of interventions by their keys
+	selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
+	return effectiveness_table(baseline,selectedInterventions)
+
+def effectiveness_table_onetype(baseline):
+	folder_path='./model_outcomes/one_intervention/'
+	selectedInterventions=load_interventions(folder_path)
+	#sort the collection of interventions by their keys
+	selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
+	return effectiveness_table(baseline,selectedInterventions)
 

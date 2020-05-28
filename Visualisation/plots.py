@@ -107,7 +107,7 @@ def plot_by_age_all(df):
 
 
 def plot_one_intervention_horizontal(column,baseline,one_intervention_dict):
-	fig, ax = plt.subplots(1, len(one_intervention_dict)+1, sharex='col', sharey='row',figsize=(25,5))
+	fig, ax = plt.subplots(1, len(one_intervention_dict)+1, sharex='col', sharey='row',figsize=(4*len(one_intervention_dict),5))
 	sns.lineplot(x="Time", y=column,ci="sd",data=baseline,ax=ax[0])
 	ax[0].set_title('Baseline')
 	i=1
@@ -119,6 +119,8 @@ def plot_one_intervention_horizontal(column,baseline,one_intervention_dict):
 def plot_one_intervention_horizontal_interactive(plot_one_intervention_horizontal,baseline):
 	folder_path='./model_outcomes/one_intervention/'
 	one_intervention_dict=load_interventions(folder_path)
+	#sort the collection of interventions by their keys
+	one_intervention_dict={k: v for k, v in sorted(one_intervention_dict.items(), key=lambda item: item[0])}
 	w = interactive(plot_one_intervention_horizontal,
 					column=widgets.Select(
 					options=['Infected (symptomatic)','Hospitalised','Critical','Deaths'],

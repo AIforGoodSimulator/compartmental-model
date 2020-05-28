@@ -12,7 +12,7 @@ control_dict = dict( # contains our 6 different control options. Can choose any 
     # 1
     # if True, reduces transmission rate by params.better_hygiene
     better_hygiene = dict(value = params.better_hygiene,
-                        timing = [0,90]),
+                        timing = [0,30]),
 
     ICU_capacity = dict(value = 6/population),
                         
