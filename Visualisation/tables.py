@@ -7,7 +7,7 @@ from preprocess import read_preprocess_file,load_interventions
 def incidence_all_table(df):
 	#calculate Peak Day IQR and Peak Number IQR for each of the 'incident' variables to plot
 	table_params=['Infected (symptomatic)','Hospitalised','Critical','Change in Deaths']
-	grouped=df.groupby('R0')
+	grouped=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])
 	incident_rs={}
 	for index, group in grouped:
 		#for each RO value find out the peak days for each table params
@@ -71,7 +71,7 @@ def incidence_all_table(df):
 def incidence_age_table(df):
 	#calculate age specific Peak Day IQR and Peak Number IQR for each of the 'incident' variables to contruct table
 	table_params=['Infected (symptomatic)','Hospitalised','Critical']
-	grouped=df.groupby('R0')
+	grouped=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])
 	incident_age={}
 	params_age=[]
 	for index, group in grouped:
@@ -241,7 +241,7 @@ def cumulative_all_table(df):
 	#deaths: we already have that from the frame
 	N=18700
 	table_params=['Susceptible','Hospitalised','Critical','Deaths']
-	grouped=df.groupby('R0')
+	grouped=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])
 	cumulative_all={}
 	for index, group in grouped:
 		#for each RO value find out the peak days for each table params
@@ -367,41 +367,41 @@ def cumulative_age_table(df):
 	for column in columns_to_select:
 		if 'Susceptible:' in column:
 			if '0-9' in column:
-				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.4).quantile([.25, .75])
-				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.4).quantile([.25, .75])
-				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.4).quantile([.25, .75])
+				first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.4).quantile([.25, .75])
+				three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.4).quantile([.25, .75])
+				six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.4).quantile([.25, .75])
 			elif 'Oct-19' in column:
-				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.25).quantile([.25, .75])
-				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.25).quantile([.25, .75])
-				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.25).quantile([.25, .75])
+				first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.25).quantile([.25, .75])
+				three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.25).quantile([.25, .75])
+				six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.25).quantile([.25, .75])
 			elif '20-29' in column:
-				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.37).quantile([.25, .75])
-				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.37).quantile([.25, .75])
-				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.37).quantile([.25, .75])
+				first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.37).quantile([.25, .75])
+				three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.37).quantile([.25, .75])
+				six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.37).quantile([.25, .75])
 			elif '30-39' in column:
-				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.42).quantile([.25, .75])
-				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.42).quantile([.25, .75])
-				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.42).quantile([.25, .75])
+				first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.42).quantile([.25, .75])
+				three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.42).quantile([.25, .75])
+				six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.42).quantile([.25, .75])
 			elif '40-49' in column:
-				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.51).quantile([.25, .75])
-				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.51).quantile([.25, .75])
-				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.51).quantile([.25, .75])
+				first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.51).quantile([.25, .75])
+				three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.51).quantile([.25, .75])
+				six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.51).quantile([.25, .75])
 			elif '50-59' in column:
-				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.59).quantile([.25, .75])
-				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.59).quantile([.25, .75])
-				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.59).quantile([.25, .75])
+				first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.59).quantile([.25, .75])
+				three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.59).quantile([.25, .75])
+				six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.59).quantile([.25, .75])
 			elif '60-69' in column:
-				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.72).quantile([.25, .75])
-				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.72).quantile([.25, .75])
-				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.72).quantile([.25, .75])
+				first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.72).quantile([.25, .75])
+				three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.72).quantile([.25, .75])
+				six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.72).quantile([.25, .75])
 			elif '70+' in column:
-				first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.76).quantile([.25, .75])
-				three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.76).quantile([.25, .75])
-				six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.76).quantile([.25, .75])
+				first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.76).quantile([.25, .75])
+				three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.76).quantile([.25, .75])
+				six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.76).quantile([.25, .75])
 		else:
-			first_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_first_month)[column].quantile([.25, .75])
-			three_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_third_month)[column].quantile([.25, .75])
-			six_month_select[column]=df.groupby('R0')[[column,'Time']].apply(find_sixth_month)[column].quantile([.25, .75])
+			first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month)[column].quantile([.25, .75])
+			three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month)[column].quantile([.25, .75])
+			six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month)[column].quantile([.25, .75])
 
 	first_month_select['Susceptible']={0.25:0,0.75:0}
 	three_month_select['Susceptible']={0.25:0,0.75:0}
@@ -414,14 +414,13 @@ def cumulative_age_table(df):
 			three_month_select['Susceptible'][0.75]+=three_month_select[column][0.75]
 			six_month_select['Susceptible'][0.25]+=six_month_select[column][0.25]
 			six_month_select['Susceptible'][0.75]+=six_month_select[column][0.75]
-
 	first_month_accu={}
 	three_month_accu={}
 	six_month_accu={}
 	for column in columns_to_acc:
-		first_month_accu[column]=df.groupby('R0')[[column,'Time']].apply(find_one_month)[column].quantile([.25, .75])
-		three_month_accu[column]=df.groupby('R0')[[column,'Time']].apply(find_three_months)[column].quantile([.25, .75])
-		six_month_accu[column]=df.groupby('R0')[[column,'Time']].apply(find_six_months)[column].quantile([.25, .75])
+		first_month_accu[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_one_month)[column].quantile([.25, .75])
+		three_month_accu[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_three_months)[column].quantile([.25, .75])
+		six_month_accu[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_six_months)[column].quantile([.25, .75])
 	first_month = Merge(first_month_select, first_month_accu) 
 	third_month = Merge(three_month_select, three_month_accu) 
 	sixth_month = Merge(six_month_select, six_month_accu)
