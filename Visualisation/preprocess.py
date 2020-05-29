@@ -12,7 +12,7 @@ def read_preprocess_file(path):
 	df.update(df_temp)
 	return df
 
-def load_interventions(folder_path,prefix=None):
+def load_interventions(folder_path,prefix=None,suffix=None):
 	intervention_files=[]
 	for file in glob.glob(folder_path+"*.csv"):
 		intervention_files.append(file)
@@ -20,7 +20,14 @@ def load_interventions(folder_path,prefix=None):
 	for file in intervention_files:
 		path=Path(file)
 		if prefix is not None:
-			if path.stem.startswith(prefix):
+			if suffix is not None:
+				if path.stem.startswith(prefix) and path.stem.endswith(suffix):
+					selectedInterventions[path.stem]=read_preprocess_file(file)
+			else:
+				if path.stem.startswith(prefix):
+					selectedInterventions[path.stem]=read_preprocess_file(file)
+		elif suffix is not None:
+			if path.stem.endswith(suffix):
 				selectedInterventions[path.stem]=read_preprocess_file(file)
 		else:
 			selectedInterventions[path.stem]=read_preprocess_file(file)

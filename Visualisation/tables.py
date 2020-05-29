@@ -722,30 +722,32 @@ def effectiveness_table(baseline,selectedInterventions,display=True):
 		differencePercentage=(baseline_numbers_separate-intervention_numbers)/baseline_numbers_separate*100
 		prettyOutput=[]
 		for _,row in differencePercentage.round(0).astype(int).iterrows():
-			if row['25%']<0:
-				output1=-row['25%']
-			else:
-				output1=row['25%']
-			if row['75%']<0:
-				output2=-row['75%']
-			else:
-				output2=row['75%']
+			# if row['25%']<0:
+			# 	output1=-row['25%']
+			# else:
+			# 	output1=row['25%']
+			# if row['75%']<0:
+			# 	output2=-row['75%']
+			# else:
+			# 	output2=row['75%']
+			output1,output2=row['25%'],row['75%']
 			if output2>output1:
-				prettyOutput.append(str(output1)+'%-'+str(output2)+'%')
+				prettyOutput.append(str(output1)+'%~'+str(output2)+'%')
 			else:
-				prettyOutput.append(str(output2)+'%-'+str(output1)+'%')
+				prettyOutput.append(str(output2)+'%~'+str(output1)+'%')
 		comparisonTable[key]=prettyOutput
 		if display:
 			medianValues=[]
 			for _,row in differencePercentage.iterrows():
-				if row['25%']<0:
-					output1=-row['25%']
-				else:
-					output1=-row['25%']
-				if row['75%']<0:
-					output2=-row['75%']
-				else:
-					output2=-row['75%']
+				# if row['25%']<0:
+				# 	output1=-row['25%']
+				# else:
+				# 	output1=row['25%']
+				# if row['75%']<0:
+				# 	output2=-row['75%']
+				# else:
+				# 	output2=row['75%']
+				output1,output2=row['25%'],row['75%']
 				medianValues.append((output1+output2)/2)
 			colouringTable[key]=medianValues
 	comparisonTable['Total']=table_params
@@ -794,10 +796,22 @@ def effectiveness_table_all(baseline):
 	selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
 	return effectiveness_table(baseline,selectedInterventions)
 
-def effectiveness_table_onetype(baseline):
+def effectiveness_table_onetype(baseline,prefix):
 	folder_path='./model_outcomes/one_intervention/'
-	selectedInterventions=load_interventions(folder_path)
+	selectedInterventions=load_interventions(folder_path,prefix=prefix)
 	#sort the collection of interventions by their keys
 	selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
 	return effectiveness_table(baseline,selectedInterventions)
 
+def effectiveness_table_hygiene(baseline,timing=True):
+	folder_path='./model_outcomes/one_intervention/'
+	if timing:
+		selectedInterventions=load_interventions(folder_path,prefix='hygiene0.7')
+		#sort the collection of interventions by their keys
+		selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
+		return effectiveness_table(baseline,selectedInterventions)
+	else:
+		selectedInterventions=load_interventions(folder_path,prefix='hygiene',suffix='200')
+		#sort the collection of interventions by their keys
+		selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
+		return effectiveness_table(baseline,selectedInterventions)
