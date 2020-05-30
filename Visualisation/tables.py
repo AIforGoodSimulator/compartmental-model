@@ -2,10 +2,10 @@
 
 import numpy as np
 import pandas as pd
-from preprocess import read_preprocess_file,load_interventions
+from preprocess import read_preprocess_file,load_interventions,intervention_dict
 
-def incidence_all_table(df):
-	#calculate Peak Day IQR and Peak Number IQR for each of the 'incident' variables to plot
+def incidence_all_table(df,display=True):
+	#calculate Peak Day IQR and Peak Number IQR for each of the 'incident' variables to table
 	table_params=['Infected (symptomatic)','Hospitalised','Critical','Change in Deaths']
 	grouped=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])
 	incident_rs={}
@@ -37,36 +37,37 @@ def incidence_all_table(df):
 		peak_number.append(f'{iqr_table[param][1][0]}-{iqr_table[param][1][1]}')
 	data={'Outcome':outcome,'Peak Day IQR':peak_day,'Peak Number IQR':peak_number}
 	incidence_table=pd.DataFrame.from_dict(data)
+	if display:
+		th_props = [
+			('font-size', '15px'),
+			('text-align', 'center'),
+			('font-weight', 'bold'),
+			('color', '#6d6d6d'),
+			('background-color', '#f7f7f9')
+			]
 
-	th_props = [
-		('font-size', '15px'),
-		('text-align', 'center'),
-		('font-weight', 'bold'),
-		('color', '#6d6d6d'),
-	 	('background-color', '#f7f7f9')
-	 	]
-
-	# Set CSS properties for td elements in dataframe
-	td_props = [
-		('font-size', '15px'),
-		('text-align', 'center')
+		# Set CSS properties for td elements in dataframe
+		td_props = [
+			('font-size', '15px'),
+			('text-align', 'center')
+			]
+		caption_props = [
+			('font-size','15px'),
+			('text-align', 'center')
 		]
-	caption_props = [
-		('font-size','15px'),
-		('text-align', 'center')
-	]
-	# Set table styles
+		# Set table styles
 
-	styles = [
-		dict(selector="th", props=th_props),
-		dict(selector="td", props=td_props),
-		dict(selector="caption",props=caption_props)
-	  ]
-	incidence_table_out=(incidence_table.style
-	 .set_caption('Table 1. peak day and peak number for incidences of different disease states of COVID19')
-	 .hide_index()
-	 .set_table_styles(styles))
-	return incidence_table_out
+		styles = [
+			dict(selector="th", props=th_props),
+			dict(selector="td", props=td_props),
+			dict(selector="caption",props=caption_props)
+		  ]
+		incidence_table_out=(incidence_table.style
+		 .set_caption('Table 1. peak day and peak number for incidences of different disease states of COVID19')
+		 .hide_index()
+		 .set_table_styles(styles))
+		return incidence_table_out
+	return incidence_table
 
 def incidence_age_table(df):
 	#calculate age specific Peak Day IQR and Peak Number IQR for each of the 'incident' variables to contruct table
@@ -208,7 +209,7 @@ def incidence_age_table(df):
 		# ('font-weight', 'bold'),
 		# ('color', '#6d6d6d'),
 	 # 	('background-color', '#f7f7f9')
-	 	]
+		]
 
 	# Set CSS properties for td elements in dataframe
 	td_props = [
@@ -286,8 +287,8 @@ def cumulative_all_table(df,display=True):
 		('text-align', 'center'),
 		('font-weight', 'bold'),
 		('color', '#6d6d6d'),
-	 	('background-color', '#f7f7f9')
-	 	]
+		('background-color', '#f7f7f9')
+		]
 
 	# Set CSS properties for td elements in dataframe
 	td_props = [
@@ -680,7 +681,7 @@ def cumulative_age_table(df):
 		# ('font-weight', 'bold'),
 		# ('color', '#6d6d6d'),
 	 # 	('background-color', '#f7f7f9')
-	 	]
+		]
 
 	# Set CSS properties for td elements in dataframe
 	td_props = [
@@ -707,7 +708,7 @@ def cumulative_age_table(df):
 
 
 
-def effectiveness_table(baseline,selectedInterventions,display=True):
+def effectiveness_cum_table(baseline,selectedInterventions,display=True):
 	table_params=['Symptomatic Cases','Hospital Person-Days','Critical Person-days','Deaths']
 	cum_table_baseline=cumulative_all_table(baseline,display=False)
 	baseline_numbers=cum_table_baseline.loc[:,'Counts'].apply(lambda x: [int(i) for i in x.split('-')])
@@ -752,6 +753,32 @@ def effectiveness_table(baseline,selectedInterventions,display=True):
 			colouringTable[key]=medianValues
 	comparisonTable['Total']=table_params
 	comparisondf=pd.DataFrame.from_dict(comparisonTable).set_index('Total')
+
+	th_props = [
+		('font-size', '15px'),
+		('text-align', 'center'),
+		('font-weight', 'bold'),
+		('color', '#6d6d6d'),
+		('background-color', '#f7f7f9')
+		]
+
+	# Set CSS properties for td elements in dataframe
+	td_props = [
+		('font-size', '15px'),
+		('text-align', 'center')
+		]
+	caption_props = [
+		('font-size','15px'),
+		('text-align', 'center')
+	]
+	# Set table styles
+
+	styles = [
+		dict(selector="th", props=th_props),
+		dict(selector="td", props=td_props),
+		dict(selector="caption",props=caption_props)
+		]
+
 	if display:
 		colouringTable['Total']=table_params
 		colouringdf=pd.DataFrame.from_dict(colouringTable).set_index('Total')
@@ -759,59 +786,114 @@ def effectiveness_table(baseline,selectedInterventions,display=True):
 			mask=(colouringdf.loc[row.name,:]==colouringdf.loc[row.name,:].max())
 			c=np.select([mask==True], ['green'])
 			return [f'background-color: {i}' for i in c]
-		th_props = [
-		('font-size', '15px'),
-		('text-align', 'center'),
-		('font-weight', 'bold'),
-		('color', '#6d6d6d'),
-	 	('background-color', '#f7f7f9')
-	 	]
-
-		# Set CSS properties for td elements in dataframe
-		td_props = [
-			('font-size', '15px'),
-			('text-align', 'center')
-			]
-		caption_props = [
-			('font-size','15px'),
-			('text-align', 'center')
-		]
-		# Set table styles
-
-		styles = [
-			dict(selector="th", props=th_props),
-			dict(selector="td", props=td_props),
-			dict(selector="caption",props=caption_props)
-			]
 		return(comparisondf.style
 			.apply(colorhighestinrow,axis='columns')
 			.set_caption('Table 3. Cumulative case counts of different disease states of COVID19')
 			.set_table_styles(styles))
-	return comparisondf
+	return (comparisondf.style
+			.set_caption('Table 3. Cumulative case counts of different disease states of COVID19')
+			.set_table_styles(styles))
 
-def effectiveness_table_all(baseline):
+def effectiveness_cum_table_all(baseline):
 	folder_path='./model_outcomes/one_intervention/'
 	selectedInterventions=load_interventions(folder_path)
 	#sort the collection of interventions by their keys
-	selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
-	return effectiveness_table(baseline,selectedInterventions)
+	selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
+	return effectiveness_cum_table(baseline,selectedInterventions)
 
-def effectiveness_table_onetype(baseline,prefix):
+def effectiveness_cum_table_onetype(baseline,prefix):
 	folder_path='./model_outcomes/one_intervention/'
 	selectedInterventions=load_interventions(folder_path,prefix=prefix)
 	#sort the collection of interventions by their keys
-	selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
-	return effectiveness_table(baseline,selectedInterventions)
+	selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
+	return effectiveness_cum_table(baseline,selectedInterventions)
 
-def effectiveness_table_hygiene(baseline,timing=True):
+def effectiveness_cum_table_hygiene(baseline,timing=True):
 	folder_path='./model_outcomes/one_intervention/'
 	if timing:
 		selectedInterventions=load_interventions(folder_path,prefix='hygiene0.7')
 		#sort the collection of interventions by their keys
-		selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
-		return effectiveness_table(baseline,selectedInterventions)
+		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
+		return effectiveness_cum_table(baseline,selectedInterventions,display=False)
 	else:
 		selectedInterventions=load_interventions(folder_path,prefix='hygiene',suffix='200')
 		#sort the collection of interventions by their keys
-		selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
-		return effectiveness_table(baseline,selectedInterventions)
+		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
+		return effectiveness_cum_table(baseline,selectedInterventions,display=False)
+
+def effectiveness_peak_table(baseline,selectedInterventions):
+	interventionPeak_baseline=incidence_all_table(baseline,display=False)
+	table_columns=interventionPeak_baseline.Outcome.tolist()
+	peakDay_baseline = pd.DataFrame(interventionPeak_baseline.loc[:,'Peak Day IQR'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
+	peakNumber_baseline = pd.DataFrame(interventionPeak_baseline.loc[:,'Peak Number IQR'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
+	comparisonDict={}
+	for key,value in selectedInterventions.items():
+		comparisonSubdict={}
+		interventionPeak=incidence_all_table(value,display=False)
+		peakDay=pd.DataFrame(interventionPeak.loc[:,'Peak Day IQR'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
+		peakNumber=pd.DataFrame(interventionPeak.loc[:,'Peak Number IQR'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
+		differenceDay=(peakDay-peakDay_baseline)
+		differenceNumberPercentage=(peakNumber_baseline-peakNumber)/peakNumber_baseline*100
+		prettyOutputDay=[]
+		prettyOutputNumber=[]
+		for _,row in differenceDay.round(0).astype(int).iterrows():
+			output1,output2=row['25%'],row['75%']
+			if output2>output1:
+				prettyOutputDay.append(str(output1)+'~'+str(output2)+' days')
+			else:
+				prettyOutputDay.append(str(output2)+'~'+str(output1)+' days')
+		for _,row in differenceNumberPercentage.round(0).astype(int).iterrows():
+			output1,output2=row['25%'],row['75%']
+			if output2>output1:
+				prettyOutputNumber.append(str(output1)+'%~'+str(output2)+'%')
+			else:
+				prettyOutputNumber.append(str(output2)+'%~'+str(output1)+'%')
+		
+		comparisonSubdict['Delay in Peak Day IQR']=prettyOutputDay
+		comparisonSubdict['Reduction in Peak Number IQR']=prettyOutputNumber
+		comparisonDict[key]=comparisonSubdict
+	flatten_comparisonDict= {(outerKey, innerKey): values for outerKey, innerDict in comparisonDict.items() for innerKey, values in innerDict.items()}
+	comparisondf=pd.DataFrame(flatten_comparisonDict).set_index(pd.Index(table_columns),'States')
+	th_props = [
+		('font-size', '15px'),
+		('text-align', 'center'),
+		('font-weight', 'bold'),
+		('color', '#6d6d6d'),
+		('background-color', '#f7f7f9')
+		]
+
+	# Set CSS properties for td elements in dataframe
+	td_props = [
+		('font-size', '15px'),
+		('text-align', 'center')
+		]
+	caption_props = [
+		('font-size','15px'),
+		('text-align', 'center')
+	]
+	# Set table styles
+
+	styles = [
+		dict(selector="th", props=th_props),
+		dict(selector="td", props=td_props),
+		dict(selector="caption",props=caption_props)
+		]
+
+	return (comparisondf.style
+			.set_caption('Table 3. Cumulative case counts of different disease states of COVID19')
+			.set_table_styles(styles))
+
+def effectiveness_peak_table_hygiene(baseline,timing=True):
+	folder_path='./model_outcomes/one_intervention/'
+	if timing:
+		selectedInterventions=load_interventions(folder_path,prefix='hygiene0.7')
+		#sort the collection of interventions by their keys
+		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
+		return effectiveness_peak_table(baseline,selectedInterventions)
+	else:
+		selectedInterventions=load_interventions(folder_path,prefix='hygiene',suffix='200')
+		#sort the collection of interventions by their keys
+		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
+		return effectiveness_peak_table(baseline,selectedInterventions)
+
+
