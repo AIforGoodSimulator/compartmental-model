@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
 from ipywidgets import fixed,interactive,Layout
-from preprocess import read_preprocess_file,load_interventions
+from preprocess import read_preprocess_file,load_interventions,intervention_dict
 import ipywidgets as widgets
+from textwrap import wrap
 
 # def plot_by_age(column,df):
 # 	fig, ax = plt.subplots(1, 9, sharex='col', sharey='row',figsize=(20,5),constrained_layout=True)
@@ -113,7 +114,7 @@ def plot_one_intervention_horizontal(column,baseline,one_intervention_dict):
 	i=1
 	for key,value in one_intervention_dict.items():
 		sns.lineplot(x="Time", y=column,ci="sd",data=value,ax=ax[i])
-		ax[i].set_title(key)
+		ax[i].set_title("\n".join(wrap(intervention_dict[key], 30)))
 		i+=1
 
 def plot_one_intervention_horizontal_interactive(plot_one_intervention_horizontal,baseline):
@@ -140,13 +141,13 @@ def plot_one_intervention_horizontal_interactive(plot_one_intervention_horizonta
 def plot_one_intervention_vertical(column,one_intervention_dict):
 	peak_values={}
 	for key,value in one_intervention_dict.items():
-		peak_values[key]=value.groupby('R0')[column].max().mean()
-	peak_values_sorted={k: v for k, v in sorted(peak_values.items(), key=lambda item: item[1],reverse=True)}
+		peak_values[key]=value.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[column].max().mean()
+	peak_values_sorted={k: v for k, v in sorted(peak_values.items(), key=lambda item: item[1])}
 	fig, ax = plt.subplots(len(one_intervention_dict), 1, sharex='row', sharey=True,figsize=(15,20))
 	i=0
 	for key in peak_values_sorted.keys():
 		sns.lineplot(x="Time", y=column,ci="sd",data=one_intervention_dict[key],ax=ax[i])
-		ax[i].text(0.5,0.5,key,verticalalignment='center',horizontalalignment='center',fontsize=15,color='green',transform=ax[i].transAxes)
+		ax[i].text(0.5,0.5,intervention_dict[key],verticalalignment='center',horizontalalignment='center',fontsize=15,color='green',transform=ax[i].transAxes)
 		ax[i].set_ylabel('')    
 		i+=1
 
@@ -194,4 +195,35 @@ def plot_intervention_comparison_interactive(plot_intervention_comparison,baseli
 	container.layout.align_items = 'center'
 	return container
 
+def plot_hygiene_intervention_horizontal(baseline,column='Infected (symptomatic)',timing=True):
+	folder_path='./model_outcomes/one_intervention/'
+	if timing:
+		selectedInterventions=load_interventions(folder_path,prefix='hygiene0.7')
+		return plot_one_intervention_horizontal(column,baseline,selectedInterventions)
+	else:
+		selectedInterventions=load_interventions(folder_path,prefix='hygiene',suffix='200')
+		return plot_one_intervention_horizontal(column,baseline,selectedInterventions)
+
+def plot_iso_intervention_horizontal(baseline,column='Infected (symptomatic)',timing=True):
+	folder_path='./model_outcomes/one_intervention/'
+	if timing:
+		selectedInterventions=load_interventions(folder_path,prefix='isolate50')
+		return plot_one_intervention_horizontal(column,baseline,selectedInterventions)
+	else:
+		selectedInterventions_100=load_interventions(folder_path,prefix='isolate100')
+		selectedInterventions_50=load_interventions(folder_path,prefix='isolate50',suffix='40')
+		selectedInterventions_10=load_interventions(folder_path,prefix='isolate10')
+		selectedInterventions = {**selectedInterventions_100, **selectedInterventions_50,**selectedInterventions_10}
+		return plot_one_intervention_horizontal(column,baseline,selectedInterventions)
+
+def plot_onetype_intervention_horizontal(baseline,prefix,column='Infected (symptomatic)'):
+	folder_path='./model_outcomes/one_intervention/'
+	selectedInterventions=load_interventions(folder_path,prefix=prefix)
+	return plot_one_intervention_horizontal(column,baseline,selectedInterventions)
+	
+def plot_onetype_intervention_vertical(prefix,column='Infected (symptomatic)'):
+	folder_path='./model_outcomes/one_intervention/'
+	selectedInterventions=load_interventions(folder_path,prefix=prefix)
+	return plot_one_intervention_vertical(column,selectedInterventions)
+	
 

@@ -821,6 +821,23 @@ def effectiveness_cum_table_hygiene(baseline,timing=True):
 		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
 		return effectiveness_cum_table(baseline,selectedInterventions,display=False)
 
+def effectiveness_cum_table_iso(baseline,timing=True):
+	folder_path='./model_outcomes/one_intervention/'
+	if timing:
+		selectedInterventions=load_interventions(folder_path,prefix='isolate50')
+		#sort the collection of interventions by their keys
+		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
+		return effectiveness_cum_table(baseline,selectedInterventions,display=False)
+	else:
+		selectedInterventions_100=load_interventions(folder_path,prefix='isolate100')
+		selectedInterventions_50=load_interventions(folder_path,prefix='isolate50',suffix='40')
+		selectedInterventions_10=load_interventions(folder_path,prefix='isolate10')
+		selectedInterventions = {**selectedInterventions_100, **selectedInterventions_50,**selectedInterventions_10}
+		#sort the collection of interventions by their keys
+		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
+		return effectiveness_cum_table(baseline,selectedInterventions,display=False)
+
+
 def effectiveness_peak_table(baseline,selectedInterventions):
 	interventionPeak_baseline=incidence_all_table(baseline,display=False)
 	table_columns=interventionPeak_baseline.Outcome.tolist()
@@ -883,6 +900,20 @@ def effectiveness_peak_table(baseline,selectedInterventions):
 			.set_caption('Table 3. Cumulative case counts of different disease states of COVID19')
 			.set_table_styles(styles))
 
+def effectiveness_peak_table_onetype(baseline,prefix):
+	folder_path='./model_outcomes/one_intervention/'
+	selectedInterventions=load_interventions(folder_path,prefix=prefix)
+	#sort the collection of interventions by their keys
+	selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
+	return effectiveness_peak_table(baseline,selectedInterventions)
+
+def effectiveness_peak_table_shielding(baseline):
+	folder_path='./model_outcomes/one_intervention/'
+	selectedInterventions=load_interventions(folder_path,prefix='shielding')
+	#sort the collection of interventions by their keys
+	selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
+	return effectiveness_peak_table(baseline,selectedInterventions)
+
 def effectiveness_peak_table_hygiene(baseline,timing=True):
 	folder_path='./model_outcomes/one_intervention/'
 	if timing:
@@ -892,6 +923,22 @@ def effectiveness_peak_table_hygiene(baseline,timing=True):
 		return effectiveness_peak_table(baseline,selectedInterventions)
 	else:
 		selectedInterventions=load_interventions(folder_path,prefix='hygiene',suffix='200')
+		#sort the collection of interventions by their keys
+		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
+		return effectiveness_peak_table(baseline,selectedInterventions)
+
+def effectiveness_peak_table_iso(baseline,timing=True):
+	folder_path='./model_outcomes/one_intervention/'
+	if timing:
+		selectedInterventions=load_interventions(folder_path,prefix='isolate50')
+		#sort the collection of interventions by their keys
+		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
+		return effectiveness_peak_table(baseline,selectedInterventions)
+	else:
+		selectedInterventions_100=load_interventions(folder_path,prefix='isolate100')
+		selectedInterventions_50=load_interventions(folder_path,prefix='isolate50',suffix='40')
+		selectedInterventions_10=load_interventions(folder_path,prefix='isolate10')
+		selectedInterventions = {**selectedInterventions_100, **selectedInterventions_50,**selectedInterventions_10}
 		#sort the collection of interventions by their keys
 		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
 		return effectiveness_peak_table(baseline,selectedInterventions)
