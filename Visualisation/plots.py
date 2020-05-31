@@ -138,18 +138,24 @@ def plot_one_intervention_horizontal_interactive(plot_one_intervention_horizonta
 	container.layout.align_items = 'center'
 	return container
 
-def plot_one_intervention_vertical(column,one_intervention_dict):
+def plot_one_intervention_vertical(column,one_intervention_dict,top_5=False):
 	peak_values={}
 	for key,value in one_intervention_dict.items():
 		peak_values[key]=value.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[column].max().mean()
 	peak_values_sorted={k: v for k, v in sorted(peak_values.items(), key=lambda item: item[1])}
-	fig, ax = plt.subplots(len(one_intervention_dict), 1, sharex='row', sharey=True,figsize=(15,20))
+	if not top_5:
+		fig, ax = plt.subplots(len(one_intervention_dict), 1, sharex='row', sharey=True,figsize=(15,len(one_intervention_dict)*3))
+	elif top_5:
+		fig, ax = plt.subplots(5, 1, sharex='row', sharey=True,figsize=(15,20))
 	i=0
 	for key in peak_values_sorted.keys():
 		sns.lineplot(x="Time", y=column,ci="sd",data=one_intervention_dict[key],ax=ax[i])
 		ax[i].text(0.5,0.5,intervention_dict[key],verticalalignment='center',horizontalalignment='center',fontsize=15,color='green',transform=ax[i].transAxes)
 		ax[i].set_ylabel('')    
 		i+=1
+		if top_5:
+			if i==5:
+				break
 
 def plot_one_intervention_vertical_interactive(plot_one_intervention_vertical):
 	folder_path='./model_outcomes/one_intervention/'
@@ -160,7 +166,8 @@ def plot_one_intervention_vertical_interactive(plot_one_intervention_vertical):
 					value='Infected (symptomatic)',
 					description='Category:'
 					),
-					one_intervention_dict=fixed(one_intervention_dict))
+					one_intervention_dict=fixed(one_intervention_dict),
+					top_5=fixed(True))
 	words = widgets.Label('Plot the case counts when one of the intervention is in place and the intervention plots are places by ascending order of effectiveness in reducing peak case counts')
 	container=widgets.VBox([words,w])
 	container.layout.width = '100%'
