@@ -12,9 +12,9 @@ import os
 # baseline experiment
 # from configs.baseline import camp, population_frame, population, control_dict
 # better hygiene from day 0
-from configs.better_hygiene import camp, population_frame, population, control_dict
+# from configs.better_hygiene import camp, population_frame, population, control_dict
 # remove people form the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
-# from configs.remove_symptomatic import camp, population_frame, population, control_dict
+from configs.remove_symptomatic import camp, population_frame, population, control_dict
 # shielding the old population/high risk
 # from configs.shielding import camp, population_frame, population, control_dict
 # remove high risk people form the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
@@ -26,11 +26,11 @@ def run_simulation(camp,population_frame,population,control_dict,mode='experimen
 
     ##----------------------------------------------------------------
     # load a saved solution?
-    load = False
+    load = True
 
     # save generated solution?
     # saves as a python pickle object
-    save = False
+    save = True
     save_csv = True
     
     # plot output?
@@ -78,13 +78,13 @@ def run_simulation(camp,population_frame,population,control_dict,mode='experimen
 
         if save:
             object_dump(sols_raw_Name,     sols_raw)
-            # object_dump(StandardSol_Name,  StandardSol)
-            # object_dump(percentiles_Name,  percentiles)
+            object_dump(StandardSol_Name,  StandardSol)
+            object_dump(percentiles_Name,  percentiles)
     else:
         print('retrieving results from saved runs')
         sols_raw    = pickle.load(open(sols_raw_Name,    'rb'))
-        # StandardSol = pickle.load(open(StandardSol_Name, 'rb'))
-        # percentiles = pickle.load(open(percentiles_Name, 'rb'))
+        StandardSol = pickle.load(open(StandardSol_Name, 'rb'))
+        percentiles = pickle.load(open(percentiles_Name, 'rb'))
 
     if mode=='test':
         return sols_raw
@@ -114,8 +114,8 @@ def run_simulation(camp,population_frame,population,control_dict,mode='experimen
     if plot_output:
         # plots - change outputs via these below
         print('generating dynamic plots in plotly')
-        multiple_categories_to_plot    = ['E','A','I','R','H','C','D','O','Q'] # categories to plot
-        single_category_to_plot        = 'Q'           # categories to plot in final 3 plots
+        multiple_categories_to_plot    = ['E','A','I','R','H','C','D','O','Q','U'] # categories to plot
+        single_category_to_plot        = 'C'           # categories to plot in final 3 plots
 
         # plot graphs
         fig_multi_lines   = go.Figure(  figure_generator(StandardSol,multiple_categories_to_plot,population,population_frame))   # plot with lots of lines
