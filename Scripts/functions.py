@@ -57,14 +57,11 @@ class simulator:
 
         for i in range(age_categories):
             # removing symptomatic individuals
-            # these are just immediately put into R or H; 
-            # no longer infecting new but don't want to 'hide' the fact some of these will die
-            # ideally there would be a slight delay
-            # but the important thing is that they instantly stop infecting others
-            move_sick_offsite = remove_symptomatic_rate * y[params.I_ind + i*params.number_compartments]/total_I # no age bias in who is moved
+            # these are put into Q ('quarantine');
+            quarantine_sick = remove_symptomatic_rate * y[params.I_ind + i*params.number_compartments]/total_I # no age bias in who is moved
 
             # removing susceptible high risk individuals
-            # these are moved into 'offsite'
+            # these are moved into O ('offsite')
             if i in range(age_categories - remove_high_risk['n_categories_removed'],age_categories) and t > remove_high_risk['timing'][0] and t < remove_high_risk['timing'][1]:
                 remove_high_risk_people = min(remove_high_risk['rate'],S_removal) # only removing high risk (within time control window). Can't remove more than we have
             else:
@@ -89,7 +86,7 @@ class simulator:
             # I
             dydt[params.I_ind + i*params.number_compartments] = (latentRate * (1-symptomatic_prob[i]) * y[params.E_ind + i*params.number_compartments]
                                                                   - removalRate * y[params.I_ind + i*params.number_compartments]
-                                                                  - move_sick_offsite
+                                                                  - quarantine_sick
                                                                   )
             # A
             dydt[params.A_ind + i*params.number_compartments] = (latentRate * symptomatic_prob[i] * y[params.E_ind + i*params.number_compartments]
@@ -99,8 +96,7 @@ class simulator:
                                                                  - hospRate * y[params.H_ind + i*params.number_compartments]
                                                                 #  + deathRateNoIcu * (1 - params.death_prob) * max(0,y[params.C_ind + i*params.number_compartments] - ICU_for_this_age) # recovered despite no ICU (0, since now assume death_prob is 1)
                                                                  + deathRateICU * (1 - params.death_prob_with_ICU) * min(y[params.C_ind + i*params.number_compartments],ICU_for_this_age) # recovered from ICU
-                                                                 + move_sick_offsite  * (hospital_prob[i]) # proportion of removed people who were hospitalised once removed (no delay)
-
+                                                                 + (hospital_prob[i]) * params.quarant_rate * y[params.Q_ind + i*params.number_compartments] # proportion of removed people who were hospitalised once returned
                                                                  )
             # C
             dydt[params.C_ind + i*params.number_compartments] = (hospRate  * (critical_prob[i]) * y[params.H_ind + i*params.number_compartments]
@@ -111,7 +107,7 @@ class simulator:
             dydt[params.R_ind + i*params.number_compartments] = (removalRate * (1 - hospital_prob[i]) * y[params.I_ind + i*params.number_compartments]
                                                                  + removalRate * y[params.A_ind + i*params.number_compartments]
                                                                  + hospRate * (1 - critical_prob[i]) * y[params.H_ind + i*params.number_compartments]
-                                                                 + move_sick_offsite  * (1 - hospital_prob[i]) # proportion of removed people who recovered once removed (no delay)
+                                                                 + (1 - hospital_prob[i]) * params.quarant_rate * y[params.Q_ind + i*params.number_compartments] # proportion of removed people who recovered once returned
                                                                  )
             
             # D
@@ -120,6 +116,10 @@ class simulator:
                                                                 )
             # O
             dydt[params.O_ind + i*params.number_compartments] = remove_high_risk_people * y[params.S_ind + i*params.number_compartments] / S_removal
+
+            # Q
+            dydt[params.Q_ind + i*params.number_compartments] = quarantine_sick - params.quarant_rate * y[params.Q_ind + i*params.number_compartments]
+
 
 
         return dydt
@@ -143,8 +143,10 @@ class simulator:
         C0 = 0
         D0 = 0
         O0 = 0 # offsite
+        Q0 = 0 # quarantined
 
-        S0 = 1 - I0 - R0 - C0 - H0 - D0 - O0
+
+        S0 = 1 - I0 - R0 - C0 - H0 - D0 - O0 - Q0
         
         age_categories = int(population_frame.shape[0])
 
@@ -165,6 +167,8 @@ class simulator:
             y0[params.C_ind + i*params.number_compartments] = (population_vector[i]/100)*C0
             y0[params.D_ind + i*params.number_compartments] = (population_vector[i]/100)*D0
             y0[params.O_ind + i*params.number_compartments] = (population_vector[i]/100)*O0
+            y0[params.Q_ind + i*params.number_compartments] = (population_vector[i]/100)*Q0
+
 
         
         symptomatic_prob = np.asarray(population_frame.p_symptomatic)
@@ -354,29 +358,13 @@ def object_dump(file_name,object_to_dump):
 
 
 
-
 def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec=None):
-    category_map = {    '0':  'S',
-                        '1':  'E',
-                        '2':  'I',
-                        '3':  'A',
-                        '4':  'R',
-                        '5':  'H',
-                        '6':  'C',
-                        '7':  'D',
-                        '8':  'O',
-                        '9':  'CS', # change in S
-                        '10': 'CE', # change in E
-                        '11': 'CI', # change in I
-                        '12': 'CA', # change in A
-                        '13': 'CR', # change in R
-                        '14': 'CH', # change in H
-                        '15': 'CC', # change in C
-                        '16': 'CD', # change in D
-                        '17': 'CO', # change in O
-                        '18': 'Ninf',
-                        }
+    
+    category_map = {}
+    for key in categories.keys():
+        category_map[str(categories[key]['index'])] = key
 
+    print(category_map)
 
     if input_type=='percentile':
         csv_sol = np.transpose(data_to_save)

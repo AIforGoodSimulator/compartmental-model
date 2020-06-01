@@ -12,7 +12,7 @@ R0,5,,Model Parameter,,High,Need
 latent period,4,Days,Model Parameter,Time to become infectious,In source uses gamma dist,"1, Table S1"
 infectious period,5,Days,Model Parameter,Time infectious,In source uses gamma dist,"1, Table S1"
 hosp period,8,Days,Model Parameter,Time stay in hosp,In source uses gamma dist,"1, Table S1"
-,,,,,,
+quarantine period,5,Days,Model Parameter,Time stay in quarantine,,
 ,,,,,,
 death period,2,Days,Model Parameter,"Time to die after getting to critical condition, without care",without ICU,Need
 death period with ICU,10,Days,Model Parameter,"Time to die after getting to critical condition, with care",with ICU - not yet factored in,"1, Table S1"
@@ -20,4 +20,4 @@ death period with ICU,10,Days,Model Parameter,"Time to die after getting to crit
 infectiousness of asymptomatic,0.5,,Model Parameter,Asymptomatic cases less infectious,,"1, Table S1"
 death prob with ICU,0.75,,Model Parameter,Prob die vs return to H,with ICU,"1, Table S2"
 ,,,,,,
-number_compartments,9,,Model Parameter,"S,E,I,A,R,H,C,D,O",,not needed
+number_compartments,10,,Model Parameter,"S,E,I,A,R,H,C,D,O,Q",,not needed

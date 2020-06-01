@@ -48,8 +48,13 @@ R_0_list                         =   np.asarray(model_params[model_params['Name'
 
 latent_rate    = 1/(np.float(model_params[model_params['Name']=='latent period'].Value))
 removal_rate   = 1/(np.float(model_params[model_params['Name']=='infectious period'].Value))
-hosp_rate                   = 1/(np.float(model_params[model_params['Name']=='hosp period'].Value))
-death_rate                  = 1/(np.float(model_params[model_params['Name']=='death period'].Value))
+hosp_rate      = 1/(np.float(model_params[model_params['Name']=='hosp period'].Value))
+death_rate     = 1/(np.float(model_params[model_params['Name']=='death period'].Value))
+death_rate_with_ICU = 1/(np.float(model_params[model_params['Name']=='death period with ICU'].Value))
+
+quarant_rate   = 1/(np.float(model_params[model_params['Name']=='quarantine period'].Value))
+
+death_prob_with_ICU =    np.float(model_params[model_params['Name']=='death prob with ICU'].Value)
 
 number_compartments = int(model_params[model_params['Name']=='number_compartments'].Value)
 
@@ -64,8 +69,6 @@ better_hygiene = np.float(control_data.Value[control_data.Name=='Better hygiene'
 
 AsymptInfectiousFactor = np.float(model_params[model_params['Name']=='infectiousness of asymptomatic'].Value)
 
-death_rate_with_ICU = 1/(np.float(model_params[model_params['Name']=='death period with ICU'].Value))
-death_prob_with_ICU =    np.float(model_params[model_params['Name']=='death prob with ICU'].Value)
 
 
 
@@ -85,9 +88,11 @@ class Parameters:
 
         self.AsymptInfectiousFactor         = AsymptInfectiousFactor
 
-        self.latent_rate         = latent_rate
+        self.latent_rate     = latent_rate
         self.removal_rate    = removal_rate
-        self.hosp_rate           = hosp_rate        
+        self.hosp_rate       = hosp_rate        
+        self.quarant_rate    = quarant_rate
+
         self.death_rate          = death_rate
         self.death_rate_with_ICU = death_rate_with_ICU
         
@@ -102,6 +107,8 @@ class Parameters:
         self.C_ind = 6
         self.D_ind = 7
         self.O_ind = 8
+        self.Q_ind = 9
+
 
 
 
@@ -120,19 +127,21 @@ calculated_categories = ['S',
         'H',
         'C',
         'D',
-        'O']
+        'O',
+        'Q']
 
 change_in_categories = ['C'+ii for ii in calculated_categories] # gives daily change for each category
 
-longname = {'S': 'Susceptible',
-            'E': 'Exposed',
-            'I': 'Infected (symptomatic)',
-            'A': 'Asymptomatically Infected',
-            'R': 'Recovered',
-            'H': 'Hospitalised',
-            'C': 'Critical',
-            'D': 'Deaths',
-            'O': 'Offsite',
+longname = {'S':  'Susceptible',
+            'E':  'Exposed',
+            'I':  'Infected (symptomatic)',
+            'A':  'Asymptomatically Infected',
+            'R':  'Recovered',
+            'H':  'Hospitalised',
+            'C':  'Critical',
+            'D':  'Deaths',
+            'O':  'Offsite',
+            'Q':  'Quarantined',
             'CS': 'Change in Susceptible',
             'CE': 'Change in Exposed',
             'CI': 'Change in Infected (symptomatic)',
@@ -142,10 +151,11 @@ longname = {'S': 'Susceptible',
             'CC': 'Change in Critical',
             'CD': 'Change in Deaths',
             'CO': 'Change in Offsite',
+            'CQ': 'Change in Quarantined',
             'Ninf': 'Change in total active infections', # sum of E, I, A
 }
 
-shortname = {'S': 'Sus.',
+shortname = {'S':  'Sus.',
              'E':  'Exp.',
              'I':  'Inf. (symp.)',
              'A':  'Asym.',
@@ -153,7 +163,8 @@ shortname = {'S': 'Sus.',
              'H':  'Hosp.',
              'C':  'Crit.',
              'D':  'Deaths',
-             'O': 'Offsite',
+             'O':  'Offsite',
+             'Q':  'Quar.',
              'CS': 'Change in Sus.',
              'CE': 'Change in Exp.',
              'CI': 'Change in Inf. (symp.)',
@@ -163,6 +174,7 @@ shortname = {'S': 'Sus.',
              'CC': 'Change in Crit.',
              'CD': 'Change in Deaths',
              'CO': 'Change in Offsite',
+             'CQ': 'Change in Quar.',
              'Ninf': 'New Infected', # newly exposed to the disease = - change in susceptibles
 }
 
@@ -175,6 +187,7 @@ colour = {'S':  'rgb(0,0,255)', #'blue',
           'C':  'rgb(50,50,50)', #'black',
           'D':  'rgb(130,0,255)', #'purple',
           'O':  'rgb(130,100,150)', #'dunno',
+          'Q':  'rgb(150,130,100)', #'dunno',
           'CS': 'rgb(0,0,255)', #'blue',
           'CE': 'rgb(255,150,255)', #'pink',
           'CI': 'rgb(255,150,50)', #'orange',
@@ -183,29 +196,32 @@ colour = {'S':  'rgb(0,0,255)', #'blue',
           'CH': 'rgb(255,0,0)', #'red',
           'CC': 'rgb(50,50,50)', #'black',
           'CD': 'rgb(130,0,255)', #'purple',
-          'CO':  'rgb(130,100,150)', #'dunno',
+          'CO': 'rgb(130,100,150)', #'dunno',
+          'CQ': 'rgb(150,130,100)', #'dunno',
           'Ninf': 'rgb(255,125,100)', #
         }
 
 index = {'S': params.S_ind,
-        'E': params.E_ind,
-        'I': params.I_ind,
-        'A': params.A_ind,
-        'R': params.R_ind,
-        'H': params.H_ind,
-        'C': params.C_ind,
-        'D': params.D_ind,
-        'O': params.O_ind,
-        'CS': 9,
-        'CE': 10,
-        'CI': 11,
-        'CA': 12,
-        'CR': 13,
-        'CH': 14,
-        'CC': 15,
-        'CD': 16,
-        'CO': 17,
-        'Ninf': 18,
+        'E':  params.E_ind,
+        'I':  params.I_ind,
+        'A':  params.A_ind,
+        'R':  params.R_ind,
+        'H':  params.H_ind,
+        'C':  params.C_ind,
+        'D':  params.D_ind,
+        'O':  params.O_ind,
+        'Q':  params.Q_ind,
+        'CS': params.number_compartments + params.S_ind,
+        'CE': params.number_compartments + params.E_ind,
+        'CI': params.number_compartments + params.I_ind,
+        'CA': params.number_compartments + params.A_ind,
+        'CR': params.number_compartments + params.R_ind,
+        'CH': params.number_compartments + params.H_ind,
+        'CC': params.number_compartments + params.C_ind,
+        'CD': params.number_compartments + params.D_ind,
+        'CO': params.number_compartments + params.O_ind,
+        'CQ': params.number_compartments + params.Q_ind,
+        'Ninf': 20,
         }
 
 categories = {}

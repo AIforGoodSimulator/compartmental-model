@@ -15,12 +15,12 @@ import os
 # from configs.better_hygiene import camp, population_frame, population, control_dict
 # build up ICU capacity from 6 to 100
 # from configs.icu100 import camp, population_frame, population, control_dict
-# remove people form the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
-# from configs.remove_symptomatic import camp, population_frame, population, control_dict
+# remove people from the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
+from configs.remove_symptomatic import camp, population_frame, population, control_dict
 # shielding the old population/high risk
 # from configs.shielding import camp, population_frame, population, control_dict
 # remove high risk people form the camp (here we vary the parameters in the config file to explore the number of people removed and to which period of time removing people is still effective)
-from configs.remove_highrisk import camp, population_frame, population, control_dict
+# from configs.remove_highrisk import camp, population_frame, population, control_dict
 
 def run_simulation(mode='experiment'):
     # cd into Scripts
@@ -29,16 +29,19 @@ def run_simulation(mode='experiment'):
     ##----------------------------------------------------------------
     # load a saved solution?
     load = False
-    # save generated solution? Only generates new if not loading old
+
+    # save generated solution?
     # saves as a python pickle object
-    save = True
+    save     = True
     save_csv = True
+    
     # plot output?
-    plot_output = False
+    plot_output = True
     save_plots  = False # needs plot_output to be True
-    #simulation timestep
+    
+    # simulation runtime
     t_sim = 200
-    numberOfIterations = 500 # suggest 800-1000 for real thing
+    numberOfIterations = 50 # suggest 800-1000 for real thing
 
     ##----------------------------------------------------------------
     param_string = "Camp=%s_%shygieneT=%s_remInfRate=%s_remInfT=%s_Shield=%s_RemHrRate=%s_RemHrTime=%s_ICU=%s_NumIts=%s" %(camp,
@@ -113,8 +116,8 @@ def run_simulation(mode='experiment'):
     if plot_output:
         # plots - change outputs via these below
         print('generating dynamic plots in plotly')
-        multiple_categories_to_plot    = ['E','A','I','R','H','C','D','O'] # categories to plot
-        single_category_to_plot        = 'D'           # categories to plot in final 3 plots
+        multiple_categories_to_plot    = ['E','A','I','R','H','C','D','O','Q'] # categories to plot
+        single_category_to_plot        = 'Q'           # categories to plot in final 3 plots
 
         # plot graphs
         fig_multi_lines   = go.Figure(  figure_generator(StandardSol,multiple_categories_to_plot,population,population_frame))   # plot with lots of lines

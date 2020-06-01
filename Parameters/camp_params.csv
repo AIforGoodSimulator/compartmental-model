@@ -1,7 +1,7 @@
 ﻿Camp,Age,p_symptomatic,Hosp_given_symptomatic,Critical_given_hospitalised,Population_structure,Total_population,Notes:,Rough prob symptomatic case becomes critical (just multiplying),Rough exp. no. critical
 ,,,,,,,,,
 Moria,0-9,0.4,0.76,30,21.05,18700,p_sympt from,0.000912,2.692908001
-Moria,Oct-19,0.25,0.81,30,17.34,,"Table 1, Source 2",0.0006075,1.47713625
+Moria,10-19,0.25,0.81,30,17.34,,"Table 1, Source 2",0.0006075,1.47713625
 Moria,20-29,0.37,0.99,30,26.35,,,0.0010989,4.061534401
 Moria,30-39,0.42,1.85,30,17.16,,Hosp/Crit data from,0.002331,5.608385999
 Moria,40-49,0.51,5.43,30,9.24,,"Table S2, Source 1",0.0083079,10.7670384

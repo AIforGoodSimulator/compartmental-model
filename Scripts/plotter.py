@@ -81,6 +81,8 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame):
 
     yy = [i for i in yy2]
 
+    pop_vec_lin = np.linspace(0,yy2[1],11)
+
     for i in range(len(yy)-1):
         if yax['range'][1]>yy[i] and yax['range'][1] <= yy[i+1]:
             pop_vec_lin = np.linspace(0,yy2[i+1],11)
@@ -136,23 +138,23 @@ def figure_generator(sols,cats_to_plot,population_plot,population_frame):
                     shapes=shapes,
                     annotations=annots,
                     font = dict(size= font_size), #'12em'),
-                   margin=dict(t=5, b=5, l=10, r=10,pad=15),
-                   hovermode='x',
-                   xaxis= dict(
-                        title='Days',
-                        
-                        automargin=True,
-                        hoverformat='.0f',
-                   ),
-                   yaxis= dict(mirror= True,
-                        title='Percentage of Total Population',
-                        range= yax['range'],
-                        
-                        automargin=True,
-                        type = 'linear'
-                   ),
-                    updatemenus = [dict(
-                                            buttons=list([
+                    margin=dict(t=5, b=5, l=10, r=10,pad=15),
+                    hovermode='x',
+                    xaxis= dict(
+                            title='Days',
+                            
+                            automargin=True,
+                            hoverformat='.0f',
+                    ),
+                    yaxis= dict(mirror= True,
+                            title='Percentage of Total Population',
+                            range= yax['range'],
+                            
+                            automargin=True,
+                            type = 'linear'
+                    ),
+                        updatemenus = [dict(
+                                                buttons=list([
                                                 dict(
                                                     args=[{"yaxis": {'title': 'Percentage of Total Population', 'type': 'linear', 'range': yax['range'], 'automargin': True},
                                                     "yaxis2": {'title': 'Population','type': 'linear', 'overlaying': 'y1', 'range': yax['range'], 'ticktext': [population_format(0.01*vec[i]) for i in range(len(pop_vec_lin))], 'tickvals': [i for i in  pop_vec_lin],'automargin': True,'side':'right'}
@@ -301,6 +303,8 @@ def uncertainty_plot(sols,cats_to_plot,population_plot,population_frame,confiden
         yy2.append(5*10**(i-5))
 
     yy = [i for i in yy2]
+
+    pop_vec_lin = np.linspace(0,yy2[1],11)
 
     for i in range(len(yy)-1):
         if yax['range'][1]>yy[i] and yax['range'][1] <= yy[i+1]:
@@ -541,6 +545,7 @@ def age_structure_plot(sols,cats_to_plot,population_plot,population_frame): # ,c
 
     yy = [i for i in yy2]
 
+    pop_vec_lin = np.linspace(0,yy2[1],11)
 
     for i in range(len(yy)-1):
         if yax['range'][1]>yy[i] and yax['range'][1] <= yy[i+1]:
@@ -702,6 +707,7 @@ def stacked_bar_plot(sols,cats_to_plot,population_plot,population_frame):
 
     yy = [i for i in yy2]
 
+    pop_vec_lin = np.linspace(0,yy2[1],11)
 
     for i in range(len(yy)-1):
         if yax['range'][1]>yy[i] and yax['range'][1] <= yy[i+1]:
