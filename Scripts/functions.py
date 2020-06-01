@@ -300,7 +300,7 @@ def SimulateOverRangeOfParameters(population_frame, population, control_dict, ca
     sols = []
     configDict = []
     sols_raw = {}
-    for ii in range(min(numberOfIterations,len(ParamCsv))):
+    for ii in tqdm(range(min(numberOfIterations,len(ParamCsv)))):
         latentRate  = 1/ParamCsv.LatentPeriod[ii]
         removalRate = 1/ParamCsv.RemovalPeriod[ii]
         
@@ -329,7 +329,7 @@ def SimulateOverRangeOfParameters(population_frame, population, control_dict, ca
                 deathRateNoIcu = deathRateNoIcu
                 )
         configDict.append(Dict)
-        sols_raw[ParamCsv.R0[ii]]=result
+        sols_raw[(ParamCsv.R0[ii],latentRate,removalRate,hospRate,deathRateICU,deathRateNoIcu)]=result
 
     [y_U95, y_UQ, y_LQ, y_L95, y_median] = GeneratePercentiles(sols)
 
@@ -405,7 +405,13 @@ def generate_csv(data_to_save,population_frame,filename,input_type=None,time_vec
             for j in range(len(categories.keys())): # params.number_compartments
                 solution_csv[categories[category_map[str(j)]]['longname']] = value['y_plot'][j] # summary/non age-structured
             
-            solution_csv['R0']=[key]*solution_csv.shape[0]
+            (R0,latentRate,removalRate,hospRate,deathRateICU,deathRateNoIcu)=key
+            solution_csv['R0']=[R0]*solution_csv.shape[0]
+            solution_csv['latentRate']=[latentRate]*solution_csv.shape[0]
+            solution_csv['removalRate']=[removalRate]*solution_csv.shape[0]
+            solution_csv['hospRate']=[hospRate]*solution_csv.shape[0]
+            solution_csv['deathRateICU']=[deathRateICU]*solution_csv.shape[0]
+            solution_csv['deathRateNoIcu']=[deathRateNoIcu]*solution_csv.shape[0]
             final_frame=pd.concat([final_frame, solution_csv], ignore_index=True)
 
         solution_csv=final_frame
