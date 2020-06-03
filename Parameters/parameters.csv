@@ -20,4 +20,4 @@ death period with ICU,10,Days,Model Parameter,"Time to die after getting to crit
 infectiousness of asymptomatic,0.5,,Model Parameter,Asymptomatic cases less infectious,,"1, Table S1"
 death prob with ICU,0.75,,Model Parameter,Prob die vs return to H,with ICU,"1, Table S2"
 ,,,,,,
-number_compartments,10,,Model Parameter,"S,E,I,A,R,H,C,D,O,Q",,not needed
+number_compartments,11,,Model Parameter,"S,E,I,A,R,H,C,D,O,Q,U",,not needed

@@ -108,6 +108,8 @@ class Parameters:
         self.D_ind = 7
         self.O_ind = 8
         self.Q_ind = 9
+        self.U_ind = 10
+
 
 
 
@@ -128,7 +130,9 @@ calculated_categories = ['S',
         'C',
         'D',
         'O',
-        'Q']
+        'Q',
+        'U'
+        ]
 
 change_in_categories = ['C'+ii for ii in calculated_categories] # gives daily change for each category
 
@@ -142,6 +146,7 @@ longname = {'S':  'Susceptible',
             'D':  'Deaths',
             'O':  'Offsite',
             'Q':  'Quarantined',
+            'U':  'No ICU Care',
             'CS': 'Change in Susceptible',
             'CE': 'Change in Exposed',
             'CI': 'Change in Infected (symptomatic)',
@@ -152,6 +157,7 @@ longname = {'S':  'Susceptible',
             'CD': 'Change in Deaths',
             'CO': 'Change in Offsite',
             'CQ': 'Change in Quarantined',
+            'CU': 'Change in No ICU Care',
             'Ninf': 'Change in total active infections', # sum of E, I, A
 }
 
@@ -165,6 +171,7 @@ shortname = {'S':  'Sus.',
              'D':  'Deaths',
              'O':  'Offsite',
              'Q':  'Quar.',
+             'U':  'No ICU',
              'CS': 'Change in Sus.',
              'CE': 'Change in Exp.',
              'CI': 'Change in Inf. (symp.)',
@@ -175,6 +182,7 @@ shortname = {'S':  'Sus.',
              'CD': 'Change in Deaths',
              'CO': 'Change in Offsite',
              'CQ': 'Change in Quar.',
+             'CU':  'Change in No ICU',
              'Ninf': 'New Infected', # newly exposed to the disease = - change in susceptibles
 }
 
@@ -188,6 +196,7 @@ colour = {'S':  'rgb(0,0,255)', #'blue',
           'D':  'rgb(130,0,255)', #'purple',
           'O':  'rgb(130,100,150)', #'dunno',
           'Q':  'rgb(150,130,100)', #'dunno',
+          'U':  'rgb(150,100,150)', #'dunno',
           'CS': 'rgb(0,0,255)', #'blue',
           'CE': 'rgb(255,150,255)', #'pink',
           'CI': 'rgb(255,150,50)', #'orange',
@@ -198,6 +207,7 @@ colour = {'S':  'rgb(0,0,255)', #'blue',
           'CD': 'rgb(130,0,255)', #'purple',
           'CO': 'rgb(130,100,150)', #'dunno',
           'CQ': 'rgb(150,130,100)', #'dunno',
+          'CU':  'rgb(150,100,150)', #'dunno',
           'Ninf': 'rgb(255,125,100)', #
         }
 
@@ -211,6 +221,7 @@ index = {'S': params.S_ind,
         'D':  params.D_ind,
         'O':  params.O_ind,
         'Q':  params.Q_ind,
+        'U':  params.U_ind,
         'CS': params.number_compartments + params.S_ind,
         'CE': params.number_compartments + params.E_ind,
         'CI': params.number_compartments + params.I_ind,
@@ -221,7 +232,8 @@ index = {'S': params.S_ind,
         'CD': params.number_compartments + params.D_ind,
         'CO': params.number_compartments + params.O_ind,
         'CQ': params.number_compartments + params.Q_ind,
-        'Ninf': 20,
+        'CU': params.number_compartments + params.U_ind,
+        'Ninf': 2*params.number_compartments,
         }
 
 categories = {}
