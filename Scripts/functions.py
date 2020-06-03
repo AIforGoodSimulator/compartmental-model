@@ -11,6 +11,12 @@ from tqdm import tqdm
 cwd = os.getcwd()
 import pdb
 
+def timing_function(t,time_vector):
+    for ii in range(ceil(len(time_vector)/2)):
+        if t>=time_vector[2*ii] and t<time_vector[2*ii+1]:
+            return True
+    # if wasn't in any of these time interval
+    return False
 
 ##
 # -----------------------------------------------------------------------------------
@@ -39,13 +45,13 @@ class simulator:
         total_I = sum(I_vec)
 
         # better hygiene
-        if t > better_hygiene['timing'][0] and t < better_hygiene['timing'][1]: # control in place
+        if timing_function(t,better_hygiene['timing']): # control in place
             control_factor = better_hygiene['value']
         else:
             control_factor = 1
         
         # removing symptomatic individuals
-        if t > remove_symptomatic['timing'][0] and t < remove_symptomatic['timing'][1]: # control in place
+        if timing_function(t,remove_symptomatic['timing']): # control in place
             remove_symptomatic_rate = min(total_I,remove_symptomatic['rate'])  # if total_I too small then can't take this many off site at once
         else:
             remove_symptomatic_rate = 0
@@ -62,7 +68,7 @@ class simulator:
 
             # removing susceptible high risk individuals
             # these are moved into O ('offsite')
-            if i in range(age_categories - remove_high_risk['n_categories_removed'],age_categories) and t > remove_high_risk['timing'][0] and t < remove_high_risk['timing'][1]:
+            if i in range(age_categories - remove_high_risk['n_categories_removed'],age_categories) and timing_function(t,remove_high_risk['timing']):
                 remove_high_risk_people = min(remove_high_risk['rate'],S_removal) # only removing high risk (within time control window). Can't remove more than we have
             else:
                 remove_high_risk_people = 0
