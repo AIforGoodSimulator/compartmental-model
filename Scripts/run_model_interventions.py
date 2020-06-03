@@ -43,19 +43,19 @@ def intialise_control_dict(hygiene_value=0.7,hygiene_timing=[0,0],icu_capacity=6
 def one_simulation_scenarios():
 	# #hygiene
 	# print('runing simulations for hygiene interventions')
-	# for hygiene_effective in [0.7,0.8,0.9]:
-	# 	camp, population_frame, population, control_dict=intialise_control_dict(hygiene_value=hygiene_effective,hygiene_timing=[0,200])
-	# 	run_simulation(camp, population_frame, population, control_dict)
-	# for hygiene_timing in [30,60,90]:
-	# 	camp, population_frame, population, control_dict=intialise_control_dict(hygiene_value=0.7,hygiene_timing=[0,hygiene_timing])
-	# 	run_simulation(camp, population_frame, population, control_dict)
-	# #icu capacity
-	# print('runing simulations for icu interventions')
-	# for capacity in [12,24,48]:
-	# 	camp, population_frame, population, control_dict=intialise_control_dict(icu_capacity=capacity)
-	# 	run_simulation(camp, population_frame, population, control_dict)
-	# #isolate symptomatic infections (this needs to be better built in to account for the 14 days scenario)
-	# print('runing simulations for isolating symptomatic infections')
+	for hygiene_effective in [0.7,0.8,0.9]:
+		camp, population_frame, population, control_dict=intialise_control_dict(hygiene_value=hygiene_effective,hygiene_timing=[0,200])
+		run_simulation(camp, population_frame, population, control_dict)
+	for hygiene_timing in [30,60,90]:
+		camp, population_frame, population, control_dict=intialise_control_dict(hygiene_value=0.7,hygiene_timing=[0,hygiene_timing])
+		run_simulation(camp, population_frame, population, control_dict)
+	#icu capacity
+	print('runing simulations for icu interventions')
+	for capacity in [12,24,48]:
+		camp, population_frame, population, control_dict=intialise_control_dict(icu_capacity=capacity)
+		run_simulation(camp, population_frame, population, control_dict)
+	#isolate symptomatic infections (this needs to be better built in to account for the 14 days scenario)
+	print('runing simulations for isolating symptomatic infections')
 	for isolate_per_day in [10,50,100]:
 		if isolate_per_day==10:
 			for timing in [100,200]:

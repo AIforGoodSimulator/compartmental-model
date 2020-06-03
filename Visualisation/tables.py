@@ -4,6 +4,45 @@ import numpy as np
 import pandas as pd
 from preprocess import read_preprocess_file,load_interventions,intervention_dict
 
+def population_breakdown(camp_name='Moria'):
+	import os
+	cwd = os.getcwd()
+	raw_data = pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/camp_params.csv'))
+	population_frame = raw_data[raw_data.Camp=='Moria']
+	population_frame = population_frame.loc[:,['Age','Population_structure']]
+	population_frame['Number of residents']=round(population_frame.Population_structure*187)
+	population_frame['Number of residents'] = population_frame['Number of residents'] .astype(int)
+	population_frame.Population_structure=population_frame.Population_structure.apply(lambda x: str(round(x,1))+'%')
+	population_frame.rename(columns={"Population_structure": "Percentage of residents"})
+	th_props = [
+		('font-size', '15px'),
+		('text-align', 'center'),
+		('font-weight', 'bold'),
+		('color', '#6d6d6d'),
+		('background-color', '#f7f7f9')
+		]
+
+	# Set CSS properties for td elements in dataframe
+	td_props = [
+		('font-size', '15px'),
+		('text-align', 'center')
+		]
+	caption_props = [
+		('font-size','15px'),
+		('text-align', 'center')
+	]
+	# Set table styles
+	styles = [
+		dict(selector="th", props=th_props),
+		dict(selector="td", props=td_props),
+		dict(selector="caption",props=caption_props)
+	  ]
+	population_frame=(population_frame.style
+	.set_caption('Population breakdown of Moria camp with 18700 residents')
+	.hide_index()
+	.set_table_styles(styles))
+	return population_frame
+
 def incidence_all_table(df,display=True):
 	#calculate Peak Day IQR and Peak Number IQR for each of the 'incident' variables to table
 	table_params=['Infected (symptomatic)','Hospitalised','Critical','Change in Deaths']
@@ -132,7 +171,7 @@ def incidence_age_table(df):
 			elif key.startswith('Critical'):
 				peak_day[19]=f'{iqr_table_age[key][0][0]}-{iqr_table_age[key][0][1]}'
 				peak_number[19]=f'{iqr_table_age[key][1][0]}-{iqr_table_age[key][1][1]}'
-		elif 'Oct-19' in key:
+		elif '10-19' in key:
 			if key.startswith('Infected (symptomatic)'):
 				peak_day[2]=f'{iqr_table_age[key][0][0]}-{iqr_table_age[key][0][1]}'
 				peak_number[2]=f'{iqr_table_age[key][1][0]}-{iqr_table_age[key][1][1]}'
@@ -234,6 +273,60 @@ def incidence_age_table(df):
 	 .set_table_styles(styles))
 	return incidence_table_out
 
+def cumulative_iso_table(timing=True,display=True):
+	folder_path='./model_outcomes/one_intervention/'
+	if timing:
+		isoInterventions=load_interventions(folder_path,prefix='isolate50')
+	else:
+		isoInterventions=load_interventions(folder_path,prefix='isolate')
+	param='Quarantined'
+	data={}
+	for key,value in isoInterventions.items():
+		grouped=value.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])
+		cumulative={}
+		for index, group in grouped:
+			#for each RO value find out the peak days for each table params
+			group=group.set_index('Time')
+			cumulative[param]=(group[param].sum())
+		count=[]
+		for elem in cumulative.values():
+			count.append(elem)
+		q75_count, q25_count = np.percentile(count, [75 ,25])
+		data[intervention_dict[key]]=f'{int(round(q25_count))}-{int(round(q75_count))}'
+	data={k: v for k, v in sorted(data.items(), key=lambda item: int(item[1].split('-')[0]),reverse=True)}
+	cumulative_table=pd.DataFrame.from_dict(data,orient='index',columns=['Total Qurantined Person-Days'])
+	if display!=True:
+		return cumulative_table
+	th_props = [
+		('font-size', '15px'),
+		('text-align', 'center'),
+		('font-weight', 'bold'),
+		('color', '#6d6d6d'),
+		('background-color', '#f7f7f9')
+		]
+
+	# Set CSS properties for td elements in dataframe
+	td_props = [
+		('font-size', '15px'),
+		('text-align', 'center')
+		]
+	caption_props = [
+		('font-size','15px'),
+		('text-align', 'center')
+	]
+	# Set table styles
+
+	styles = [
+		dict(selector="th", props=th_props),
+		dict(selector="td", props=td_props),
+		dict(selector="caption",props=caption_props)
+		]
+	cumulative_table_out=(cumulative_table.style
+	 .set_caption('Cumulative number of Quarantine Person-Days for different isolation strategies COVID19')
+	 .set_table_styles(styles))
+
+	return cumulative_table_out
+
 def cumulative_all_table(df,display=True):
 	#now we try to calculate the total count
 	#cases: (N-exposed)*0.5 since the asymptomatic rate is 0.5
@@ -251,7 +344,7 @@ def cumulative_all_table(df,display=True):
 		for param in table_params:
 			if param=='Susceptible':
 				param09='Susceptible: 0-9'
-				param1019='Susceptible: Oct-19'
+				param1019='Susceptible: 10-19'
 				param2029='Susceptible: 20-29'
 				param3039='Susceptible: 30-39'
 				param4049='Susceptible: 40-49'
@@ -373,7 +466,7 @@ def cumulative_age_table(df):
 				first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.4).quantile([.25, .75])
 				three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.4).quantile([.25, .75])
 				six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.4).quantile([.25, .75])
-			elif 'Oct-19' in column:
+			elif '10-19' in column:
 				first_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_first_month_diff)[column].mul(-0.25).quantile([.25, .75])
 				three_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_third_month_diff)[column].mul(-0.25).quantile([.25, .75])
 				six_month_select[column]=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])[[column,'Time']].apply(find_sixth_month_diff)[column].mul(-0.25).quantile([.25, .75])
@@ -446,7 +539,7 @@ def cumulative_age_table(df):
 				first_month_count[19]=f'{int(round(first_month[key][0.25]))}-{int(round(first_month[key][0.75]))}'
 			elif key.startswith('Deaths'):
 				first_month_count[28]=f'{int(round(first_month[key][0.25]))}-{int(round(first_month[key][0.75]))}'
-		elif 'Oct-19' in key:
+		elif '10-19' in key:
 			if key.startswith('Susceptible'):
 				first_month_count[2]=f'{int(round(first_month[key][0.25]))}-{int(round(first_month[key][0.75]))}'
 			elif key.startswith('Hospitalised'):
@@ -528,7 +621,7 @@ def cumulative_age_table(df):
 				three_month_count[19]=f'{int(round(third_month[key][0.25]))}-{int(round(third_month[key][0.75]))}'
 			elif key.startswith('Deaths'):
 				three_month_count[28]=f'{int(round(third_month[key][0.25]))}-{int(round(third_month[key][0.75]))}'
-		elif 'Oct-19' in key:
+		elif '10-19' in key:
 			if key.startswith('Susceptible'):
 				three_month_count[2]=f'{int(round(third_month[key][0.25]))}-{int(round(third_month[key][0.75]))}'
 			elif key.startswith('Hospitalised'):
@@ -610,7 +703,7 @@ def cumulative_age_table(df):
 				six_month_count[19]=f'{int(round(sixth_month[key][0.25]))}-{int(round(sixth_month[key][0.75]))}'
 			elif key.startswith('Deaths'):
 				six_month_count[28]=f'{int(round(sixth_month[key][0.25]))}-{int(round(sixth_month[key][0.75]))}'
-		elif 'Oct-19' in key:
+		elif '10-19' in key:
 			if key.startswith('Susceptible'):
 				six_month_count[2]=f'{int(round(sixth_month[key][0.25]))}-{int(round(sixth_month[key][0.75]))}'
 			elif key.startswith('Hospitalised'):
@@ -708,7 +801,7 @@ def cumulative_age_table(df):
 
 
 
-def effectiveness_cum_table(baseline,selectedInterventions,display=True):
+def effectiveness_cum_table(baseline,selectedInterventions,caption='Table 3. Cumulative case counts of different disease states of COVID19',display=True):
 	table_params=['Symptomatic Cases','Hospital Person-Days','Critical Person-days','Deaths']
 	cum_table_baseline=cumulative_all_table(baseline,display=False)
 	baseline_numbers=cum_table_baseline.loc[:,'Counts'].apply(lambda x: [int(i) for i in x.split('-')])
@@ -788,10 +881,10 @@ def effectiveness_cum_table(baseline,selectedInterventions,display=True):
 			return [f'background-color: {i}' for i in c]
 		return(comparisondf.style
 			.apply(colorhighestinrow,axis='columns')
-			.set_caption('Table 3. Cumulative case counts of different disease states of COVID19')
+			.set_caption(caption)
 			.set_table_styles(styles))
 	return (comparisondf.style
-			.set_caption('Table 3. Cumulative case counts of different disease states of COVID19')
+			.set_caption(caption)
 			.set_table_styles(styles))
 
 def effectiveness_cum_table_all(baseline):
@@ -801,12 +894,19 @@ def effectiveness_cum_table_all(baseline):
 	selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
 	return effectiveness_cum_table(baseline,selectedInterventions)
 
-def effectiveness_cum_table_onetype(baseline,prefix):
+def effectiveness_cum_table_onetype(baseline,prefix,caption='Placeholder',display=True):
 	folder_path='./model_outcomes/one_intervention/'
 	selectedInterventions=load_interventions(folder_path,prefix=prefix)
 	#sort the collection of interventions by their keys
 	selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
-	return effectiveness_cum_table(baseline,selectedInterventions)
+	return effectiveness_cum_table(baseline,selectedInterventions,caption=caption,display=display)
+
+def effectiveness_cum_table_custom(baseline,caption='Placeholder',display=True):
+	folder_path='./model_outcomes/custom/'
+	selectedInterventions=load_interventions(folder_path)
+	#sort the collection of interventions by their keys
+	selectedInterventions={k: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
+	return effectiveness_cum_table(baseline,selectedInterventions,caption=caption,display=display)
 
 def effectiveness_cum_table_hygiene(baseline,timing=True):
 	folder_path='./model_outcomes/one_intervention/'
@@ -814,12 +914,12 @@ def effectiveness_cum_table_hygiene(baseline,timing=True):
 		selectedInterventions=load_interventions(folder_path,prefix='hygiene0.7')
 		#sort the collection of interventions by their keys
 		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
-		return effectiveness_cum_table(baseline,selectedInterventions,display=False)
+		return effectiveness_cum_table(baseline,selectedInterventions,caption='Reduction in cumulative incidences of the same hygiene measures but with different timings',display=False)
 	else:
 		selectedInterventions=load_interventions(folder_path,prefix='hygiene',suffix='200')
 		#sort the collection of interventions by their keys
 		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
-		return effectiveness_cum_table(baseline,selectedInterventions,display=False)
+		return effectiveness_cum_table(baseline,selectedInterventions,caption='Reduction in cumulative incidences of different levels of hygiene measures in the same time frame',display=False)
 
 def effectiveness_cum_table_iso(baseline,timing=True):
 	folder_path='./model_outcomes/one_intervention/'
@@ -827,7 +927,7 @@ def effectiveness_cum_table_iso(baseline,timing=True):
 		selectedInterventions=load_interventions(folder_path,prefix='isolate50')
 		#sort the collection of interventions by their keys
 		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
-		return effectiveness_cum_table(baseline,selectedInterventions,display=False)
+		return effectiveness_cum_table(baseline,selectedInterventions,caption='Effectiveness of the same isolation policy but with different lengths of implementation',display=False)
 	else:
 		selectedInterventions_100=load_interventions(folder_path,prefix='isolate100')
 		selectedInterventions_50=load_interventions(folder_path,prefix='isolate50',suffix='40')
@@ -835,7 +935,7 @@ def effectiveness_cum_table_iso(baseline,timing=True):
 		selectedInterventions = {**selectedInterventions_100, **selectedInterventions_50,**selectedInterventions_10}
 		#sort the collection of interventions by their keys
 		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
-		return effectiveness_cum_table(baseline,selectedInterventions,display=False)
+		return effectiveness_cum_table(baseline,selectedInterventions,caption='Effectiveness of the isolation policies with different lengths of implementation and different daily capacity',display=False)
 
 
 def effectiveness_peak_table(baseline,selectedInterventions):
