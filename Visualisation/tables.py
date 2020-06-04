@@ -43,7 +43,7 @@ def population_breakdown(camp_name='Moria'):
 	.set_table_styles(styles))
 	return population_frame
 
-def incidence_all_table(df,display=True):
+def prevalence_all_table(df,display=True):
 	#calculate Peak Day IQR and Peak Number IQR for each of the 'incident' variables to table
 	table_params=['Infected (symptomatic)','Hospitalised','Critical','Change in Deaths']
 	grouped=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])
@@ -65,8 +65,8 @@ def incidence_all_table(df,display=True):
 		q75_day, q25_day = np.percentile(day, [75 ,25])
 		q75_number, q25_number = np.percentile(number, [75 ,25])
 		iqr_table[param]=((int(round(q25_day)), int(round(q75_day))),(int(round(q25_number)), int(round(q75_number))))
-	table_columns={'Infected (symptomatic)':'Incidence of Symptomatic Cases','Hospitalised':'Hospitalisation Demand',
-					'Critical':'Critical Care Demand','Change in Deaths':'Incidence of Deaths' }
+	table_columns={'Infected (symptomatic)':'Prevalence of Symptomatic Cases','Hospitalised':'Hospitalisation Demand',
+					'Critical':'Critical Care Demand','Change in Deaths':'Prevalence of Deaths' }
 	outcome=[]
 	peak_day=[]
 	peak_number=[]
@@ -75,7 +75,7 @@ def incidence_all_table(df,display=True):
 		peak_day.append(f'{iqr_table[param][0][0]}-{iqr_table[param][0][1]}')
 		peak_number.append(f'{iqr_table[param][1][0]}-{iqr_table[param][1][1]}')
 	data={'Outcome':outcome,'Peak Day IQR':peak_day,'Peak Number IQR':peak_number}
-	incidence_table=pd.DataFrame.from_dict(data)
+	prevalence_table=pd.DataFrame.from_dict(data)
 	if display:
 		th_props = [
 			('font-size', '15px'),
@@ -101,39 +101,39 @@ def incidence_all_table(df,display=True):
 			dict(selector="td", props=td_props),
 			dict(selector="caption",props=caption_props)
 		  ]
-		incidence_table_out=(incidence_table.style
-		 .set_caption('Table 1. peak day and peak number for incidences of different disease states of COVID19')
+		prevalence_table_out=(prevalence_table.style
+		 .set_caption('Peak day and peak number for prevalences of different disease states of COVID19')
 		 .hide_index()
 		 .set_table_styles(styles))
-		return incidence_table_out
-	return incidence_table
+		return prevalence_table_out
+	return prevalence_table
 
-def incidence_age_table(df):
-	#calculate age specific Peak Day IQR and Peak Number IQR for each of the 'incident' variables to contruct table
+def prevalence_age_table(df):
+	#calculate age specific Peak Day IQR and Peak Number IQR for each of the 'prevalent' variables to contruct table
 	table_params=['Infected (symptomatic)','Hospitalised','Critical']
 	grouped=df.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])
-	incident_age={}
+	prevalent_age={}
 	params_age=[]
 	for index, group in grouped:
 		#for each RO value find out the peak days for each table params
 		group=group.set_index('Time')
-		incident={}
+		prevalent={}
 		for param in table_params:
 			for column in df.columns:
 				if column.startswith(param):   
-					incident[column]=(group.loc[:,column].idxmax(),group.loc[:,column].max())
+					prevalent[column]=(group.loc[:,column].idxmax(),group.loc[:,column].max())
 					params_age.append(column)
-		incident_age[index]=incident
+		prevalent_age[index]=prevalent
 	params_age_dedup=list(set(params_age))
-	incident_age_bucket={}
-	for elem in incident_age.values():
+	prevalent_age_bucket={}
+	for elem in prevalent_age.values():
 		for key,value in elem.items():
-			if key in incident_age_bucket:
-				incident_age_bucket[key].append(value)
+			if key in prevalent_age_bucket:
+				prevalent_age_bucket[key].append(value)
 			else:
-				incident_age_bucket[key]=[value]
+				prevalent_age_bucket[key]=[value]
 	iqr_table_age={}
-	for key,value in incident_age_bucket.items():
+	for key,value in prevalent_age_bucket.items():
 		day=[x[0] for x in value]
 		number=[x[1] for x in value]
 		q75_day, q25_day = np.percentile(day, [75 ,25])
@@ -242,7 +242,7 @@ def incidence_age_table(df):
 				peak_day[26]=f'{iqr_table_age[key][0][0]}-{iqr_table_age[key][0][1]}'
 				peak_number[26]=f'{iqr_table_age[key][1][0]}-{iqr_table_age[key][1][1]}'
 	d = {'Peak Day, IQR': peak_day.astype(str), 'Peak Number, IQR': peak_number.astype(str)}
-	incidence_table_age = pd.DataFrame(data=d, index=arrays)
+	prevalence_table_age = pd.DataFrame(data=d, index=arrays)
 	th_props = [
 		('font-size', '15px'),
 		# ('font-weight', 'bold'),
@@ -268,10 +268,10 @@ def incidence_age_table(df):
 		dict(selector="caption",props=caption_props)
 	  ]
 
-	incidence_table_out=(incidence_table_age.style
-	 .set_caption('Table 2. peak day and peak number for incidences of different disease states of COVID19 breakdown by age')
+	prevalence_table_out=(prevalence_table_age.style
+	 .set_caption('Peak day and peak prevalences of different disease states of COVID19 breakdown by age')
 	 .set_table_styles(styles))
-	return incidence_table_out
+	return prevalence_table_out
 
 def cumulative_iso_table(timing=True,display=True):
 	folder_path='./model_outcomes/one_intervention/'
@@ -285,9 +285,9 @@ def cumulative_iso_table(timing=True,display=True):
 		grouped=value.groupby(['R0','latentRate','removalRate','hospRate','deathRateICU','deathRateNoIcu'])
 		cumulative={}
 		for index, group in grouped:
-			#for each RO value find out the peak days for each table params
+			#for each parameter combination find out the peak days for each table params
 			group=group.set_index('Time')
-			cumulative[param]=(group[param].sum())
+			cumulative[index]=(group[param].sum())
 		count=[]
 		for elem in cumulative.values():
 			count.append(elem)
@@ -400,7 +400,7 @@ def cumulative_all_table(df,display=True):
 		dict(selector="caption",props=caption_props)
 		]
 	cumulative_table_out=(cumulative_table.style
-	 .set_caption('Table 3. Cumulative case counts of different disease states of COVID19')
+	 .set_caption('Cumulative case counts of different disease states of COVID19')
 	 .hide_index()
 	 .set_table_styles(styles))
 
@@ -795,7 +795,7 @@ def cumulative_age_table(df):
 	  ]
 
 	count_table_age_out=(count_table_age.style
-	 .set_caption('Table 4. Cumulative case counts of different disease states of COVID19 breakdown by age')
+	 .set_caption('Cumulative case counts of different disease states of COVID19 breakdown by age')
 	 .set_table_styles(styles))
 	return count_table_age_out
 
@@ -938,15 +938,15 @@ def effectiveness_cum_table_iso(baseline,timing=True):
 		return effectiveness_cum_table(baseline,selectedInterventions,caption='Effectiveness of the isolation policies with different lengths of implementation and different daily capacity',display=False)
 
 
-def effectiveness_peak_table(baseline,selectedInterventions):
-	interventionPeak_baseline=incidence_all_table(baseline,display=False)
+def effectiveness_peak_table(baseline,selectedInterventions,caption='Placeholder'):
+	interventionPeak_baseline=prevalence_all_table(baseline,display=False)
 	table_columns=interventionPeak_baseline.Outcome.tolist()
 	peakDay_baseline = pd.DataFrame(interventionPeak_baseline.loc[:,'Peak Day IQR'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
 	peakNumber_baseline = pd.DataFrame(interventionPeak_baseline.loc[:,'Peak Number IQR'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
 	comparisonDict={}
 	for key,value in selectedInterventions.items():
 		comparisonSubdict={}
-		interventionPeak=incidence_all_table(value,display=False)
+		interventionPeak=prevalence_all_table(value,display=False)
 		peakDay=pd.DataFrame(interventionPeak.loc[:,'Peak Day IQR'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
 		peakNumber=pd.DataFrame(interventionPeak.loc[:,'Peak Number IQR'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
 		differenceDay=(peakDay-peakDay_baseline)
@@ -997,7 +997,7 @@ def effectiveness_peak_table(baseline,selectedInterventions):
 		]
 
 	return (comparisondf.style
-			.set_caption('Table 3. Cumulative case counts of different disease states of COVID19')
+			.set_caption(caption)
 			.set_table_styles(styles))
 
 def effectiveness_peak_table_onetype(baseline,prefix):
@@ -1020,12 +1020,12 @@ def effectiveness_peak_table_hygiene(baseline,timing=True):
 		selectedInterventions=load_interventions(folder_path,prefix='hygiene0.7')
 		#sort the collection of interventions by their keys
 		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
-		return effectiveness_peak_table(baseline,selectedInterventions)
+		return effectiveness_peak_table(baseline,selectedInterventions,caption='Delay and reduction in peak prevalence for same program with different lengths of implementation')
 	else:
 		selectedInterventions=load_interventions(folder_path,prefix='hygiene',suffix='200')
 		#sort the collection of interventions by their keys
 		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
-		return effectiveness_peak_table(baseline,selectedInterventions)
+		return effectiveness_peak_table(baseline,selectedInterventions,caption='Delay and reduction in peak prevalence for different programs with the same length of implementation')
 
 def effectiveness_peak_table_iso(baseline,timing=True):
 	folder_path='./model_outcomes/one_intervention/'
