@@ -283,7 +283,7 @@ def plot_all(df):
 		sns.lineplot(x="Time", y=column,ci='iqr',data=df,ax=ax[i],estimator=np.median)
 		ax[i].set_title(column,fontdict)
 		i+=1
-	fig.suptitle('Fig.1 Plots of changes in symptomatically infected cases, hopitalisation cases, critical care cases and death incidents over the course of simulation datys',
+	fig.suptitle('Plots of changes in symptomatically infected cases, hopitalisation cases, critical care cases and death incidents over the course of simulation days',
 		fontsize=20)
 
 def plot_by_age_all(df):
@@ -338,7 +338,7 @@ def plot_by_age_all(df):
 					ax[i,8].set_title('70+ years',fontdict)
 					ax[i,0].set_xlabel('Time',fontsize=15)
 		i+=1
-	fig.suptitle('Fig.1 Plots of changes in symptomatically infected cases, hopitalisation cases, critical care cases and death incidents over the course of simulation datys',
+	fig.suptitle('Plots of changes in symptomatically infected cases, hopitalisation cases, critical care cases and death incidents over the course of simulation days breakdown by age',
 		fontsize=20)
 
 
