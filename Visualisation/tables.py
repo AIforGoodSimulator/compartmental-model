@@ -894,7 +894,7 @@ def effectiveness_cum_table_all(baseline):
 	selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: item[0])}
 	return effectiveness_cum_table(baseline,selectedInterventions)
 
-def effectiveness_cum_table_onetype(baseline,prefix,caption='Placeholder',display=True):
+def effectiveness_cum_table_onetype(baseline,prefix,caption='Placeholder',display=False):
 	folder_path='./model_outcomes/one_intervention/'
 	selectedInterventions=load_interventions(folder_path,prefix=prefix)
 	#sort the collection of interventions by their keys
@@ -939,6 +939,8 @@ def effectiveness_cum_table_iso(baseline,timing=True):
 
 
 def effectiveness_peak_table(baseline,selectedInterventions,caption='Placeholder'):
+	#the calcuation here is a little bit hand wavy and flimsy, the correct way of implementing should be to compare each intervention
+	#with the baseline with the same set up parameters and then in that range pick 25% to 75% data or else it is not correct.
 	interventionPeak_baseline=prevalence_all_table(baseline,display=False)
 	table_columns=interventionPeak_baseline.Outcome.tolist()
 	peakDay_baseline = pd.DataFrame(interventionPeak_baseline.loc[:,'Peak Day IQR'].apply(lambda x: [int(i) for i in x.split('-')]).tolist(), columns=['25%','75%'])
@@ -1033,7 +1035,7 @@ def effectiveness_peak_table_iso(baseline,timing=True):
 		selectedInterventions=load_interventions(folder_path,prefix='isolate50')
 		#sort the collection of interventions by their keys
 		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
-		return effectiveness_peak_table(baseline,selectedInterventions)
+		return effectiveness_peak_table(baseline,selectedInterventions,caption='Delay and reduction in peak prevalence for same program with different lengths of implementation')
 	else:
 		selectedInterventions_100=load_interventions(folder_path,prefix='isolate100')
 		selectedInterventions_50=load_interventions(folder_path,prefix='isolate50',suffix='40')
@@ -1041,6 +1043,6 @@ def effectiveness_peak_table_iso(baseline,timing=True):
 		selectedInterventions = {**selectedInterventions_100, **selectedInterventions_50,**selectedInterventions_10}
 		#sort the collection of interventions by their keys
 		selectedInterventions={intervention_dict[k]: v for k, v in sorted(selectedInterventions.items(), key=lambda item: int(item[0].split('-')[1]))}
-		return effectiveness_peak_table(baseline,selectedInterventions)
+		return effectiveness_peak_table(baseline,selectedInterventions,caption='Delay and reduction in peak prevalence for different programs with different lengths of implementation')
 
 
