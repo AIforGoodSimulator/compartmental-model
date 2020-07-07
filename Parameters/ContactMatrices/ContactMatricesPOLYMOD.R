@@ -1,6 +1,6 @@
 # install.packages("socialmixr")
 library('socialmixr')
-setwd("c:/Users/user/Documents/Python/AI4Good/compartmental-model-master/compartmental-model/Parameters")
+#setwd("c:/Users/user/Documents/Python/AI4Good/compartmental-model-master/compartmental-model/Parameters")
 source('ContactMatrices/contact_matrices.R')
 
 
@@ -27,7 +27,7 @@ C8 <- C8[1:nCats8,1:nCats8]
 # C_subset
 # C <- as.matrix(C)
 ageLimsGen <- c(0, 10, 20, 30, 40, 50, 60, 70, 80)
-C8_generated <- generate_contact_matrix('Moria',ageLimsGen,C16)
+C8_generated <- generate_contact_matrix('',ageLimsGen,C16)
 C8_generated
 
 C16[1:4,1:4]
