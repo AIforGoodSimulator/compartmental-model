@@ -108,8 +108,6 @@ class simulator:
             dydt[params.C_ind + i*params.number_compartments] = ( min(hospRate  * (critical_prob[i]) * y[params.H_ind + i*params.number_compartments], 
                                                                                 ICU_for_this_age - y[params.C_ind + i*params.number_compartments]
                                                                                  + deathRateICU * y[params.C_ind + i*params.number_compartments]  # with ICU treatment
-                                                                                # max(0, 
-                                                                                # )
                                                                                 ) # amount entering is minimum of: amount of beds available**/number needing it
                                                                                 # **including those that will be made available by new deaths
                                                                  - deathRateICU * y[params.C_ind + i*params.number_compartments]  # with ICU treatment
@@ -120,8 +118,6 @@ class simulator:
                                                                  - min(hospRate  * (critical_prob[i]) * y[params.H_ind + i*params.number_compartments],
                                                                      ICU_for_this_age - y[params.C_ind + i*params.number_compartments]
                                                                     + deathRateICU * y[params.C_ind + i*params.number_compartments] 
-                                                                    # max(0,
-                                                                    # )
                                                                     ) # minus number who get it (these entered category C) 
                                                                  - deathRateNoIcu * y[params.U_ind + i*params.number_compartments] # without ICU treatment
                                                                  )
