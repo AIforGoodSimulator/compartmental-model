@@ -46,6 +46,7 @@ control_data = parameter_csv[parameter_csv['Type']=='Control']
 
 R_0_list                         =   np.asarray(model_params[model_params['Name']=='R0'].Value)
 
+
 latent_rate    = 1/(np.float(model_params[model_params['Name']=='latent period'].Value))
 removal_rate   = 1/(np.float(model_params[model_params['Name']=='infectious period'].Value))
 hosp_rate      = 1/(np.float(model_params[model_params['Name']=='hosp period'].Value))

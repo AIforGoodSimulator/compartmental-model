@@ -8,7 +8,9 @@ from plotter import figure_generator, age_structure_plot, stacked_bar_plot, unce
 import pickle
 import os
 
-#import the config file for the experimental setup 
+# cd AI4Good\compartmental-model-master\compartmental-model\Scripts
+
+# import the config file for the experimental setup 
 # baseline experiment
 # from configs.baseline import camp, population_frame, population, control_dict
 # better hygiene from day 0
