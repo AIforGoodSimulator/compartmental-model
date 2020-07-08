@@ -20,19 +20,23 @@ Here is the workflow in generating CSVs for the report
 
 1. Prepare population level data
 
-⋅⋅⋅Go to **Parameters** folder and open up **Prepare camp parameters.ipynb** where you use the **camp_params_template.csv** modify it with the age data from the camp of interest and save it as a seperate csv file
+⋅⋅⋅Go to **Parameters** folder and open up **camp_params.csv** where you use the input the camp information and fill up the proportion for each age bracket and save it. Don't modify other camps information!
 
-2. Prepare contact matrix data
+2. Prepare contact matrix data (optional)
 
-⋅⋅⋅Again in the **Parameters** folder, open up **Prepare contact matrix.ipynb** where you use the **Contact_matrix_wuhan.csv** modify it with the csv just being created on camp population level data. Save it as a seperate csv file
+⋅⋅⋅Again in the **Parameters** folder, open up **GenerateRandomParams.R** where you can synthesize the contact matrix for the camp of interest. Save it as a seperate csv file.
 
-3. Change the directories pointing towards the population level data and contact matrix data
-* go to **Scripts** and open **initalise_parameters.py** and change the csv import for population data
-* go to **Scripts** and open **functions.py** and change the csv import for contact matrix
+3. To run the baseline experiment
+* go to **Scripts/fucntions.py** and find the GenerateInfectionMatrix function to change where it is pointing to the contact matrix csv file
+* define the config file used to run the experiment and set up the name of the camp correctly as set out in the camp_params.csv
+* for a single run and just run the run_model.py file but notice the control parameters at the top (maybe we can build in some command line control here rather than modifying the py file every time)
+```python
+python run_model.py
+```
 
-4. Define the config file used to run the experiment
+4. To run different interventions
 
-⋅⋅⋅Can modify the **config.py** under the **Scripts** directory or go into **configs** folder to set up the file and go to **run_model.py** to adjust for the import.
+* Modify the **config.py** under the **Scripts** directory to make copies with it along with appropriate naming convention
 
 For example:
 ```python
@@ -45,13 +49,8 @@ from configs.baseline import camp, population_frame, population, control_dict
 from configs.hygiene import camp, population_frame, population, control_dict
 ```
 
-5. Set up the run_model,py (change settings on *load*,*save*,*plot_outputs* and *save_plots*) and run the model from command line
-⋅⋅⋅ make sure your current directory is in **Scripts**
+* Can use the **run_model_intervention.py** file to run interventions in bulk (maybe we can build in multiprocessing here to speed up the run time)
 
-```python
-python run_model.py
-```
-
-6. Retrieve outputs from **CSV_output** folder
+5. Retrieve outputs from **CSV_output** folder
 
 ⋅⋅⋅ These are the csvs that we will use to make a plot

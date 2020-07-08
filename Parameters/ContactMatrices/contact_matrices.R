@@ -1,10 +1,10 @@
-setwd("c:/Users/user/Documents/Python/AI4Good/compartmental-model-master/compartmental-model/Parameters")
+#setwd("c:/Users/user/Documents/Python/AI4Good/compartmental-model-master/compartmental-model/Parameters")
 
 
 
 generate_contact_matrix <- function(campName,age_limits,contact_matrix){
   
-  camp_params <- read.csv("camp_params.csv")
+  camp_params <- read.csv("camp_params_2.csv")
   names(camp_params)[1] <- 'Camp'
   
   camp_params_pop_for_camp <- camp_params[camp_params['Camp']==campName,]$Population_structure
@@ -54,9 +54,9 @@ return(M)
 }
 
 
-camp_name <- 'Moria'
+camp_name <- 'Haman-al-Alil'
 ageLimits <- c(0,10,20,30,40,50,60,70,80)
-inputContactMatrix <- read.csv('ContactMatrices/GreeceCM.csv')
+inputContactMatrix <- read.csv('ContactMatrices/IraqCM.csv')
 
 
 generated_contact_matrix <- generate_contact_matrix(camp_name,ageLimits,inputContactMatrix)

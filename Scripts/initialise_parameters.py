@@ -13,7 +13,7 @@ raw_data = pd.read_csv(os.path.join(os.path.dirname(cwd),'Parameters/camp_params
 
 def preparePopulationFrame(camp_name):
     
-    population_frame = raw_data[raw_data.Camp==camp_name]
+    population_frame = raw_data[raw_data.Camp==camp_name].reset_index()
     population_frame = population_frame.loc[:,'Age':'Total_population']
 
     population_frame = population_frame.assign(p_hospitalised = lambda x: (x.Hosp_given_symptomatic/100), # *frac_symptomatic,
@@ -23,7 +23,7 @@ def preparePopulationFrame(camp_name):
     # make sure population frame.value sum to 100
     # population_frame.loc[:,'Population'] = population_frame.Population/sum(population_frame.Population)
 
-    population_size = np.float(population_frame.Total_population[1])
+    population_size = np.float(population_frame.Total_population[0])
 
 
     return population_frame, population_size
