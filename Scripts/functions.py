@@ -37,8 +37,8 @@ class simulator:
         dydt = np.zeros(y.shape)
 
         I_vec = [ y[params.I_ind+i*params.number_compartments] for i in range(age_categories)]
-        # H_vec = [ y[params.H_ind+i*params.number_compartments] for i in range(age_categories)]
-        C_vec = [ y[params.C_ind+i*params.number_compartments] for i in range(age_categories)]
+        
+        H_vec = [ y[params.H_ind+i*params.number_compartments] for i in range(age_categories)]
 
         A_vec = [ y[params.A_ind+i*params.number_compartments] for i in range(age_categories)]
 
@@ -74,8 +74,9 @@ class simulator:
                 remove_high_risk_people = 0
             
             # ICU capacity
-            if sum(C_vec)>0: # can't divide by 0
-                ICU_for_this_age = ICU_capacity['value'] * y[params.C_ind + i*params.number_compartments]/sum(C_vec) # hospital beds allocated on a first come, first served basis
+            if sum(H_vec)>0: # can't divide by 0
+                ICU_for_this_age = ICU_capacity['value'] * y[params.H_ind + i*params.number_compartments]/sum(H_vec) 
+                # ICU beds allocated on a first come, first served basis based on the numbers in hospital
             else:
                 ICU_for_this_age = ICU_capacity['value']
 
