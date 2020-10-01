@@ -1,7 +1,7 @@
 from initialise_parameters import preparePopulationFrame, params
 
 # camp
-camp = 'Haman-al-Alil'
+camp = 'Moria'
 population_frame, population = preparePopulationFrame(camp)
 
 # from github issue
